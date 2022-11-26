@@ -1,0 +1,100 @@
+---
+title: "Pipeline"
+author: 
+  - name: Michael Levin, MD
+    orcid: 0000-0002-9937-9932
+date: last-modified
+format:
+  html:
+    code-tools: true
+    toc: true
+    toc-depth: 6
+    cap-location: top
+    self-contained: true
+    citations-hover: true
+fig-height: 4
+execute:
+  warning: false
+  message: false
+  echo: false
+csl: https://raw.githubusercontent.com/citation-style-language/styles/6152ccea8b7d7a472910d36524d1bf3557a83bfc/dependent/nature-genetics.csl
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(dev = "svg")
+
+library(tidyverse)
+library(targets)
+library(data.table)
+library(vroom)
+library(arrow)
+library(qs)
+library(tarchetypes)
+
+theme_set(theme_bw(base_size = 16))
+
+tar_unscript()
+```
+
+# Targets Pipeline
+
+```{targets globals, tar_globals = TRUE}
+# define some global options/functions common to all targets
+options(tidyverse.quiet = TRUE)
+tar_option_set(
+  packages = c("tidyverse", "targets", "tarchetypes", "arrow", "vroom", "data.table", "qs"),
+  resources = tar_resources(
+    clustermq = tar_resources_clustermq(template = list(memory = 16000,
+                                                        log_file = "build_logs/clustermq_%J.out"))),
+  storage = "worker",
+  retrieval = "worker"
+  )
+
+options(clustermq.scheduler = "lsf",
+        clustermq.template = ".clustermq_lsf.tmpl",
+        clustermq.defaults = list(R_WORK_DIR = here::here())
+  )
+```
+
+```{targets arrow-storage}
+format_arrow_table <- function() {
+  targets::tar_format(
+    read = function(path) {
+      arrow::read_parquet(path, as_data_frame = FALSE)
+    },
+    write = function(object, path) {
+      arrow::write_parquet(object, path, version = "2.0")
+    },
+    marshal = function(object) as.data.frame(object),
+    unmarshal = function(object) arrow::Table$create(object)
+  )
+}
+
+# store as an Arrow Dataset (parquet), and load as an Arrow Dataset
+format_arrow_dataset <- function() {
+  targets::tar_format(
+    read = function(path) {
+      arrow::open_dataset(path)
+    },
+    write = function(object, path) {
+      arrow::write_dataset(object, path, version = "2.0")
+    },
+    marshal = function(object) dplyr::collect(object),
+    unmarshal = function(object) arrow::Dataset$create(object)
+  )
+}
+```
+
+# Analysis
+
+```{targets study-overview}
+
+```
+
+
+# Pipeline Status
+
+```{r}
+targets::tar_visnetwork(targets_only = TRUE)
+```

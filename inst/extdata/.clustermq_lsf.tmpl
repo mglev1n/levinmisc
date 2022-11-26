@@ -1,0 +1,23 @@
+#BSUB-J {{ job_name }}[1-{{ n_jobs }}]  # name of the job / array jobs
+#BSUB-n {{ cores | 1 }}                 # number of cores to use per job
+#BSUB-o {{ log_file | /dev/null }}      # stdout + stderr; %I for array index
+#BSUB-e {{ error_file | /dev/null }}      # stdout + stderr; %I for array index
+#BSUB-M {{ memory | 16384 }}             # Memory requirements in Mbytes
+#BSUB-R rusage[mem={{ memory | 16384 }}] # Memory requirements in Mbytes
+#BSUB-q damrauer_normal                 # name of the queue (uncomment)
+#BSUB-cwd {{ R_WORK_DIR | ~/}}          # name of working directory
+##BSUB-W {{ walltime | 6:00 }}          # walltime (uncomment)
+
+export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.0
+export CMQ_AUTH={{ auth }}
+export SINGULARITY_BIND="/project/PMBB/:/project/PMBB/, /project/damrauer_shared/:/project/damrauer_shared/, /scratch/:${HOME}/roubaix/scratch/, /scratch/:/scratch/"
+
+export MKL_NUM_THREADS={{ cores | 1 }}
+export NUMEXPR_NUM_THREADS={{ cores | 1 }}
+export OMP_NUM_THREADS={{ cores | 1 }}
+
+module load singularity/3.8.3
+
+ulimit -v $(( 1024 * {{ memory | 16384 }} ))
+
+singularity exec --pwd {{ R_WORK_DIR | ~/ }} /project/damrauer_shared/rstudio/bioconductor-tidyverse_singularity-latest.sif R --no-save --no-restore -e 'clustermq:::worker("{{ master }}")'

@@ -1,0 +1,169 @@
+---
+title: "levinmisc"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- 
+Run this 'development' chunk
+
+Store every call to library() that you need to run chunks line by line, as in a classical Rmd for analysis
+-->
+
+```{r development, include=FALSE}
+library(testthat)
+library(devtools)
+library(usethis)
+```
+
+<!--
+# Description of your package
+
+This will fill the description of your package.
+Fill and run the content of this chunk, before anything else. 
+
+Note: when you will use other flat templates, this part will be in a separate file. Do not be surprised!
+--> 
+
+```{r description, eval=FALSE}
+# Describe your package
+fusen::fill_description(
+  pkg = here::here(),
+  fields = list(
+    Title = "Miscellaneous Convenience Functions",
+    Description = "A set of miscellaneous convenience functions.",
+    `Authors@R` = c(
+      person("Michael", "Levin", email = "mglev1n@gmail.com", role = c("aut", "cre"))
+    )
+  )
+)
+# Define License with use_*_license()
+usethis::use_mit_license("Michael Levin")
+```
+
+# Populate a Project With Files/Folders Needed for Deploying a {targets} Project on LPC
+
+This function populates a new project folder with the files/folders necessary for deploying a {targets} project on the LPC at Penn. This includes creating LSF templates, a "Pipelines.qmd" file containing boilerplate for running analyses, and a "Results.qmd" file which can be used to visualize the results.
+
+```{r function-populate_targets_proj}
+
+#' Populate Targets Project
+#'
+#' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
+#' @param log_folder (character) directory for LSF logs.
+#'
+#' @export
+
+populate_targets_proj <- function(title,
+                                  log_folder = "build_logs",
+                                  overwrite = FALSE){
+  # Create title
+  if(missing(title)) {
+    title <- basename(here::here())
+  }
+  
+  # Check if files already exist
+  if(file.exists(".clustermq_lsf.tmpl") | file.exists("*-Results.qmd") | file.exists("*-Pipeline.qmd")) {
+    cli::cli_alert_danger("Files already exist")
+    overwrite <- yesno::yesno("Overwrite existing files?")
+    if(!overwrite) cli::cli_abort("Exiting")
+  }
+  
+  # Create build_logs folder
+  fs::dir_create(log_folder)
+  cli::cli_alert_success("Build log folder created at {.file {log_folder}}")
+  
+  # Copy clustermq lsf template
+  fs::file_copy(fs::path_package("extdata", ".clustermq_lsf.tmpl", package = "levinmisc"), 
+                ".clustermq_lsf.tmpl", 
+                overwrite = overwrite)
+  cli::cli_alert_success("Clustermq template created at {.file .clustermq_lsf.tmpl}")
+  
+  # Copy targets pipeline template
+  fs::file_copy(fs::path_package("extdata", "Pipeline.qmd", package = "levinmisc"), 
+                paste0(title, "-Pipeline.qmd"),
+                overwrite = overwrite)
+  cli::cli_alert_success("Targets Pipeline template created at {.file {paste0(title, '-Pipeline.qmd')}}")
+  
+  # Copy targets results template
+  fs::file_copy(fs::path_package("extdata", "Results.qmd", package = "levinmisc"), 
+                paste0(title, "-Results.qmd"),
+                overwrite = overwrite)
+  cli::cli_alert_success("Targets Results template created at {.file {paste0(title, '-Results.qmd')}}")
+  
+}
+```
+
+<!--
+Here is an example on how to use the function.
+This should be a reproducible and working example
+-->
+
+```{r examples-populate_targets_proj}
+#' \dontrun{
+#' populate_targets_proj("test")
+#' }
+```
+
+<!--
+Here are some unit tests to verify the function works as expected.
+-->
+
+```{r tests-populate_targets_proj}
+# Functions to allow creating files in new temporary directory
+dir_empty <- function(x){
+  unlink(x, recursive = TRUE, force = TRUE)
+  dir.create(x)
+}
+
+test_with_dir <- function(desc, ...){
+  new <- tempfile()
+  dir_empty(new)
+  withr::with_dir( # or local_dir()
+    new = new,
+    code = {
+      tmp <- capture.output(
+        testthat::test_that(desc = desc, ...)
+      )
+    }
+  )
+  invisible()
+}
+
+test_with_dir("populate_targets_proj creates log folder", {
+  populate_targets_proj()
+  expect_true(dir.exists("build_logs"))
+})
+
+test_with_dir("populate_targets_proj creates .clustermq_lsf.tmpl", {
+  populate_targets_proj()
+  expect_true(file.exists(".clustermq_lsf.tmpl"))
+})
+
+test_with_dir("populate_targets_proj creates pipeline and results .qmd templates", {
+  populate_targets_proj()
+  expect_true(length(fs::dir_ls(".", glob = "*-Results.qmd")) > 0)
+  expect_true(length(fs::dir_ls(".", glob = "*-Pipeline.qmd")) > 0)
+})
+```
+
+<!-- 
+# Inflate your package
+
+You're one inflate from paper to box.
+Build your package from this very Rmd using `fusen::inflate()` 
+-->
+
+
+```{r development-inflate, eval=FALSE}
+# Execute in the console directly
+fusen::inflate(flat_file = "dev/LPC_targets_project.Rmd")
+```
+
+<!-- 
+- Verify your `"DESCRIPTION"` file has been updated
+- Verify your function is in `"R/"` directory
+- Verify your test is in `"tests/testthat/"` directory
+- Verify this Rmd appears in `"vignettes/"` directory 
+-->
