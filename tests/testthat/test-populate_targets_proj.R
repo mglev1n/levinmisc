@@ -30,6 +30,11 @@ test_with_dir("populate_targets_proj creates .clustermq_lsf.tmpl", {
   expect_true(file.exists(".clustermq_lsf.tmpl"))
 })
 
+test_with_dir("populate_targets_proj creates make-targets-10cores.sh", {
+  populate_targets_proj()
+  expect_true(file.exists("make-targets-10cores.sh"))
+})
+
 test_with_dir("populate_targets_proj creates pipeline and results .qmd templates", {
   populate_targets_proj()
   expect_true(length(fs::dir_ls(".", glob = "*-Results.qmd")) > 0)

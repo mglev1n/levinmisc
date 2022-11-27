@@ -80,6 +80,12 @@ populate_targets_proj <- function(title,
                 overwrite = overwrite)
   cli::cli_alert_success("Clustermq template created at {.file .clustermq_lsf.tmpl}")
   
+  # Copy clustermq lsf template
+  fs::file_copy(fs::path_package("extdata", "make-targets-10cores.sh", package = "levinmisc"), 
+                "make-targets-10cores.sh", 
+                overwrite = overwrite)
+  cli::cli_alert_success("Clustermq template created at {.file make-targets-10cores.sh}")
+  
   # Copy targets pipeline template
   fs::file_copy(fs::path_package("extdata", "Pipeline.qmd", package = "levinmisc"), 
                 paste0(title, "-Pipeline.qmd"),
@@ -139,6 +145,11 @@ test_with_dir("populate_targets_proj creates log folder", {
 test_with_dir("populate_targets_proj creates .clustermq_lsf.tmpl", {
   populate_targets_proj()
   expect_true(file.exists(".clustermq_lsf.tmpl"))
+})
+
+test_with_dir("populate_targets_proj creates make-targets-10cores.sh", {
+  populate_targets_proj()
+  expect_true(file.exists("make-targets-10cores.sh"))
 })
 
 test_with_dir("populate_targets_proj creates pipeline and results .qmd templates", {
