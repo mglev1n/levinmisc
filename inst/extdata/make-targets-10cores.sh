@@ -15,4 +15,4 @@ module load singularity/3.8.3
 
 ulimit -v $(( 1024 * 32000))
 
-singularity exec /project/damrauer_shared/rstudio/bioconductor-tidyverse_singularity-latest.sif R --no-save --no-restore -e 'targets::tar_make_clustermq(workers = 10)'
+singularity exec /project/damrauer_shared/rstudio/bioconductor-tidyverse_singularity-latest.sif R --no-save --no-restore -e "slackr::slackr_setup(); slackr::slackr_bot('Targets Pipeline Started', channel = '@Mike Levin'); targets::tar_make_clustermq(workers = 10); slackr::slackr_bot('Targets Pipeline Complete', channel = '@Mike Levin')"
