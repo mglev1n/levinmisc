@@ -64,7 +64,7 @@ format_arrow_table <- function() {
       arrow::read_parquet(path, as_data_frame = FALSE)
     },
     write = function(object, path) {
-      arrow::write_parquet(object, path, version = "2.0")
+      arrow::write_parquet(object, path)
     },
     marshal = function(object) as.data.frame(object),
     unmarshal = function(object) arrow::Table$create(object)
@@ -78,7 +78,7 @@ format_arrow_dataset <- function() {
       arrow::open_dataset(path)
     },
     write = function(object, path) {
-      arrow::write_dataset(object, path, version = "2.0")
+      arrow::write_dataset(object, path)
     },
     marshal = function(object) dplyr::collect(object),
     unmarshal = function(object) arrow::Dataset$create(object)
