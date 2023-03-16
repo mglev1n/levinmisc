@@ -98,11 +98,14 @@ Note: when you will use other flat templates, this part will be in a separate fi
 <h2 id="populate-a-project-with-filesfolders-needed-for-deploying-a-targets-project-on-lpc">Populate a Project With Files/Folders Needed for Deploying a
 {targets} Project on LPC<a class="anchor" aria-label="anchor" href="#populate-a-project-with-filesfolders-needed-for-deploying-a-targets-project-on-lpc"></a>
 </h2>
+<div class="section level3">
+<h3 id="populate_targets_proj">populate_targets_proj()<a class="anchor" aria-label="anchor" href="#populate_targets_proj"></a>
+</h3>
 <p>The <code>populate_targets_proj</code> function can be run within a
-blank/empty project folder to initialize the project with the
-files/folders necessary for deploying a {targets} project on the LPC at
-Penn. This includes creating LSF templates, a <code>Pipelines.qmd</code>
-file containing boilerplate for running analyses, and a
+new project folder to initialize the project with the files/folders
+necessary for deploying a {targets} pipeline on the LPC at Penn. This
+includes creating LSF templates, a <code>Pipelines.qmd</code> file
+containing boilerplate for running analyses, and a
 <code>Results.qmd</code> file which can be used to visualize the
 results.</p>
 <!--
@@ -113,11 +116,12 @@ This should be a reproducible and working example
 <code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
 <span><span class="co">#' populate_targets_proj("test")</span></span>
 <span><span class="co">#' }</span></span></code></pre></div>
-<p>This function creates several files/folders within the project
-directory. <code>.make-targets.sh</code> and
-<code>.clustermq_lsf.tmpl</code> are hidden helper files which a not
-designed for user interaction, but necessary for submission of jobs to
-the LSF scheduler:</p>
+<p>The <code><a href="../reference/populate_targets_proj.html">populate_targets_proj()</a></code> function creates several
+files/folders within the project directory.
+<code>.make-targets.sh</code> and <code>.clustermq_lsf.tmpl</code> are
+hidden helper files which a not designed for user interaction, but
+necessary for submission of jobs to the LSF scheduler. The other files
+are designed to be edited/used by the user:</p>
 <ul>
 <li><p><code>Pipeline.qmd</code> - Quarto markdown file which can be
 used to create a Target Markdown document that specifies a {targets}
@@ -152,11 +156,11 @@ Options:
 <code>-s true</code> command line flag to the
 <code>./submit-targets.sh</code> script:</p>
 <pre><code>./submit-targets.sh -s true</code></pre>
-<p>Notifications are provided using the <code>slackr</code> package. The
-package must be configured before Slack notifications are enabled. See
-<a href="https://mrkaye97.github.io/slackr/index.html" class="external-link uri">https://mrkaye97.github.io/slackr/index.html</a> for more
+<p>Slack notifications are provided using the <code>slackr</code>
+package. The package must be configured before Slack notifications are
+enabled. See <a href="https://mrkaye97.github.io/slackr/index.html" class="external-link uri">https://mrkaye97.github.io/slackr/index.html</a> for more
 information about <code>slackr</code> setup and generation of an Slack
-API tocken</p>
+API token.</p>
 <!--
 Here are some unit tests to verify the function works as expected.
 -->
@@ -174,7 +178,9 @@ Build your package from this very Rmd using `fusen::inflate()`
 - Verify this Rmd appears in `"vignettes/"` directory 
 -->
 </div>
-  </main>
+</div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
