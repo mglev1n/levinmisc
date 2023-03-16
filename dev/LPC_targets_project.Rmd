@@ -148,7 +148,7 @@ Slack notifications of pipeline start/finish can be enabled using the `-s true` 
 
 Notifications are provided using the `slackr` package. The package must be configured before Slack notifications are enabled. See https://mrkaye97.github.io/slackr/index.html for more information about `slackr` setup and generation of an Slack API tocken
 
-```{r examples-populate_targets_proj}
+```{r examples-populate_targets_proj, include=FALSE}
 #' \dontrun{
 #' populate_targets_proj("test")
 #' }
