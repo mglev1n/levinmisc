@@ -167,14 +167,15 @@ stored</p></li>
 be used to run your <code>targets</code> pipeline, once
 <code>Pipeline.qmd</code> has been knit/rendered. This script can be run
 directly from the submission host. This script can accept command line
-options:</p></li>
+options, which can be useful for parallelizing your pipeline over
+multiple workers/CPUs:</p></li>
 </ul>
-<pre><code>Usage: ./submit-targets.sh [-n NUM_CPUS] [-j JOB_NAME] [-o OUTPUT_LOG] [-e ERROR_LOG] [-q QUEUE] [-m MEMORY] [-s SLACK] [-h HELP]
+<pre><code>Usage: ./submit-targets.sh [-n NUM_WORKERS] [-j JOB_NAME] [-o OUTPUT_LOG] [-e ERROR_LOG] [-q QUEUE] [-m MEMORY] [-s SLACK] [-h HELP]
 
 Submit a job using the LSF scheduler with the specified number of CPUs and memory usage.
 
 Options:
-  -n NUM_CPUS    Number of CPUs to request for the job (default: 1)
+  -n NUM_WORKERS Number of workers (cpu cores) to request for running the targets pipeline (default: 1)
   -j JOB_NAME    Name of the job (default: make_targets)
   -o OUTPUT_LOG  Path to the output log file (default: build_logs/targets_%J.out)
   -e ERROR_LOG   Path to the error log file (default: build_logs/targets_%J.err)
