@@ -44,6 +44,22 @@ usethis::use_mit_license("Michael Levin")
 
 # Populate a Project With Files/Folders Needed for Deploying a {targets} Project on LPC
 
+The `targets` package is a tool for developing reproducible research workflows in R. Details of the package motivation and tools are described in detail: https://books.ropensci.org/targets/ and https://docs.ropensci.org/targets/.
+
+A general workflow:
+
+1. Create a new R project
+
+1. Run the `levinmisc::populate_targets_proj()` function in the R console - this function is described below in detail, and will initialize your project with helpful files/folders to start building your targets pipeline.
+
+1. Modify the `Pipelines.qmd` file to specify your analyses. The `targets` documentation can be useful for specifics.
+
+1. Knit/Render `Pipelines.qmd` to convert your markdown document into a series of R scripts that will actually run your analyses.
+
+1. Run `submit-targets.sh` from a terminal window to submit your targets pipeline to the LPC for execution. Details of possible command line arguments to this script are described below.
+
+1. Modify `Results.qmd` to present the results of your analyses. Rendering this file allows you to mix text describing your analyses/methods and include citations alongside the actual results of your pipeline. The `targets::tar_read()` function should be used heavily to load pre-computed results from your pipeline.
+
 ## populate_targets_proj()
 
 The `populate_targets_proj` function can be run within a new project folder to initialize the project with the files/folders necessary for deploying a {targets} pipeline on the LPC at Penn. This includes creating LSF templates, a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results.
@@ -120,7 +136,7 @@ This should be a reproducible and working example
 #' }
 ```
 
-The `populate_targets_proj()` function creates several files/folders within the project directory. `.make-targets.sh` and `.clustermq_lsf.tmpl` are hidden helper files which a not designed for user interaction, but necessary for submission of jobs to the LSF scheduler. The other files are designed to be edited/used by the user:
+The `populate_targets_proj()` function creates several files/folders within the project directory. `.make-targets.sh` and `.clustermq_lsf.tmpl` are hidden helper files which are not designed for user interaction, but necessary for submission of jobs to the LSF scheduler. The other files are designed to be edited/used by the user:
 
   - `Pipeline.qmd` - Quarto markdown file which can be used to create a Target Markdown document that specifies a {targets} pipeline for your analyses. See: https://books.ropensci.org/targets/literate-programming.html#target-markdown for details. Remember to knit/render this document in order to generate the pipeline.
   
