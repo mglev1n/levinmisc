@@ -13,7 +13,6 @@ Imports:
     fs,
     here,
     magrittr,
-    slackr,
     yesno
 Suggests: 
     knitr,
