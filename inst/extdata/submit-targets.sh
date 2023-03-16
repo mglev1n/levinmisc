@@ -8,9 +8,10 @@ error_log="build_logs/targets_%J.err"
 queue="voltron_normal"
 memory="16000"
 job_script=$(pwd)"/make-targets.sh"
+slack=false
 
 # Parse command line arguments
-while getopts ":n:j:o:e:q:m:h" opt; do
+while getopts ":n:j:o:e:q:m:s:h" opt; do
     case $opt in
         n)
             num_cpus=$OPTARG
@@ -30,8 +31,12 @@ while getopts ":n:j:o:e:q:m:h" opt; do
         m)
             memory=$OPTARG
             ;;
+
+        s)
+            slack=$OPTARG
+            ;;
         h)
-            echo "Usage: $0 [-n NUM_CPUS] [-j JOB_NAME] [-o OUTPUT_LOG] [-e ERROR_LOG] [-q QUEUE] [-m MEMORY] [-h HELP]"
+            echo "Usage: $0 [-n NUM_CPUS] [-j JOB_NAME] [-o OUTPUT_LOG] [-e ERROR_LOG] [-q QUEUE] [-m MEMORY] [-s SLACK] [-h HELP]"
             echo
             echo "Submit a job using the LSF scheduler with the specified number of CPUs and memory usage."
             echo
@@ -42,6 +47,7 @@ while getopts ":n:j:o:e:q:m:h" opt; do
             echo "  -e ERROR_LOG   Path to the error log file (default: build_logs/targets_%J.err)"
             echo "  -q QUEUE       Name of the queue to submit the job to (default: voltron_normal)"
             echo "  -m MEMORY      Memory usage for the job in megabytes (default: 16000)"
+            echo "  -s SLACK       Enable slack notifications; requires setup using slackr::slack_setup() (default: false)"
             echo "  -h HELP        Display this help message and exit"
             echo
             echo
@@ -63,5 +69,5 @@ shift $((OPTIND-1))
 
 # Submit job to LSF scheduler with specified number of CPUs and arguments
 bsub -cwd $(pwd) -J $job_name -o $output_log -e $error_log -q $queue -R "rusage[mem=$memory]" <<EOF
-$job_script -n $num_cpus "$@"
+$job_script -n $num_cpus -s $slack
 EOF

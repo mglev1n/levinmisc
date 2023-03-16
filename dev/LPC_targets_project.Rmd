@@ -125,7 +125,7 @@ This function creates several files/folders within the project directory. `.make
   - `submit-targets.sh`- This is a bash script which can be used to run your {targets} pipeline, once `Pipeline.qmd` has been knit/rendered. This script can be run directly from the submission host. This script can accept command line options:
   
 ```
-Usage: ./submit-targets.sh [-n NUM_CPUS] [-j JOB_NAME] [-o OUTPUT_LOG] [-e ERROR_LOG] [-q QUEUE] [-m MEMORY] [-h HELP]
+Usage: ./submit-targets.sh [-n NUM_CPUS] [-j JOB_NAME] [-o OUTPUT_LOG] [-e ERROR_LOG] [-q QUEUE] [-m MEMORY] [-s SLACK] [-h HELP]
 
 Submit a job using the LSF scheduler with the specified number of CPUs and memory usage.
 
@@ -136,8 +136,19 @@ Options:
   -e ERROR_LOG   Path to the error log file (default: build_logs/targets_%J.err)
   -q QUEUE       Name of the queue to submit the job to (default: voltron_normal)
   -m MEMORY      Memory usage for the job in megabytes (default: 16000)
+  -s SLACK       Enable slack notifications; requires setup using slackr::slack_setup() (default: false)
   -h HELP        Display this help message and exit
 ```
+
+## Slack notifications
+
+Slack notifications of pipeline start/finish can be enabled using the `-s true` command line flag to the `./submit-targets.sh` script:
+
+```
+./submit-targets.sh -s true
+```
+
+Notifications are provided using the `slackr` package. The package must be configured before Slack notifications are enabled. See https://mrkaye97.github.io/slackr/index.html for more information about `slackr` setup and generation of an Slack API tocken
 
 <!--
 Here are some unit tests to verify the function works as expected.

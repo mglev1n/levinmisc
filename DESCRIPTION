@@ -5,13 +5,15 @@ Authors@R:
     person("Michael", "Levin", , "mglev1n@gmail.com", role = c("aut", "cre"))
 Description: A set of miscellaneous convenience functions.
 License: MIT + file LICENSE
-URL: https://github.com/mglev1n/levinmisc
+URL: https://github.com/mglev1n/levinmisc,
+    https://mglev1n.github.io/levinmisc/
 BugReports: https://github.com/mglev1n/levinmisc/issues
 Imports: 
     cli,
     fs,
     here,
     magrittr,
+    slackr,
     yesno
 Suggests: 
     knitr,
