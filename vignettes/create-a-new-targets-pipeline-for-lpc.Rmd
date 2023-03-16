@@ -1,8 +1,8 @@
 ---
-title: "Get started"
+title: "Create a New Targets Pipeline for LPC"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{get-started}
+  %\VignetteIndexEntry{create-a-new-targets-pipeline-for-lpc}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
