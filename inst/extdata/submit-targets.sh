@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# Set default values for command line arguments
+num_cpus=1
+job_name="make_targets"
+output_log="build_logs/targets_%J.out"
+error_log="build_logs/targets_%J.err"
+queue="voltron_normal"
+memory="16000"
+job_script=$(pwd)"/make-targets.sh"
+
+# Parse command line arguments
+while getopts ":n:j:o:e:q:m:h" opt; do
+    case $opt in
+        n)
+            num_cpus=$OPTARG
+            ;;
+        j)
+            job_name=$OPTARG
+            ;;
+        o)
+            output_log=$OPTARG
+            ;;
+        e)
+            error_log=$OPTARG
+            ;;
+        q)
+            queue=$OPTARG
+            ;;
+        m)
+            memory=$OPTARG
+            ;;
+        h)
+            echo "Usage: $0 [-n NUM_CPUS] [-j JOB_NAME] [-o OUTPUT_LOG] [-e ERROR_LOG] [-q QUEUE] [-m MEMORY] [-h HELP]"
+            echo
+            echo "Submit a job using the LSF scheduler with the specified number of CPUs and memory usage."
+            echo
+            echo "Options:"
+            echo "  -n NUM_CPUS    Number of CPUs to request for the job (default: 1)"
+            echo "  -j JOB_NAME    Name of the job (default: make_targets)"
+            echo "  -o OUTPUT_LOG  Path to the output log file (default: build_logs/targets_%J.out)"
+            echo "  -e ERROR_LOG   Path to the error log file (default: build_logs/targets_%J.err)"
+            echo "  -q QUEUE       Name of the queue to submit the job to (default: voltron_normal)"
+            echo "  -m MEMORY      Memory usage for the job in megabytes (default: 16000)"
+            echo "  -h HELP        Display this help message and exit"
+            echo
+            echo
+            exit 0
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument." >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Shift command line arguments to skip parsed options
+shift $((OPTIND-1))
+
+# Submit job to LSF scheduler with specified number of CPUs and arguments
+bsub -cwd $(pwd) -J $job_name -o $output_log -e $error_log -q $queue -R "rusage[mem=$memory]" <<EOF
+$job_script -n $num_cpus "$@"
+EOF

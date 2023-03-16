@@ -37,11 +37,17 @@ populate_targets_proj <- function(title,
                 overwrite = overwrite)
   cli::cli_alert_success("Clustermq template created at {.file .clustermq_lsf.tmpl}")
   
-  # Copy clustermq lsf template
-  fs::file_copy(fs::path_package("extdata", "make-targets-10cores.sh", package = "levinmisc"), 
-                "make-targets-10cores.sh", 
+  # Copy batch script for clustermq
+  fs::file_copy(fs::path_package("extdata", ".make-targets.sh", package = "levinmisc"), 
+                ".make-targets.sh", 
                 overwrite = overwrite)
-  cli::cli_alert_success("Clustermq template created at {.file make-targets-10cores.sh}")
+  cli::cli_alert_success("Clustermq template created at {.file .make-targets.sh}")
+  
+  # Copy batch script to submit targets job
+  fs::file_copy(fs::path_package("extdata", "submit-targets.sh", package = "levinmisc"), 
+                "submit-targets.sh", 
+                overwrite = overwrite)
+  cli::cli_alert_success("Targets submission script created at {.file submit-targets.sh}")
   
   # Copy targets pipeline template
   fs::file_copy(fs::path_package("extdata", "Pipeline.qmd", package = "levinmisc"), 
