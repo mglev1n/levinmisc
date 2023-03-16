@@ -95,16 +95,14 @@ Fill and run the content of this chunk, before anything else.
 Note: when you will use other flat templates, this part will be in a separate file. Do not be surprised!
 -->
 <div class="section level2">
-<h2 id="populate-a-project-with-filesfolders-needed-for-deploying-a-targets-project-on-lpc">Populate a Project With Files/Folders Needed for Deploying a
-{targets} Project on LPC<a class="anchor" aria-label="anchor" href="#populate-a-project-with-filesfolders-needed-for-deploying-a-targets-project-on-lpc"></a>
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<div class="section level3">
-<h3 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
-</h3>
 <p>The <code>targets</code> package is a tool for developing
 reproducible research workflows in R. Details of the package motivation
 and tools are described in detail: <a href="https://books.ropensci.org/targets/" class="external-link uri">https://books.ropensci.org/targets/</a> and <a href="https://docs.ropensci.org/targets/" class="external-link uri">https://docs.ropensci.org/targets/</a>.</p>
-<p>A general workflow:</p>
+<div class="section level3">
+<h3 id="example-workflow">Example Workflow<a class="anchor" aria-label="anchor" href="#example-workflow"></a>
+</h3>
 <ol style="list-style-type: decimal">
 <li><p>Create a new R project</p></li>
 <li><p>Run the <code><a href="../reference/populate_targets_proj.html">levinmisc::populate_targets_proj()</a></code> function
@@ -128,9 +126,10 @@ your pipeline. The <code>targets::tar_read()</code> function should be
 used heavily to load pre-computed results from your pipeline.</p></li>
 </ol>
 </div>
-<div class="section level3">
-<h3 id="populate_targets_proj">populate_targets_proj()<a class="anchor" aria-label="anchor" href="#populate_targets_proj"></a>
-</h3>
+</div>
+<div class="section level2">
+<h2 id="populate_targets_proj">populate_targets_proj()<a class="anchor" aria-label="anchor" href="#populate_targets_proj"></a>
+</h2>
 <p>The <code>populate_targets_proj</code> function can be run within a
 new project folder to initialize the project with the files/folders
 necessary for deploying a <code>targets</code> pipeline on the LPC at
@@ -183,9 +182,9 @@ Options:
   -m MEMORY      Memory usage for the job in megabytes (default: 16000)
   -s SLACK       Enable slack notifications; requires setup using slackr::slack_setup() (default: false)
   -h HELP        Display this help message and exit</code></pre>
-<div class="section level4">
-<h4 id="slack-notifications">Slack Notifications<a class="anchor" aria-label="anchor" href="#slack-notifications"></a>
-</h4>
+<div class="section level3">
+<h3 id="slack-notifications">Slack Notifications<a class="anchor" aria-label="anchor" href="#slack-notifications"></a>
+</h3>
 <p>Slack can be used to automatically notify the user of pipeline
 start/finish using the <code>-s true</code> command line flag:</p>
 <pre><code>./submit-targets.sh -s true</code></pre>
@@ -210,7 +209,6 @@ Build your package from this very Rmd using `fusen::inflate()`
 - Verify your test is in `"tests/testthat/"` directory
 - Verify this Rmd appears in `"vignettes/"` directory 
 -->
-</div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
