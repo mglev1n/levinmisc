@@ -98,6 +98,32 @@ Note: when you will use other flat templates, this part will be in a separate fi
 <h2 id="populate-a-project-with-filesfolders-needed-for-deploying-a-targets-project-on-lpc">Populate a Project With Files/Folders Needed for Deploying a
 {targets} Project on LPC<a class="anchor" aria-label="anchor" href="#populate-a-project-with-filesfolders-needed-for-deploying-a-targets-project-on-lpc"></a>
 </h2>
+<p>The <code>targets</code> package is a tool for developing
+reproducible research workflows in R. Details of the package motivation
+and tools are described in detail: <a href="https://books.ropensci.org/targets/" class="external-link uri">https://books.ropensci.org/targets/</a> and <a href="https://docs.ropensci.org/targets/" class="external-link uri">https://docs.ropensci.org/targets/</a>.</p>
+<p>A general workflow:</p>
+<ol style="list-style-type: decimal">
+<li><p>Create a new R project</p></li>
+<li><p>Run the <code><a href="../reference/populate_targets_proj.html">levinmisc::populate_targets_proj()</a></code> function
+in the R console - this function is described below in detail, and will
+initialize your project with helpful files/folders to start building
+your targets pipeline.</p></li>
+<li><p>Modify the <code>Pipelines.qmd</code> file to specify your
+analyses. The <code>targets</code> documentation can be useful for
+specifics.</p></li>
+<li><p>Knit/Render <code>Pipelines.qmd</code> to convert your markdown
+document into a series of R scripts that will actually run your
+analyses.</p></li>
+<li><p>Run <code>submit-targets.sh</code> from a terminal window to
+submit your targets pipeline to the LPC for execution. Details of
+possible command line arguments to this script are described
+below.</p></li>
+<li><p>Modify <code>Results.qmd</code> to present the results of your
+analyses. Rendering this file allows you to mix text describing your
+analyses/methods and include citations alongside the actual results of
+your pipeline. The <code>targets::tar_read()</code> function should be
+used heavily to load pre-computed results from your pipeline.</p></li>
+</ol>
 <div class="section level3">
 <h3 id="populate_targets_proj">populate_targets_proj()<a class="anchor" aria-label="anchor" href="#populate_targets_proj"></a>
 </h3>
@@ -119,7 +145,7 @@ This should be a reproducible and working example
 <p>The <code><a href="../reference/populate_targets_proj.html">populate_targets_proj()</a></code> function creates several
 files/folders within the project directory.
 <code>.make-targets.sh</code> and <code>.clustermq_lsf.tmpl</code> are
-hidden helper files which a not designed for user interaction, but
+hidden helper files which are not designed for user interaction, but
 necessary for submission of jobs to the LSF scheduler. The other files
 are designed to be edited/used by the user:</p>
 <ul>
