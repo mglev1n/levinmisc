@@ -42,13 +42,11 @@ fusen::fill_description(
 usethis::use_mit_license("Michael Levin")
 ```
 
-# Populate a Project With Files/Folders Needed for Deploying a {targets} Project on LPC
-
 ## Introduction
 
 The `targets` package is a tool for developing reproducible research workflows in R. Details of the package motivation and tools are described in detail: https://books.ropensci.org/targets/ and https://docs.ropensci.org/targets/.
 
-A general workflow:
+### Example Workflow
 
 1. Create a new R project
 
