@@ -71,3 +71,15 @@ shift $((OPTIND-1))
 bsub -cwd $(pwd) -J $job_name -o $output_log -e $error_log -q $queue -R "rusage[mem=$memory]" <<EOF
 $job_script -n $num_cpus -s $slack
 EOF
+
+# Prompt user to monitor job status
+echo ""
+echo "Submitted the main {targets} process <$job_name> to <$queue>, and requested $num_cpus workers"
+echo "Worker-specific parameters (eg. cores, memory, and queue for each worker) should be specified within the {targets} pipeline."
+echo ""
+read -p "Would you like to monitor the job status? (y/n): " answer
+if [[ $answer =~ ^[Yy][Ee][Ss]|[Yy]$ ]]; then
+    watch bjobs -W
+else
+    exit
+fi
