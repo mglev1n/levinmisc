@@ -4,13 +4,13 @@
 #BSUB-e {{ error_file | /dev/null }}      # stdout + stderr; %I for array index
 #BSUB-M {{ memory | 16384 }}             # Memory requirements in Mbytes
 #BSUB-R rusage[mem={{ memory | 16384 }}] # Memory requirements in Mbytes
-#BSUB-q voltron_normal                 # name of the queue (uncomment)
+#BSUB-q {{ queue | voltron_normal }}    # name of the queue (uncomment)
 #BSUB-cwd {{ R_WORK_DIR | ~/}}          # name of working directory
 ##BSUB-W {{ walltime | 6:00 }}          # walltime (uncomment)
 
 export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.0
 export CMQ_AUTH={{ auth }}
-export SINGULARITY_BIND="/project/PMBB/:/project/PMBB/, /project/damrauer_shared/:/project/damrauer_shared/, /scratch/:${HOME}/roubaix/scratch/, /scratch/:/scratch/"
+export SINGULARITY_BIND="/project/:/project/, /scratch/:/scratch/"
 
 export MKL_NUM_THREADS={{ cores | 1 }}
 export NUMEXPR_NUM_THREADS={{ cores | 1 }}

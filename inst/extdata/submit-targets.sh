@@ -7,7 +7,7 @@ output_log="build_logs/targets_%J.out"
 error_log="build_logs/targets_%J.err"
 queue="voltron_normal"
 memory="16000"
-job_script=$(pwd)"/make-targets.sh"
+job_script=$(pwd)"/.make-targets.sh"
 slack=false
 
 # Parse command line arguments
