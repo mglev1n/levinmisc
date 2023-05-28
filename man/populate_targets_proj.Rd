@@ -9,7 +9,9 @@ populate_targets_proj(title, log_folder = "build_logs", overwrite = FALSE)
 \arguments{
 \item{title}{(character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")}
 
-\item{log_folder}{(character) directory for LSF logs.}
+\item{log_folder}{(character) directory for LSF logs}
+
+\item{overwrite}{(logical) overwrite existing template files}
 }
 \description{
 Populate Targets Project

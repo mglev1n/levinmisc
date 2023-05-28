@@ -4,7 +4,8 @@
 #' Populate Targets Project
 #'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
-#' @param log_folder (character) directory for LSF logs.
+#' @param log_folder (character) directory for LSF logs
+#' @param overwrite (logical) overwrite existing template files
 #'
 #' @export
 
