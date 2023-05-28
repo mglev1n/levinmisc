@@ -10,7 +10,7 @@
 
 export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.0
 export CMQ_AUTH={{ auth }}
-export SINGULARITY_BIND="/project/:/project/, /scratch/:/scratch/"
+export SINGULARITY_BIND="/project/:/project/, /scratch/:/scratch/, /static/:/static/, /appl/:/appl/, /lsf/:/lsf/"
 
 export MKL_NUM_THREADS={{ cores | 1 }}
 export NUMEXPR_NUM_THREADS={{ cores | 1 }}
@@ -20,4 +20,4 @@ module load singularity/3.8.3
 
 ulimit -v $(( 1024 * {{ memory | 16384 }} ))
 
-singularity exec --pwd {{ R_WORK_DIR | ~/ }} /project/damrauer_shared/rstudio/bioconductor-tidyverse_singularity-latest.sif R --no-save --no-restore -e 'clustermq:::worker("{{ master }}")'
+singularity exec --pwd {{ R_WORK_DIR | ~/ }} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif R --no-save --no-restore -e 'clustermq:::worker("{{ master }}")'

@@ -10,8 +10,10 @@ format:
     toc: true
     toc-depth: 6
     cap-location: top
+    embed-resources: true
     self-contained: true
     citations-hover: true
+    page-layout: full
 fig-height: 4
 execute:
   warning: false
