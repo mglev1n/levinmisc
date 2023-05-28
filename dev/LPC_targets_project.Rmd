@@ -228,6 +228,118 @@ test_with_dir("populate_targets_proj creates pipeline and results .qmd templates
 })
 ```
 
+# use_crew_lsf
+
+By default, `populate_targets_proj()` creates a `targets` pipeline that uses the `tar_make_clustermq()` function to execute the pipeline using LPC resources. This function creates a cluster of persistent workers, and therefore is not very flexible in terms of varying the number or resources allocated to complete individual targets. More recently, the `crew` and `crew.cluster` packages have enabled the use of heterogenous workers (<https://books.ropensci.org/targets/crew.html#heterogeneous-workers>), which can be deployed either locally or on HPC resources. The `use_crew_lsf()` function is designed to return a block of code to rapidly enable the use of heterogeneous workers on the Penn LPC. By default, this function creates workers that submit to different queues (eg. `voltron_normal`, `voltron_long`), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory). 
+    
+```{r function-use_crew_lsf}
+#' Use Crew LSF
+#' 
+#' @return string
+#' 
+#' @export
+#' 
+use_crew_lsf <- function(){
+  title <- basename(here::here())
+  
+  command <- glue::glue(
+    "library(targets)
+library(tarchetypes)
+library(crew)
+library(crew.cluster)
+
+controller_local <- crew_controller_local(
+  name = '{title}_local',
+  workers = 1,
+  seconds_idle = 10
+)
+
+controller_lsf_normal <- crew.cluster::crew_controller_lsf(
+  name = '{title}_normal',
+  workers = 20L,
+  lsf_memory_gigabytes_limit = 16,
+  script_dir = {tools::R_user_dir('crew.cluster', which = 'cache')},
+  lsf_log_output = 'build_logs/test-%J.log',
+  lsf_log_error = 'build_logs/test-%J.err',
+  script_lines = c(
+    '#BSUB-q voltron_normal',
+    'export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0',
+    'export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'',
+    'module load singularity',
+    glue::glue('singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\')
+  ),
+  verbose = TRUE
+)
+
+controller_lsf_long <- crew.cluster::crew_controller_lsf(
+  name = '{title}_long',
+  workers = 150L,
+  lsf_memory_gigabytes_limit = 10,
+  script_dir = {tools::R_user_dir('crew.cluster', which = 'cache')},
+  lsf_log_output = 'build_logs/test-%J.log',
+  lsf_log_error = 'build_logs/test-%J.err',
+  script_lines = c(
+    '#BSUB-q voltron_long',
+    'export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0',
+    'export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'',
+    'module load singularity',
+    glue::glue('singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\')
+  ),
+  verbose = TRUE
+)
+
+controller_lsf_highmem <- crew.cluster::crew_controller_lsf(
+  name = '{title}_highmem',
+  workers = 5L,
+  lsf_memory_gigabytes_limit = 96,
+  script_dir = {tools::R_user_dir('crew.cluster', which = 'cache')},
+  lsf_log_output = 'build_logs/test-%J.log',
+  lsf_log_error = 'build_logs/test-%J.err',
+  script_lines = c(
+    '#BSUB-q voltron_normal',
+    'export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0',
+    'export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'',
+    'module load singularity',
+    glue::glue('singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\')
+  ),
+  verbose = TRUE
+)
+
+# define some global options/functions common to all targets
+options(tidyverse.quiet = TRUE)
+
+tar_option_set(
+  packages = c('tidyverse', 'targets', 'tarchetypes', 'arrow', 'vroom', 'data.table', 'qs', 'gt', 'crew', 'crew.cluster'),
+  controller = crew::crew_controller_group(controller_lsf_long, controller_lsf_normal, controller_lsf_highmem, controller_local),
+  resources = tar_resources(
+    crew = tar_resources_crew(controller = '{title}_normal')
+  ),
+  storage = 'worker',
+  retrieval = 'worker',
+  cue = tar_cue(format = FALSE)
+)"
+  )
+  
+  cli::cli_h1("Copy the below code to the `global` chunk in your targets project:")
+  
+  return(command)
+}
+```
+
+  
+```{r example-use_crew_lsf}
+#' \dontrun{
+#' use_crew_lsf()
+#' }
+```
+  
+```{r tests-use_crew_lsf}
+test_that("use_crew_lsf works", {
+  expect_true(inherits(use_crew_lsf, "function")) 
+})
+```
+  
+
 <!-- 
 # Inflate your package
 

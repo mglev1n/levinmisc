@@ -2,4 +2,5 @@
 
 export("%>%")
 export(populate_targets_proj)
+export(use_crew_lsf)
 importFrom(magrittr,"%>%")
