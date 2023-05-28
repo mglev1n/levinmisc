@@ -94,15 +94,15 @@ Fill and run the content of this chunk, before anything else.
 
 Note: when you will use other flat templates, this part will be in a separate file. Do not be surprised!
 -->
-<div class="section level2">
-<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
-</h2>
+<div class="section level3">
+<h3 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h3>
 <p>The <code>targets</code> package is a tool for developing
 reproducible research workflows in R. Details of the package motivation
 and tools are described in detail: <a href="https://books.ropensci.org/targets/" class="external-link uri">https://books.ropensci.org/targets/</a> and <a href="https://docs.ropensci.org/targets/" class="external-link uri">https://docs.ropensci.org/targets/</a>.</p>
-<div class="section level3">
-<h3 id="example-workflow">Example Workflow<a class="anchor" aria-label="anchor" href="#example-workflow"></a>
-</h3>
+<div class="section level4">
+<h4 id="example-workflow">Example Workflow<a class="anchor" aria-label="anchor" href="#example-workflow"></a>
+</h4>
 <ol style="list-style-type: decimal">
 <li><p>Create a new R project</p></li>
 <li><p>Run the <code><a href="../reference/populate_targets_proj.html">levinmisc::populate_targets_proj()</a></code> function
@@ -122,14 +122,14 @@ below.</p></li>
 <li><p>Modify <code>Results.qmd</code> to present the results of your
 analyses. Rendering this file allows you to mix text describing your
 analyses/methods and include citations alongside the actual results of
-your pipeline. The <code>targets::tar_read()</code> function should be
+your pipeline. The <code><a href="https://docs.ropensci.org/targets/reference/tar_read.html" class="external-link">targets::tar_read()</a></code> function should be
 used heavily to load pre-computed results from your pipeline.</p></li>
 </ol>
 </div>
 </div>
-<div class="section level2">
-<h2 id="populate_targets_proj">populate_targets_proj()<a class="anchor" aria-label="anchor" href="#populate_targets_proj"></a>
-</h2>
+<div class="section level3">
+<h3 id="populate_targets_proj">populate_targets_proj()<a class="anchor" aria-label="anchor" href="#populate_targets_proj"></a>
+</h3>
 <p>The <code>populate_targets_proj</code> function can be run within a
 new project folder to initialize the project with the files/folders
 necessary for deploying a <code>targets</code> pipeline on the LPC at
@@ -168,9 +168,9 @@ be used to run your <code>targets</code> pipeline, once
 directly from the submission host.</p></li>
 </ul>
 </div>
-<div class="section level2">
-<h2 id="submit-targets-sh">submit-targets.sh<a class="anchor" aria-label="anchor" href="#submit-targets-sh"></a>
-</h2>
+<div class="section level3">
+<h3 id="submit-targets-sh">submit-targets.sh<a class="anchor" aria-label="anchor" href="#submit-targets-sh"></a>
+</h3>
 <p>This script is used to actually submit your pipeline to the LPC once
 <code>Pipeline.qmd</code> has been knit/rendered. This should be run
 from a terminal session from the root directory of your project. The
@@ -192,9 +192,9 @@ Options:
   -m MEMORY      Memory usage for the job in megabytes (default: 16000)
   -s SLACK       Enable slack notifications; requires setup using slackr::slack_setup() (default: false)
   -h HELP        Display this help message and exit</code></pre>
-<div class="section level3">
-<h3 id="slack-notifications">Slack Notifications<a class="anchor" aria-label="anchor" href="#slack-notifications"></a>
-</h3>
+<div class="section level4">
+<h4 id="slack-notifications">Slack Notifications<a class="anchor" aria-label="anchor" href="#slack-notifications"></a>
+</h4>
 <p>Slack can be used to automatically notify the user of pipeline
 start/finish using the <code>-s true</code> command line flag:</p>
 <pre><code>./submit-targets.sh -s true</code></pre>
@@ -206,6 +206,30 @@ API token.</p>
 <!--
 Here are some unit tests to verify the function works as expected.
 -->
+</div>
+</div>
+<div class="section level2">
+<h2 id="use_crew_lsf">use_crew_lsf<a class="anchor" aria-label="anchor" href="#use_crew_lsf"></a>
+</h2>
+<p>By default, <code><a href="../reference/populate_targets_proj.html">populate_targets_proj()</a></code> creates a
+<code>targets</code> pipeline that uses the
+<code>tar_make_clustermq()</code> function to execute the pipeline using
+LPC resources. This function creates a cluster of persistent workers,
+and therefore is not very flexible in terms of varying the number or
+resources allocated to complete individual targets. More recently, the
+<code>crew</code> and <code>crew.cluster</code> packages have enabled
+the use of heterogenous workers (<a href="https://books.ropensci.org/targets/crew.html#heterogeneous-workers" class="external-link uri">https://books.ropensci.org/targets/crew.html#heterogeneous-workers</a>),
+which can be deployed either locally or on HPC resources. The
+<code><a href="../reference/use_crew_lsf.html">use_crew_lsf()</a></code> function is designed to return a block of
+code to rapidly enable the use of heterogeneous workers on the Penn LPC.
+By default, this function creates workers that submit to different
+queues (eg. <code>voltron_normal</code>, <code>voltron_long</code>), and
+allocate different resources (eg. a “normal” worker will use 1 core and
+16GB memory, while a “long” worker will use 1 core and 10GB memory).</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
+<span><span class="co">#' use_crew_lsf()</span></span>
+<span><span class="co">#' }</span></span></code></pre></div>
 <!-- 
 
 # Inflate your package
@@ -219,7 +243,6 @@ Build your package from this very Rmd using `fusen::inflate()`
 - Verify your test is in `"tests/testthat/"` directory
 - Verify this Rmd appears in `"vignettes/"` directory 
 -->
-</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
