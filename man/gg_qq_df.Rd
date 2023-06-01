@@ -11,7 +11,7 @@ gg_qq_df(sumstats_df, pval_col = p_value, ...)
 
 \item{pval_col}{Name of p-value column}
 
-\item{...}{}
+\item{...}{Passed to \code{ggfastman::fast_qq}}
 }
 \value{
 A ggplot2 object

@@ -6,7 +6,7 @@
 #'
 #' @param sumstats_df Dataframe containing GWAS summary statistics
 #' @param pval_col Name of p-value column
-#' @param ...
+#' @param ... Passed to `ggfastman::fast_qq`
 #'
 #' @return A ggplot2 object
 #'

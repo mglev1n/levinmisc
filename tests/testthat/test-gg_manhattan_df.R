@@ -5,21 +5,21 @@ test_that("gg_manhattan_df works", {
 })
 
 test_that("gg_manhattan_df returns a ggplot object", {
-  locus_df <- tibble(position = sample.int(1000, 100)) %>%
+  locus_df <- tibble(position = 1:100) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     mutate(label = "Test")
 
   plot_res <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
-    mutate(p_value = runif(1)) %>%
+    mutate(p_value = runif(1, min = 1/1e5, max = 0.99)) %>%
     gg_manhattan_df(chr_col = chromosome, pos_col = position, pval_col = p_value)
   expect_s3_class(plot_res, "ggplot")
 
-  plot_res <- tibble(position = sample.int(1000, 100)) %>%
+  plot_res <- tibble(position = 1:100) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
-    mutate(p_value = runif(1)) %>%
+    mutate(p_value = runif(1, min = 1/1e5, max = 0.99)) %>%
     gg_manhattan_df(chr_col = chromosome, pos_col = position, pval_col = p_value, annotation_df = locus_df, label_col = label)
   expect_s3_class(plot_res, "ggplot")
 })

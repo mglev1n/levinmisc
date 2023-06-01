@@ -39,7 +39,7 @@ gg_manhattan_df(
 
 \item{speed}{(string) One of "slow", "fast", or "ultrafast"; passed to \code{ggfastman} to control plotting speed}
 
-\item{...}{}
+\item{...}{Passed to \code{ggfastman::fast_manhattan}}
 }
 \value{
 A ggplot2 object

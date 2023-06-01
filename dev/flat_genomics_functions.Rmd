@@ -33,7 +33,7 @@ The `gg_manhattan_df` function is used to create Manhattan plots. This function 
 #' @param color1 (string) Color for odd-numbered chromosomes (passed to `ggfastman`)
 #' @param color2 (string) Color for even-numbered chromosomes (passed to `ggfastman`)
 #' @param speed (string) One of "slow", "fast", or "ultrafast"; passed to `ggfastman` to control plotting speed
-#' @param ...
+#' @param ... Passed to `ggfastman::fast_manhattan`
 #'
 #' @return A ggplot2 object
 #' @export
@@ -135,21 +135,21 @@ test_that("gg_manhattan_df works", {
 })
 
 test_that("gg_manhattan_df returns a ggplot object", {
-  locus_df <- tibble(position = sample.int(1000, 100)) %>%
+  locus_df <- tibble(position = 1:100) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     mutate(label = "Test")
 
   plot_res <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
-    mutate(p_value = runif(1)) %>%
+    mutate(p_value = runif(1, min = 1/1e5, max = 0.99)) %>%
     gg_manhattan_df(chr_col = chromosome, pos_col = position, pval_col = p_value)
   expect_s3_class(plot_res, "ggplot")
 
-  plot_res <- tibble(position = sample.int(1000, 100)) %>%
+  plot_res <- tibble(position = 1:100) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
-    mutate(p_value = runif(1)) %>%
+    mutate(p_value = runif(1, min = 1/1e5, max = 0.99)) %>%
     gg_manhattan_df(chr_col = chromosome, pos_col = position, pval_col = p_value, annotation_df = locus_df, label_col = label)
   expect_s3_class(plot_res, "ggplot")
 })
@@ -167,7 +167,7 @@ The `gg_qq_df` function can be used to generate a qq plot to visually evaluate f
 #'
 #' @param sumstats_df Dataframe containing GWAS summary statistics
 #' @param pval_col Name of p-value column
-#' @param ...
+#' @param ... Passed to `ggfastman::fast_qq`
 #'
 #' @return A ggplot2 object
 #'
