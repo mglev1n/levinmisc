@@ -11,6 +11,6 @@ reference:
   contents:
   - has_concept("genomics")
 - title: Miscellaneous
-  desc: Miscellaneous
+  desc: Miscellaneous functions
   contents:
   - has_concept("miscellaneous")
