@@ -14,7 +14,9 @@ library(testthat)
 pkgload::load_all(export_all = FALSE)
 ```
 
-# Manhattan plots
+# Plotting
+
+## Manhattan plots
 
 The `gg_manhattan_df` function is used to create Manhattan plots. This function can optionally annotated the plot with additional information (eg. gene name, rsid) by using the `annotation_df` amd `label_col` arguments.
     
@@ -156,7 +158,7 @@ test_that("gg_manhattan_df returns a ggplot object", {
 ```
 
   
-# QQ plots
+## QQ plots
 
 The `gg_qq_df` function can be used to generate a qq plot to visually evaluate for test statistic inflation, and calculate lambda GC to quantify any inflation.
     
@@ -209,8 +211,9 @@ test_that("gg_qq_df returns a ggplot object", {
 })
 ```
   
+# Annotation
 
-# Annotate rsids
+## Add rsids
 
 This function can be used rapidly add rsids to GWAS summary statistics by chromosome:position.
     
@@ -291,6 +294,137 @@ test_that("annotate_rsids returns a tibble", {
     tidyr::crossing(Position = 1e4:1e5)
   rsids_res <- annotate_rsids(df)
   expect_s3_class(rsids_res, "data.frame")
+})
+```
+  
+# METAL
+
+## Configure METAL
+    
+```{r function-metal_config}
+#' Create a configuration file for METAL
+#' 
+#' This function can be used to generate a configuration for METAL, a tool for performing meta-analysis of GWAS summary statistics <https://github.com/statgen/METAL>. The file created by this function can be used to run a meta-analysis. Details of the arguments to METAL are described in the METAL documentation: <https://genome.sph.umich.edu/wiki/METAL_Documentation>.
+#' 
+#' @param config_name (string) Name of the configuration
+#' @param output_dir (path) Path to output directory where GWAS meta-analysis data should be stored
+#' @param study_files (list) List of paths to summary statistics that should be included in the GWAS
+#' @param SCHEME (string) Either "SAMPLESIZE" or "STDERR" (default), corresponding to the METAL analysis scheme
+#' @param AVERAGEFREQ (string) Either "ON" (default) or "OFF", allowing METAL to report the mean effect allele frequency across files
+#' @param MINMAXFREQ (string) Either "ON" (default) or "OFF", allowing METAL to report the min/max effect allele frequency across files
+#' @param TRACKPOSITIONS (string) Either "ON" (default) or "OFF", allowing METAL to report chromosome/position in the output
+#' @param MARKERLABEL (string) Column containing unique markers to analyze (this column must be named the same across all input files)
+#' @param CHROMOSOMELABEL (string) Column containing chromosomes (this column must be named the same across all input files)
+#' @param POSITIONLABEL (string) Column containing genomic positions (this column must be named the same across all input files)
+#' @param EFFECT_ALLELE (string) Column containing effect alleles (this column must be named the same across all input files)
+#' @param OTHER_ALLELE (string) Column containing non-effect alleles (this column must be named the same across all input files)
+#' @param EFFECTLABEL (string) Column containing effect sizes corresponding to the effect allele (this column must be named the same across all input files)
+#' @param STDERR (string) Column containing standard errors fo the effect estimate (this column must be named the same across all input files)
+#' @param FREQLABEL (string) Column containing effect allele frequencies (this column must be named the same across all input files)
+#' @param NCASE (string) Column containing number of cases (this column must be named the same across all input files)
+#' @param NCONTROL (string) Column containing number of controls (this column must be named the same across all input files)
+#' @param SAMPLESIZE (string) Column containing total samplesize (this column must be named the same across all input files)
+#'
+#' @return
+#' @concept genomics
+#' @export
+
+metal_config <- function(config_name, output_dir, study_files, SCHEME = "STDERR", AVERAGEFREQ = "ON", MINMAXFREQ = "OFF", TRACKPOSITIONS = "ON", MARKERLABEL = "MARKER", CHROMOSOMELABEL = "CHROM", POSITIONLABEL = "POS", EFFECT_ALLELE = "EFFECT_ALLELE", OTHER_ALLELE = "OTHER_ALLELE", EFFECTLABEL = "BETA", STDERR = "SE", FREQLABEL = "EAF", NCASE = "N_CASE", NCONTROL = "N_CONTROL", SAMPLESIZE = "N") {
+  
+  fs::dir_create(output_dir, recurse = TRUE)
+
+  config_outfile <- fs::path(output_dir, paste0(config_name, "_metal-config.txt"))
+  meta_outfile <- fs::path(normalizePath(output_dir), config_name)
+
+  study_files <- paste0(glue::glue("PROCESS {normalizePath(study_files)}"), collapse = "\n")
+
+  config_text <- glue::glue(
+    "SCHEME {SCHEME}
+    AVERAGEFREQ {AVERAGEFREQ}
+    MINMAXFREQ {MINMAXFREQ}
+    TRACKPOSITIONs {TRACKPOSITIONS}
+    MARKERLABEL {MARKERLABEL}
+    CHROMOSOMELABEL {CHROMOSOMELABEL}
+    POSITIONLABEL {POSITIONLABEL}
+    ALLELELABELS {EFFECT_ALLELE} {OTHER_ALLELE}
+    EFFECTLABEL {EFFECTLABEL}
+    STDERR {STDERR}
+    FREQLABEL {FREQLABEL}
+    
+    CUSTOMVARIABLE NCASE
+    LABEL NCASE as {NCASE}
+    
+    CUSTOMVARIABLE NCONTROL
+    LABEL NCONTROL as {NCONTROL}
+    
+    CUSTOMVARIABLE SAMPLESIZE
+    LABEL SAMPLESIZE as {SAMPLESIZE}
+    
+    {study_files}
+    
+    OUTFILE {meta_outfile}_metal- .txt
+    ANALYZE HETEROGENEITY
+    
+    QUIT
+    "
+  )
+
+  readr::write_lines(x = config_text, file = config_outfile)
+
+  return(config_outfile)
+}
+```
+  
+```{r example-metal_config}
+#' \dontrun{
+#' metal_config()
+#' }
+```
+  
+```{r tests-metal_config}
+test_that("metal_config works", {
+  expect_true(inherits(metal_config, "function")) 
+})
+```
+
+## Run METAL
+    
+```{r function-metal_run}
+#' Use METAL to run a GWAS meta-analysis
+#' 
+#' This function is a wrapper for METAL, a tool for performing meta-analysis of GWAS summary statistics <https://github.com/statgen/METAL>. Details of the arguments to METAL are described in the METAL documentation: <https://genome.sph.umich.edu/wiki/METAL_Documentation>.
+#' 
+#' @param config_file (path) Path to a METAL configuration file (this can be generated using [levinmisc::metal_config()])
+#' @param metal_path (path) Path to the METAL binary
+#'
+#' @return Path to .gzipped meta-analysis summary statistics
+#' @concept genomics
+#' @export
+
+metal_run <- function(config_file, metal_path) {
+  metal_path <- normalizePath(metal_path)
+  config_file <- normalizePath(config_file)
+
+  processx::run(metal_path, args = config_file)
+  output_file <- str_replace(config_file, "-config.txt", "-1.txt")
+
+  processx::run("gzip", c("-f", output_file))
+
+  output_file <- str_replace(output_file, ".txt", ".txt.gz")
+
+  return(output_file)
+}
+```
+  
+```{r example-metal_run}
+#' \dontrun{
+#' metal_run(config_file = "config.txt", metal_path = "/path/to/metal_binary")
+#' }
+```
+  
+```{r tests-metal_run}
+test_that("metal_run works", {
+  expect_true(inherits(metal_run, "function")) 
 })
 ```
   

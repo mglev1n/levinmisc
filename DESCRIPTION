@@ -25,6 +25,7 @@ Imports:
     here,
     magrittr,
     plyranges,
+    processx,
     purrr,
     readr,
     SNPlocs.Hsapiens.dbSNP144.GRCh37,
