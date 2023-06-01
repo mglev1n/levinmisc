@@ -1,4 +1,16 @@
 url: https://mglev1n.github.io/levinmisc/
 template:
   bootstrap: 5
-
+reference:
+- title: Targets
+  desc: Build a simple {targets} project
+  contents:
+  - has_concept("targets")
+- title: Genomics
+  desc: Genomics utility functions
+  contents:
+  - has_concept("genomics")
+- title: Miscellaneous
+  desc: Miscellaneous
+  contents:
+  - has_concept("miscellaneous")

@@ -52,3 +52,4 @@ This function is a wrapper around \code{ggfastman::fast_manhattan} which allows 
 gg_manhattan_df()
 }
 }
+\concept{genomics}

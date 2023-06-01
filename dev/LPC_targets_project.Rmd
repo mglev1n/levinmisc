@@ -65,7 +65,6 @@ The `targets` package is a tool for developing reproducible research workflows i
 The `populate_targets_proj` function can be run within a new project folder to initialize the project with the files/folders necessary for deploying a `targets` pipeline on the LPC at Penn. This includes creating LSF templates, a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results.
 
 ```{r function-populate_targets_proj}
-
 #' Populate Targets Project
 #'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
@@ -73,56 +72,61 @@ The `populate_targets_proj` function can be run within a new project folder to i
 #' @param overwrite (logical) overwrite existing template files
 #'
 #' @export
+#' @concept targets
 
 populate_targets_proj <- function(title,
                                   log_folder = "build_logs",
-                                  overwrite = FALSE){
+                                  overwrite = FALSE) {
   # Create title
-  if(missing(title)) {
+  if (missing(title)) {
     title <- basename(here::here())
   }
-  
+
   # Check if files already exist
-  if(file.exists(".clustermq_lsf.tmpl") | file.exists("*-Results.qmd") | file.exists("*-Pipeline.qmd")) {
+  if (file.exists(".clustermq_lsf.tmpl") | file.exists("*-Results.qmd") | file.exists("*-Pipeline.qmd")) {
     cli::cli_alert_danger("Files already exist")
     overwrite <- yesno::yesno("Overwrite existing files?")
-    if(!overwrite) cli::cli_abort("Exiting")
+    if (!overwrite) cli::cli_abort("Exiting")
   }
-  
+
   # Create build_logs folder
   fs::dir_create(log_folder)
   cli::cli_alert_success("Build log folder created at {.file {log_folder}}")
-  
+
   # Copy clustermq lsf template
-  fs::file_copy(fs::path_package("extdata", ".clustermq_lsf.tmpl", package = "levinmisc"), 
-                ".clustermq_lsf.tmpl", 
-                overwrite = overwrite)
+  fs::file_copy(fs::path_package("extdata", ".clustermq_lsf.tmpl", package = "levinmisc"),
+    ".clustermq_lsf.tmpl",
+    overwrite = overwrite
+  )
   cli::cli_alert_success("Clustermq template created at {.file .clustermq_lsf.tmpl}")
-  
+
   # Copy batch script for clustermq
-  fs::file_copy(fs::path_package("extdata", ".make-targets.sh", package = "levinmisc"), 
-                ".make-targets.sh", 
-                overwrite = overwrite)
+  fs::file_copy(fs::path_package("extdata", ".make-targets.sh", package = "levinmisc"),
+    ".make-targets.sh",
+    overwrite = overwrite
+  )
   cli::cli_alert_success("Clustermq template created at {.file .make-targets.sh}")
-  
+
   # Copy batch script to submit targets job
-  fs::file_copy(fs::path_package("extdata", "submit-targets.sh", package = "levinmisc"), 
-                "submit-targets.sh", 
-                overwrite = overwrite)
+  fs::file_copy(fs::path_package("extdata", "submit-targets.sh", package = "levinmisc"),
+    "submit-targets.sh",
+    overwrite = overwrite
+  )
   cli::cli_alert_success("Targets submission script created at {.file submit-targets.sh}")
-  
+
   # Copy targets pipeline template
-  fs::file_copy(fs::path_package("extdata", "Pipeline.qmd", package = "levinmisc"), 
-                paste0(title, "-Pipeline.qmd"),
-                overwrite = overwrite)
+  fs::file_copy(fs::path_package("extdata", "Pipeline.qmd", package = "levinmisc"),
+    paste0(title, "-Pipeline.qmd"),
+    overwrite = overwrite
+  )
   cli::cli_alert_success("Targets Pipeline template created at {.file {paste0(title, '-Pipeline.qmd')}}")
-  
+
   # Copy targets results template
-  fs::file_copy(fs::path_package("extdata", "Results.qmd", package = "levinmisc"), 
-                paste0(title, "-Results.qmd"),
-                overwrite = overwrite)
+  fs::file_copy(fs::path_package("extdata", "Results.qmd", package = "levinmisc"),
+    paste0(title, "-Results.qmd"),
+    overwrite = overwrite
+  )
   cli::cli_alert_success("Targets Results template created at {.file {paste0(title, '-Results.qmd')}}")
-  
 }
 ```
 
@@ -183,12 +187,12 @@ Here are some unit tests to verify the function works as expected.
 
 ```{r tests-populate_targets_proj}
 # Functions to allow creating files in new temporary directory
-dir_empty <- function(x){
+dir_empty <- function(x) {
   unlink(x, recursive = TRUE, force = TRUE)
   dir.create(x)
 }
 
-test_with_dir <- function(desc, ...){
+test_with_dir <- function(desc, ...) {
   new <- tempfile()
   dir_empty(new)
   withr::with_dir( # or local_dir()
@@ -235,14 +239,15 @@ By default, `populate_targets_proj()` creates a `targets` pipeline that uses the
     
 ```{r function-use_crew_lsf}
 #' Use Crew LSF
-#' 
+#'
 #' @return string
-#' 
+#'
 #' @export
-#' 
-use_crew_lsf <- function(){
+#' @concept targets
+
+use_crew_lsf <- function() {
   title <- basename(here::here())
-  
+
   command <- glue::glue(
     "library(targets)
 library(tarchetypes)
@@ -320,9 +325,9 @@ tar_option_set(
   cue = tar_cue(format = FALSE)
 )"
   )
-  
+
   cli::cli_h1("Copy the below code to the `global` chunk in your targets project:")
-  
+
   return(command)
 }
 ```
@@ -336,7 +341,7 @@ tar_option_set(
   
 ```{r tests-use_crew_lsf}
 test_that("use_crew_lsf works", {
-  expect_true(inherits(use_crew_lsf, "function")) 
+  expect_true(inherits(use_crew_lsf, "function"))
 })
 ```
   
@@ -352,7 +357,6 @@ Build your package from this very Rmd using `fusen::inflate()`
 ```{r development-inflate, eval=FALSE}
 # Execute in the console directly
 fusen::inflate(flat_file = "dev/LPC_targets_project.Rmd", vignette_name = "Create a New Targets Pipeline for LPC")
-
 ```
 
 <!-- 

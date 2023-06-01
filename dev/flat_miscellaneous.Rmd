@@ -21,17 +21,21 @@ This function is a wrapper around the `DT::datatable` function, which renders a 
     
 ```{r function-render_datatable}
 #' Render DataTable to HTML
-#' 
+#'
 #' This function is a wrapper around the `DT::datatable` function, containing useful defaults.
-#' 
+#'
 #' @param df Dataframe to render
-#' 
+#'
 #' @return An HTML widget
-#' 
+#'
 #' @export
-render_datatable <- function(df){
-    DT::datatable(
-      df,
+#'
+#' @concept miscellaneous
+
+
+render_datatable <- function(df) {
+  DT::datatable(
+    df,
     extensions = c("Buttons"),
     class = c("compact", "stripe", "hover", "row-border"),
     rownames = FALSE,
@@ -53,7 +57,7 @@ render_datatable(datasets::mtcars)
   
 ```{r tests-render_datatable}
 test_that("render_datatable works", {
-  expect_true(inherits(render_datatable, "function")) 
+  expect_true(inherits(render_datatable, "function"))
 })
 ```
   

@@ -19,9 +19,8 @@ pkgload::load_all(export_all = FALSE)
 The `gg_manhattan_df` function is used to create Manhattan plots. This function can optionally annotated the plot with additional information (eg. gene name, rsid) by using the `annotation_df` amd `label_col` arguments.
     
 ```{r function-gg_manhattan_df}
-
 #' Create a Manhattan Plot
-#' 
+#'
 #' This function is a wrapper around `ggfastman::fast_manhattan` which allows for the creation of a Manhattan plot from a dataframe containing GWAS summary statistics.
 #'
 #' @param sumstats_df Dataframe containing GWAS summary statistics
@@ -34,11 +33,12 @@ The `gg_manhattan_df` function is used to create Manhattan plots. This function 
 #' @param color1 (string) Color for odd-numbered chromosomes (passed to `ggfastman`)
 #' @param color2 (string) Color for even-numbered chromosomes (passed to `ggfastman`)
 #' @param speed (string) One of "slow", "fast", or "ultrafast"; passed to `ggfastman` to control plotting speed
-#' @param ... 
+#' @param ...
 #'
 #' @return A ggplot2 object
 #' @export
 #' @import dplyr ggplot2
+#' @concept genomics
 
 gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromosome, pos_col = position, pval_col = p_value, label_col = gene, build = "hg19", color1 = "#045ea7", color2 = "#82afd3", speed = "slow", ...) {
   if (!is.null((annotation_df))) {
@@ -70,47 +70,54 @@ gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromos
 
   cli::cli_alert_info("Creating Manhattan Plot")
   if (!is.null((annotation_df))) {
-    
     max_log10_p <- -log10(min(df$pvalue))
-    
+
     plot <- df %>%
-      ggfastman::fast_manhattan(build = build, 
-                                color1 = color1, 
-                                color2 = color2, 
-                                pointsize = pointsize, 
-                                speed = speed, 
-                                ...) +
+      ggfastman::fast_manhattan(
+        build = build,
+        color1 = color1,
+        color2 = color2,
+        pointsize = pointsize,
+        speed = speed,
+        ...
+      ) +
       geom_hline(yintercept = -log10(5e-8), linetype = "dotted") +
-      ggrepel::geom_text_repel(data = . %>% 
-                                 filter(!is.na(label)), 
-                               aes(label = label), 
-                               color = "black", 
-                               force_pull   = 0, # do not pull toward data points
-                               nudge_y      = 10,
-                               direction    = "x",
-                               angle        = 90,
-                               hjust        = 0,
-                               segment.size = 0.2,
-                               segment.curvature = -1e-20,
-                               segment.angle = 175,
-                               ylim = c(max_log10_p + 10, NA),
-                               max.overlaps = 50)
+      ggrepel::geom_text_repel(
+        data = . %>%
+          filter(!is.na(label)),
+        aes(label = label),
+        color = "black",
+        force_pull = 0, # do not pull toward data points
+        nudge_y = 10,
+        direction = "x",
+        angle = 90,
+        hjust = 0,
+        segment.size = 0.2,
+        segment.curvature = -1e-20,
+        segment.angle = 175,
+        ylim = c(max_log10_p + 10, NA),
+        max.overlaps = 50
+      )
   } else {
     plot <- df %>%
-      ggfastman::fast_manhattan(build = build, 
-                                color1 = color1, 
-                                color2 = color2, 
-                                pointsize = pointsize, 
-                                speed = speed, 
-                                ...) +
+      ggfastman::fast_manhattan(
+        build = build,
+        color1 = color1,
+        color2 = color2,
+        pointsize = pointsize,
+        speed = speed,
+        ...
+      ) +
       geom_hline(yintercept = -log10(5e-8), linetype = "dotted")
   }
-  
-  plot <- plot + 
-    ggplot2::scale_y_continuous(expand = expansion(mult = c(0.01, 0.30)), name="-log<sub>10</sub>(p-value)") +
+
+  plot <- plot +
+    ggplot2::scale_y_continuous(expand = expansion(mult = c(0.01, 0.30)), name = "-log<sub>10</sub>(p-value)") +
     theme_bw(base_size = 16) +
-    theme(panel.grid = element_blank(),
-          axis.title.y = ggtext::element_markdown())
+    theme(
+      panel.grid = element_blank(),
+      axis.title.y = ggtext::element_markdown()
+    )
 
   return(plot)
 }
@@ -124,21 +131,21 @@ gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromos
   
 ```{r tests-gg_manhattan_df}
 test_that("gg_manhattan_df works", {
-  expect_true(inherits(gg_manhattan_df, "function")) 
+  expect_true(inherits(gg_manhattan_df, "function"))
 })
 
 test_that("gg_manhattan_df returns a ggplot object", {
   locus_df <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     mutate(label = "Test")
-  
+
   plot_res <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
     mutate(p_value = runif(1)) %>%
     gg_manhattan_df(chr_col = chromosome, pos_col = position, pval_col = p_value)
   expect_s3_class(plot_res, "ggplot")
-  
+
   plot_res <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
@@ -155,17 +162,18 @@ The `gg_qq_df` function can be used to generate a qq plot to visually evaluate f
     
 ```{r function-gg_qq_df}
 #' Create a QQ plot
-#' 
+#'
 #' This function is a wrapper around `ggfastman::fast_qq` which allows for the creation of a QQ plot from a dataframe containing GWAS summary statistics.
-#' 
+#'
 #' @param sumstats_df Dataframe containing GWAS summary statistics
 #' @param pval_col Name of p-value column
-#' @param ... 
+#' @param ...
 #'
 #' @return A ggplot2 object
-#' 
+#'
 #' @export
 #' @import dplyr ggplot2
+#' @concept genomics
 
 gg_qq_df <- function(sumstats_df, pval_col = p_value, ...) {
   df <- sumstats_df %>%
@@ -191,7 +199,7 @@ gg_qq_df <- function(sumstats_df, pval_col = p_value, ...) {
   
 ```{r tests-gg_qq_df}
 test_that("gg_qq_df works", {
-  expect_true(inherits(gg_qq_df, "function")) 
+  expect_true(inherits(gg_qq_df, "function"))
 })
 
 test_that("gg_qq_df returns a ggplot object", {

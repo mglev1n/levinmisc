@@ -18,3 +18,4 @@ This function is a wrapper around the \code{DT::datatable} function, containing 
 \examples{
 render_datatable(datasets::mtcars)
 }
+\concept{miscellaneous}

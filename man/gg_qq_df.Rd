@@ -24,3 +24,4 @@ This function is a wrapper around \code{ggfastman::fast_qq} which allows for the
 gg_qq_df()
 }
 }
+\concept{genomics}
