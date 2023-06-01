@@ -259,7 +259,7 @@ controller_lsf_normal <- crew.cluster::crew_controller_lsf(
   name = '{title}_normal',
   workers = 20L,
   lsf_memory_gigabytes_limit = 16,
-  script_dir = {tools::R_user_dir('crew.cluster', which = 'cache')},
+  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
   lsf_log_output = 'build_logs/test-%J.log',
   lsf_log_error = 'build_logs/test-%J.err',
   script_lines = c(
@@ -276,7 +276,7 @@ controller_lsf_long <- crew.cluster::crew_controller_lsf(
   name = '{title}_long',
   workers = 150L,
   lsf_memory_gigabytes_limit = 10,
-  script_dir = {tools::R_user_dir('crew.cluster', which = 'cache')},
+  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
   lsf_log_output = 'build_logs/test-%J.log',
   lsf_log_error = 'build_logs/test-%J.err',
   script_lines = c(
@@ -293,7 +293,7 @@ controller_lsf_highmem <- crew.cluster::crew_controller_lsf(
   name = '{title}_highmem',
   workers = 5L,
   lsf_memory_gigabytes_limit = 96,
-  script_dir = {tools::R_user_dir('crew.cluster', which = 'cache')},
+  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
   lsf_log_output = 'build_logs/test-%J.log',
   lsf_log_error = 'build_logs/test-%J.err',
   script_lines = c(
@@ -352,6 +352,7 @@ Build your package from this very Rmd using `fusen::inflate()`
 ```{r development-inflate, eval=FALSE}
 # Execute in the console directly
 fusen::inflate(flat_file = "dev/LPC_targets_project.Rmd", vignette_name = "Create a New Targets Pipeline for LPC")
+
 ```
 
 <!-- 

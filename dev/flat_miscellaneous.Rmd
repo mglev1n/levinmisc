@@ -1,0 +1,65 @@
+---
+title: "flat_miscellaneous.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# Render DataTable to HTML
+
+This function is a wrapper around the `DT::datatable` function, which renders a dataframe to an interactive html widget, containing useful defaults.
+
+    
+```{r function-render_datatable}
+#' Render DataTable to HTML
+#' 
+#' This function is a wrapper around the `DT::datatable` function, containing useful defaults.
+#' 
+#' @param df Dataframe to render
+#' 
+#' @return An HTML widget
+#' 
+#' @export
+render_datatable <- function(df){
+    DT::datatable(
+      df,
+    extensions = c("Buttons"),
+    class = c("compact", "stripe", "hover", "row-border"),
+    rownames = FALSE,
+    # fillContainer = TRUE,
+    options = list(
+      dom = "Bfrtip",
+      buttons = c("copy", "csv"),
+      scrollX = TRUE,
+      scrollY = TRUE
+    ),
+    height = 400
+  )
+}
+```
+  
+```{r example-render_datatable}
+render_datatable(datasets::mtcars)
+```
+  
+```{r tests-render_datatable}
+test_that("render_datatable works", {
+  expect_true(inherits(render_datatable, "function")) 
+})
+```
+  
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+
+fusen::inflate(flat_file = "dev/flat_miscellaneous.Rmd", vignette_name = "Miscellaneous Functions")
+```

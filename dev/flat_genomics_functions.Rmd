@@ -1,0 +1,211 @@
+---
+title: "flat_genomics_functions.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# Manhattan plots
+
+The `gg_manhattan_df` function is used to create Manhattan plots. This function can optionally annotated the plot with additional information (eg. gene name, rsid) by using the `annotation_df` amd `label_col` arguments.
+    
+```{r function-gg_manhattan_df}
+
+#' Create a Manhattan Plot
+#' 
+#' This function is a wrapper around `ggfastman::fast_manhattan` which allows for the creation of a Manhattan plot from a dataframe containing GWAS summary statistics.
+#'
+#' @param sumstats_df Dataframe containing GWAS summary statistics
+#' @param chr_col Name of chromosome column
+#' @param pos_col Name of position column
+#' @param pval_col Name of p-value column
+#' @param annotation_df Optional dataframe containing chromosome, position, and annotation labels
+#' @param label_col Name of column in `annotation_df` containing annotations to include on the plot
+#' @param build (string) One of "hg18", "hg19", or "hg38" (passed to `ggfastman`)
+#' @param color1 (string) Color for odd-numbered chromosomes (passed to `ggfastman`)
+#' @param color2 (string) Color for even-numbered chromosomes (passed to `ggfastman`)
+#' @param speed (string) One of "slow", "fast", or "ultrafast"; passed to `ggfastman` to control plotting speed
+#' @param ... 
+#'
+#' @return A ggplot2 object
+#' @export
+#' @import dplyr ggplot2
+
+gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromosome, pos_col = position, pval_col = p_value, label_col = gene, build = "hg19", color1 = "#045ea7", color2 = "#82afd3", speed = "slow", ...) {
+  if (!is.null((annotation_df))) {
+    df <- sumstats_df %>%
+      select(chr = {{ chr_col }}, pos = {{ pos_col }}, pvalue = {{ pval_col }}) %>%
+      filter(pvalue < 0.001) %>%
+      collect() %>%
+      as_tibble() %>%
+      mutate(across(.cols = everything(), as.numeric)) %>%
+      tidyr::drop_na() %>%
+      left_join(annotation_df %>% select(chr = {{ chr_col }}, pos = {{ pos_col }}, label = {{ label_col }})) %>%
+      mutate(highlight = case_when(
+        pvalue < 5e-8 ~ "#990000",
+        TRUE ~ NA_character_
+      ))
+  } else {
+    df <- sumstats_df %>%
+      select(chr = {{ chr_col }}, pos = {{ pos_col }}, pvalue = {{ pval_col }}) %>%
+      filter(pvalue < 0.001) %>%
+      collect() %>%
+      as_tibble() %>%
+      mutate(across(.cols = everything(), as.numeric)) %>%
+      tidyr::drop_na() %>%
+      mutate(highlight = case_when(
+        pvalue < 5e-8 ~ "#990000",
+        TRUE ~ NA_character_
+      ))
+  }
+
+  cli::cli_alert_info("Creating Manhattan Plot")
+  if (!is.null((annotation_df))) {
+    
+    max_log10_p <- -log10(min(df$pvalue))
+    
+    plot <- df %>%
+      ggfastman::fast_manhattan(build = build, 
+                                color1 = color1, 
+                                color2 = color2, 
+                                pointsize = pointsize, 
+                                speed = speed, 
+                                ...) +
+      geom_hline(yintercept = -log10(5e-8), linetype = "dotted") +
+      ggrepel::geom_text_repel(data = . %>% 
+                                 filter(!is.na(label)), 
+                               aes(label = label), 
+                               color = "black", 
+                               force_pull   = 0, # do not pull toward data points
+                               nudge_y      = 10,
+                               direction    = "x",
+                               angle        = 90,
+                               hjust        = 0,
+                               segment.size = 0.2,
+                               segment.curvature = -1e-20,
+                               segment.angle = 175,
+                               ylim = c(max_log10_p + 10, NA),
+                               max.overlaps = 50)
+  } else {
+    plot <- df %>%
+      ggfastman::fast_manhattan(build = build, 
+                                color1 = color1, 
+                                color2 = color2, 
+                                pointsize = pointsize, 
+                                speed = speed, 
+                                ...) +
+      geom_hline(yintercept = -log10(5e-8), linetype = "dotted")
+  }
+  
+  plot <- plot + 
+    ggplot2::scale_y_continuous(expand = expansion(mult = c(0.01, 0.30)), name="-log<sub>10</sub>(p-value)") +
+    theme_bw(base_size = 16) +
+    theme(panel.grid = element_blank(),
+          axis.title.y = ggtext::element_markdown())
+
+  return(plot)
+}
+```
+  
+```{r example-gg_manhattan_df}
+#' \dontrun{
+#' gg_manhattan_df()
+#' }
+```
+  
+```{r tests-gg_manhattan_df}
+test_that("gg_manhattan_df works", {
+  expect_true(inherits(gg_manhattan_df, "function")) 
+})
+
+test_that("gg_manhattan_df returns a ggplot object", {
+  locus_df <- tibble(position = sample.int(1000, 100)) %>%
+    tidyr::crossing(chromosome = 1:22) %>%
+    mutate(label = "Test")
+  
+  plot_res <- tibble(position = sample.int(1000, 100)) %>%
+    tidyr::crossing(chromosome = 1:22) %>%
+    rowwise() %>%
+    mutate(p_value = runif(1)) %>%
+    gg_manhattan_df(chr_col = chromosome, pos_col = position, pval_col = p_value)
+  expect_s3_class(plot_res, "ggplot")
+  
+  plot_res <- tibble(position = sample.int(1000, 100)) %>%
+    tidyr::crossing(chromosome = 1:22) %>%
+    rowwise() %>%
+    mutate(p_value = runif(1)) %>%
+    gg_manhattan_df(chr_col = chromosome, pos_col = position, pval_col = p_value, annotation_df = locus_df, label_col = label)
+  expect_s3_class(plot_res, "ggplot")
+})
+```
+
+  
+# QQ plots
+
+The `gg_qq_df` function can be used to generate a qq plot to visually evaluate for test statistic inflation, and calculate lambda GC to quantify any inflation.
+    
+```{r function-gg_qq_df}
+#' Create a QQ plot
+#' 
+#' This function is a wrapper around `ggfastman::fast_qq` which allows for the creation of a QQ plot from a dataframe containing GWAS summary statistics.
+#' 
+#' @param sumstats_df Dataframe containing GWAS summary statistics
+#' @param pval_col Name of p-value column
+#' @param ... 
+#'
+#' @return A ggplot2 object
+#' 
+#' @export
+#' @import dplyr ggplot2
+
+gg_qq_df <- function(sumstats_df, pval_col = p_value, ...) {
+  df <- sumstats_df %>%
+    select(pvalue = {{ pval_col }}) %>%
+    collect() %>%
+    as_tibble() %>%
+    mutate(across(.cols = everything(), as.numeric)) %>%
+    pull(pvalue)
+
+  cli::cli_alert_info("Creating QQ Plot")
+  plot <- df %>%
+    ggfastman::fast_qq(...)
+
+  return(plot)
+}
+```
+  
+```{r example-gg_qq_df}
+#' \dontrun{
+#' gg_qq_df()
+#' }
+```
+  
+```{r tests-gg_qq_df}
+test_that("gg_qq_df works", {
+  expect_true(inherits(gg_qq_df, "function")) 
+})
+
+test_that("gg_qq_df returns a ggplot object", {
+  plot_res <- tibble(pval = runif(1000)) %>%
+    gg_qq_df(pval_col = pval)
+  expect_s3_class(plot_res, "ggplot")
+})
+```
+  
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+
+fusen::inflate(flat_file = "dev/flat_genomics_functions.Rmd", vignette_name = "Genomics Functions")
+```
+

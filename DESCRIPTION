@@ -12,21 +12,32 @@ Imports:
     cli,
     crew,
     crew.cluster,
+    dplyr,
+    DT,
     fs,
+    ggfastman,
+    ggplot2,
+    ggrepel,
+    ggtext,
     glue,
     here,
     magrittr,
     tarchetypes,
     targets,
+    tibble,
+    tidyr,
     tools,
     yesno
 Suggests: 
+    datasets,
     knitr,
     rmarkdown,
     testthat,
     withr
 VignetteBuilder: 
     knitr
+Remotes: 
+    roman-tremmel/ggfastman
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3

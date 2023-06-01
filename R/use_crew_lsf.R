@@ -29,7 +29,7 @@ controller_lsf_normal <- crew.cluster::crew_controller_lsf(
   name = '{title}_normal',
   workers = 20L,
   lsf_memory_gigabytes_limit = 16,
-  script_dir = {tools::R_user_dir('crew.cluster', which = 'cache')},
+  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
   lsf_log_output = 'build_logs/test-%J.log',
   lsf_log_error = 'build_logs/test-%J.err',
   script_lines = c(
@@ -46,7 +46,7 @@ controller_lsf_long <- crew.cluster::crew_controller_lsf(
   name = '{title}_long',
   workers = 150L,
   lsf_memory_gigabytes_limit = 10,
-  script_dir = {tools::R_user_dir('crew.cluster', which = 'cache')},
+  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
   lsf_log_output = 'build_logs/test-%J.log',
   lsf_log_error = 'build_logs/test-%J.err',
   script_lines = c(
@@ -63,7 +63,7 @@ controller_lsf_highmem <- crew.cluster::crew_controller_lsf(
   name = '{title}_highmem',
   workers = 5L,
   lsf_memory_gigabytes_limit = 96,
-  script_dir = {tools::R_user_dir('crew.cluster', which = 'cache')},
+  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
   lsf_log_output = 'build_logs/test-%J.log',
   lsf_log_error = 'build_logs/test-%J.err',
   script_lines = c(
