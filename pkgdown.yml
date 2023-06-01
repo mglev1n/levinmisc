@@ -3,7 +3,9 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   create-a-new-targets-pipeline-for-lpc: create-a-new-targets-pipeline-for-lpc.html
-last_built: 2023-05-30T15:41Z
+  genomics-functions: genomics-functions.html
+  miscellaneous-functions: miscellaneous-functions.html
+last_built: 2023-06-01T02:13Z
 urls:
   reference: https://mglev1n.github.io/levinmisc/reference
   article: https://mglev1n.github.io/levinmisc/articles

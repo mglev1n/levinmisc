@@ -13,7 +13,13 @@
     <loc>https://mglev1n.github.io/levinmisc/articles/create-a-new-targets-pipeline-for-lpc.html</loc>
   </url>
   <url>
+    <loc>https://mglev1n.github.io/levinmisc/articles/genomics-functions.html</loc>
+  </url>
+  <url>
     <loc>https://mglev1n.github.io/levinmisc/articles/index.html</loc>
+  </url>
+  <url>
+    <loc>https://mglev1n.github.io/levinmisc/articles/miscellaneous-functions.html</loc>
   </url>
   <url>
     <loc>https://mglev1n.github.io/levinmisc/authors.html</loc>
@@ -22,13 +28,25 @@
     <loc>https://mglev1n.github.io/levinmisc/index.html</loc>
   </url>
   <url>
+    <loc>https://mglev1n.github.io/levinmisc/reference/gg_manhattan_df.html</loc>
+  </url>
+  <url>
+    <loc>https://mglev1n.github.io/levinmisc/reference/gg_qq_df.html</loc>
+  </url>
+  <url>
     <loc>https://mglev1n.github.io/levinmisc/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://mglev1n.github.io/levinmisc/reference/levinmisc-package.html</loc>
   </url>
   <url>
     <loc>https://mglev1n.github.io/levinmisc/reference/pipe.html</loc>
   </url>
   <url>
     <loc>https://mglev1n.github.io/levinmisc/reference/populate_targets_proj.html</loc>
+  </url>
+  <url>
+    <loc>https://mglev1n.github.io/levinmisc/reference/render_datatable.html</loc>
   </url>
   <url>
     <loc>https://mglev1n.github.io/levinmisc/reference/use_crew_lsf.html</loc>
