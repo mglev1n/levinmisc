@@ -215,11 +215,11 @@ test_that("gg_qq_df returns a ggplot object", {
 This function can be used rapidly add rsids to GWAS summary statistics by chromosome:position.
     
 ```{r function-annotate_rsids}
-#' Annotate dataframe with rsids
+#' Annotate a dataframe containing genomic coordinates with rsids
 #' 
-#' This function can be used rapidly add rsids to GWAS summary statistics by chromosome:position. This does not explicitly account for differences in variants at the position.
+#' This function can be used rapidly add rsids to GWAS summary statistics or any other dataframe containing genomic coordinates (eg. chromosome and position). This is a rapid function that does not explicitly account for differences in variants at each position, strand flips, etc.)
 #' 
-#' @param df Dataframe containing variants to annotate with rsid
+#' @param df Dataframe containing genomic coordinates to annotate with rsid
 #' @param dbSNP Bioconductor object containing SNP locations and alleles to be used for annotation (default: `SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs.Hsapiens.dbSNP144.GRCh37`)
 #' @param chrom_col Chromosome column 
 #' @param pos_col Position column

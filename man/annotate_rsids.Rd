@@ -2,7 +2,7 @@
 % Please edit documentation in R/annotate_rsids.R
 \name{annotate_rsids}
 \alias{annotate_rsids}
-\title{Annotate dataframe with rsids}
+\title{Annotate a dataframe containing genomic coordinates with rsids}
 \usage{
 annotate_rsids(
   df,
@@ -12,7 +12,7 @@ annotate_rsids(
 )
 }
 \arguments{
-\item{df}{Dataframe containing variants to annotate with rsid}
+\item{df}{Dataframe containing genomic coordinates to annotate with rsid}
 
 \item{dbSNP}{Bioconductor object containing SNP locations and alleles to be used for annotation (default: \code{SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs.Hsapiens.dbSNP144.GRCh37})}
 
@@ -21,7 +21,7 @@ annotate_rsids(
 \item{pos_col}{Position column}
 }
 \description{
-This function can be used rapidly add rsids to GWAS summary statistics by chromosome:position. This does not explicitly account for differences in variants at the position.
+This function can be used rapidly add rsids to GWAS summary statistics or any other dataframe containing genomic coordinates (eg. chromosome and position). This is a rapid function that does not explicitly account for differences in variants at each position, strand flips, etc.)
 }
 \examples{
 \dontrun{
