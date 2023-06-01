@@ -6,7 +6,7 @@ test_that("annotate_rsids works", {
 
 test_that("annotate_rsids returns a tibble", {
   df <- tibble(Chromosome = 1) %>%
-    tidyr::crossing(Position = 1e4:2e4)
+    tidyr::crossing(Position = 1e4:1e5)
   rsids_res <- annotate_rsids(df)
   expect_s3_class(rsids_res, "data.frame")
 })

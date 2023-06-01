@@ -42,7 +42,7 @@ annotate_rsids <- function(df, dbSNP = SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs
       df_granges <- df %>%
         GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE, starts.in.df.are.0based = FALSE)
 
-      snps_granges <- BSgenome::snpsBySeqname(dbSNP, chrom) %>%
+      snps_granges <- BSgenome::snpsByOverlaps(dbSNP, df_granges) %>%
         unique()
 
       plyranges::join_overlap_left_directed(df_granges, snps_granges) %>%
