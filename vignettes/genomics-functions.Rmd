@@ -55,3 +55,21 @@ The `gg_qq_df` function can be used to generate a qq plot to visually evaluate f
   
 
 
+# Annotate rsids
+
+This function can be used rapidly add rsids to GWAS summary statistics by chromosome:position.
+    
+
+  
+
+```{r example-annotate_rsids}
+#' \dontrun{
+#' annotate_rsids()
+#' }
+```
+
+  
+
+  
+
+
