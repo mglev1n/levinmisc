@@ -15,6 +15,7 @@
 #' @return A list containing a data.frame of HyPrColoc results: each row is a cluster of colocalized traits or is coded NA (if no colocalization is identified)
 #' @import hyprcoloc tidyr
 #' @importFrom purrr possibly
+#' @concept genomics
 #' @export
 
 #' @examples

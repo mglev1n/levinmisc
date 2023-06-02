@@ -40,3 +40,4 @@ This function is a convenience wrapper around \code{\link[hyprcoloc:hyprcoloc]{h
 hyprcoloc_df(gwas_results_df)
 }
 }
+\concept{genomics}

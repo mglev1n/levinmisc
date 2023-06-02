@@ -445,6 +445,7 @@ test_that("metal_run works", {
 #' @return A list containing a data.frame of HyPrColoc results: each row is a cluster of colocalized traits or is coded NA (if no colocalization is identified)
 #' @import hyprcoloc tidyr
 #' @importFrom purrr possibly
+#' @concept genomics
 #' @export
 
 hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta, se_col = se, type_col = type, ...) {
