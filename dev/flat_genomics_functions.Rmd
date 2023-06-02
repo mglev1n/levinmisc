@@ -424,6 +424,103 @@ test_that("metal_run works", {
 })
 ```
   
+  
+# Colocalization
+
+## HyPrColoc
+    
+```{r function-hyprcoloc_df}
+#' Run multi-trait colocalization using HyPrColoc
+#' 
+#' This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that takes a dataframe as input, and performs mutli-trait colocalization. Details of the HyPrColoc method are described in Foley et al. (Nature Communications 2021): <https://doi.org/10.1038/s41467-020-20885-8>.
+#' 
+#' @param df Dataframe containing summary statistics at a single locus, in a "long" format, with one row per variant per trait.
+#' @param trait_col Column containing trait names
+#' @param snp_col Column containing variant names (eg. rsid, marker_name), which should be consistent across studies
+#' @param beta_col Column containing effect estimates from GWAS
+#' @param se_col Column containing standard errors of the effect estimates
+#' @param type_col Column containing the "type" of trait - this column should contain `1` for binary traits, and `0` for all others
+#' @param ... Arguments passed to [hyprcoloc::hyprcoloc()]
+#'
+#' @return A list containing a data.frame of HyPrColoc results: each row is a cluster of colocalized traits or is coded NA (if no colocalization is identified)
+#' @import hyprcoloc tidyr
+#' @importFrom purrr possibly
+#' @export
+
+hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta, se_col = se, type_col = type, ...) {
+  df <- df %>%
+    select(trait = {{ trait_col }}, rsid = {{ snp_col }}, beta.exposure = {{ beta_col }}, se.exposure = {{ se_col }}, type = {{ type_col }}) %>%
+    distinct(rsid, trait, .keep_all = TRUE) %>%
+    tidyr::drop_na()
+
+  # return(df)
+
+  .betas <- df %>%
+    select(rsid, beta.exposure, trait) %>%
+    distinct(rsid, trait, .keep_all = TRUE) %>%
+    pivot_wider(names_from = trait, values_from = beta.exposure) %>%
+    tibble::column_to_rownames(var = "rsid") %>%
+    tidyr::drop_na() %>%
+    as.matrix()
+
+  .ses <- df %>%
+    select(rsid, se.exposure, trait) %>%
+    distinct(rsid, trait, .keep_all = TRUE) %>%
+    pivot_wider(names_from = trait, values_from = se.exposure) %>%
+    tibble::column_to_rownames(var = "rsid") %>%
+    tidyr::drop_na() %>%
+    as.matrix()
+
+  .ids <- rownames(.betas)
+
+  .trait_names <- colnames(.betas)
+
+  .binary <- df %>%
+    select(trait, type) %>%
+    unique() %>%
+    pivot_wider(names_from = trait, values_from = type) %>%
+    tidyr::drop_na() %>%
+    as.matrix()
+
+  .possibly_hyprcoloc <- possibly(hyprcoloc::hyprcoloc)
+  # .safely_hyprcoloc <- purrr::safely(hyprcoloc::hyprcoloc)
+
+  .result <- .possibly_hyprcoloc(.betas, .ses, trait.names = .trait_names, snp.id = .ids, binary.outcomes = .binary, ...)
+
+  return(.result)
+
+  # .result <- hyprcoloc(.betas, .ses, trait.names = .trait_names, snp.id = .ids, binary.outcomes = .binary, snpscores = TRUE, uniform.priors = FALSE)
+
+  # .credible_set <- cred_sets(.result, value = 0.95)
+
+  # return(list(.result, .credible_set))
+
+  # hyprcoloc::cred.sets()
+}
+```
+  
+```{r example-hyprcoloc_df}
+#' \dontrun{
+#' hyprcoloc_df(gwas_results_df)
+#' }
+```
+  
+```{r tests-hyprcoloc_df}
+test_that("hyprcoloc_df works", {
+  expect_true(inherits(hyprcoloc_df, "function")) 
+  
+  df <- tibble::tibble(rsid = letters,
+                       beta = runif(26, min = -1, max = 1),
+                       se = runif(26)) %>%
+    tidyr::crossing(trait = letters[1:3],
+             type = c(1, 0, 0))
+
+  hyprcoloc_res <- hyprcoloc_df(df)
+  
+  expect_true(inherits(hyprcoloc_res, "hyprcoloc"))
+})
+```
+  
 
 ```{r development-inflate, eval=FALSE}
 # Run but keep eval=FALSE to avoid infinite loop

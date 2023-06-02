@@ -106,5 +106,24 @@ This function can be used rapidly add rsids to GWAS summary statistics by chromo
   
 
   
+  
+
+# Colocalization
+
+## HyPrColoc
+
+    
+
+  
+
+```{r example-hyprcoloc_df}
+#' \dontrun{
+#' hyprcoloc_df(gwas_results_df)
+#' }
+```
+
+  
+
+  
 
 
