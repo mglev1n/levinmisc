@@ -2,6 +2,7 @@
 
 export("%>%")
 export(annotate_rsids)
+export(calc_credset)
 export(gg_manhattan_df)
 export(gg_qq_df)
 export(hyprcoloc_df)

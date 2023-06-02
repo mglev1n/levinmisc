@@ -537,6 +537,58 @@ test_that("hyprcoloc_df works", {
 ```
   
   
+# Finemapping
+
+Finemapping is an approach for identifying the putative causal variant(s) at a locus identified in a GWAS. Like colocalization, finemapping methods make different assumptions about the configuration of causal variant(s) at the locus.
+
+## Bayesian finemapping
+
+This function implements the simple Bayesian finemapping approach described in Mallard et al. (Nature Genetics 2012; <https://doi.org/10.1038/ng.2435>), adapted in Graham et al. (Nature 2021; <https://doi.org/10.1038/s41586-021-04064-3>). This method assumes a single causal variant configuration at the locus.
+    
+```{r function-calc_credset}
+#' Perform Bayesian finemapping
+#' 
+#' Description
+#' 
+#' @param df Dataframe containing GWAS summary statistics
+#' @param locus_marker_col Column containing a locus-level identifier 
+#' @param effect_col Column containing effect estimates
+#' @param se_col Column containing standard errors fo the effect estimates
+#' @param samplesize_col Column containing sample sizes
+#' @param cred_interval Credible interval for the fine-mapped credible sets (default = 0.99; 0.95 is another common but artbitrarily determined interval)
+#'
+#' @return A data.frame containing credible sets at each locus. For each variant within the credible set, the prior probability of being the casual variant is provided.
+#' 
+#' @export
+#' @concept genomics
+
+calc_credset <- function(df, locus_marker_col = locus_marker, effect_col = effect, se_col = std_err, samplesize_col = samplesize, cred_interval = 0.99) {
+  df %>%
+    group_by({{ locus_marker_col }}) %>%
+    mutate(bf = exp(0.5 * ({{ effect_col }}^2 / {{ se_col }}^2 - log({{ samplesize_col }})))) %>%
+    mutate(posterior_prob = bf / sum(bf)) %>%
+    arrange(desc(posterior_prob)) %>%
+    mutate(cum_sum = cumsum(posterior_prob)) %>%
+    group_by({{ locus_marker_col }}) %>%
+    filter(cum_sum <= cred_interval | posterior_prob > cred_interval) %>%
+    select(-cum_sum) %>%
+    ungroup()
+}
+```
+  
+```{r example-calc_credset}
+#' \dontrun{
+#' calc_credset()
+#' }
+```
+  
+```{r tests-calc_credset}
+test_that("calc_credset works", {
+  expect_true(inherits(calc_credset, "function")) 
+})
+```
+    
+  
 # Gene-based Testing
 
 GWAS summary statistics can be used to perform gene-based testing for associations with the trait/phenotype of interest, rather than SNP/variant-level associations found in GWAS.

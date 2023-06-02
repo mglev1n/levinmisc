@@ -145,6 +145,29 @@ This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that take
   
   
 
+# Finemapping
+
+Finemapping is an approach for identifying the putative causal variant(s) at a locus identified in a GWAS. Like colocalization, finemapping methods make different assumptions about the configuration of causal variant(s) at the locus.
+
+
+## Bayesian finemapping
+
+This function implements the simple Bayesian finemapping approach described in Mallard et al. (Nature Genetics 2012; <https://doi.org/10.1038/ng.2435>), adapted in Graham et al. (Nature 2021; <https://doi.org/10.1038/s41586-021-04064-3>). This method assumes a single causal variant configuration at the locus.
+    
+
+  
+
+```{r example-calc_credset}
+#' \dontrun{
+#' calc_credset()
+#' }
+```
+
+  
+
+    
+  
+
 # Gene-based Testing
 
 GWAS summary statistics can be used to perform gene-based testing for associations with the trait/phenotype of interest, rather than SNP/variant-level associations found in GWAS.
