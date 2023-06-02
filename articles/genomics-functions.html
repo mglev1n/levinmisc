@@ -182,6 +182,26 @@ Foley et al. (Nature Communications 2021): <a href="https://doi.org/10.1038/s41
 </div>
 </div>
 <div class="section level2">
+<h2 id="finemapping">Finemapping<a class="anchor" aria-label="anchor" href="#finemapping"></a>
+</h2>
+<p>Finemapping is an approach for identifying the putative causal
+variant(s) at a locus identified in a GWAS. Like colocalization,
+finemapping methods make different assumptions about the configuration
+of causal variant(s) at the locus.</p>
+<div class="section level3">
+<h3 id="bayesian-finemapping">Bayesian finemapping<a class="anchor" aria-label="anchor" href="#bayesian-finemapping"></a>
+</h3>
+<p>This function implements the simple Bayesian finemapping approach
+described in Mallard et al. (Nature Genetics 2012; <a href="https://doi.org/10.1038/ng.2435" class="external-link uri">https://doi.org/10.1038/ng.2435</a>), adapted in Graham et
+al. (Nature 2021; <a href="https://doi.org/10.1038/s41586-021-04064-3" class="external-link uri">https://doi.org/10.1038/s41586-021-04064-3</a>). This method
+assumes a single causal variant configuration at the locus.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
+<span><span class="co">#' calc_credset()</span></span>
+<span><span class="co">#' }</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
 <h2 id="gene-based-testing">Gene-based Testing<a class="anchor" aria-label="anchor" href="#gene-based-testing"></a>
 </h2>
 <p>GWAS summary statistics can be used to perform gene-based testing for
@@ -195,7 +215,7 @@ testing from GWAS summary statistics. Details of MAGMA described in de
 Leeuw et al. (PLoS Cumputational Biology 2015; <a href="https://doi.org/10.1371/journal.pcbi.1004219" class="external-link uri">https://doi.org/10.1371/journal.pcbi.1004219</a>). The MAGMA
 binary and reference files are available from the Complex Trait Genetics
 lab (<a href="https://ctg.cncr.nl/software/magma" class="external-link uri">https://ctg.cncr.nl/software/magma</a>).</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
 <span><span class="co">#' magmar()</span></span>
 <span><span class="co">#' </span></span></code></pre></div>
