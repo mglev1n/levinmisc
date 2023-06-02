@@ -3,7 +3,3 @@
 test_that("metal_config works", {
   expect_true(inherits(metal_config, "function")) 
 })
-
-test_that("metal_run works", {
-  expect_true(inherits(metal_run, "function")) 
-})

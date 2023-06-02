@@ -109,8 +109,8 @@ devtools::build(vignettes = TRUE)
 
 # Inflate
 ```{r}
-fusen::inflate(flat_file = "dev/flat_genomics_functions.Rmd", vignette_name = "Genomics Functions", check = FALSE, overwrite = TRUE, open_vignette = FALSE)
-fusen::inflate(flat_file = "dev/flat_miscellaneous.Rmd", vignette_name = "Miscellaneous Functions", check = FALSE, overwrite = TRUE, open_vignette = FALSE)
+fusen::inflate(flat_file = "dev/flat_genomics_functions.Rmd", vignette_name = NA, check = FALSE, overwrite = TRUE, open_vignette = FALSE,)
+fusen::inflate(flat_file = "dev/flat_miscellaneous.Rmd", vignette_name = NA, check = FALSE, overwrite = TRUE, open_vignette = FALSE)
 fusen::inflate(flat_file = "dev/LPC_targets_project.Rmd", vignette_name = "Create a New Targets Pipeline for LPC", check = FALSE, overwrite = TRUE, open_vignette = FALSE)
 ```
 

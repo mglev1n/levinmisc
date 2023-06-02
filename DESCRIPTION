@@ -39,7 +39,6 @@ Imports:
     vroom,
     yesno
 Suggests: 
-    datasets,
     knitr,
     rmarkdown,
     testthat,
