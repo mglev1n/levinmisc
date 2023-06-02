@@ -307,7 +307,7 @@ GWAS summary statistics from multiple studies can be combined using meta-analysi
 
 ## METAL
 
-METAL <https://github.com/statgen/METAL> is a common command-line tool for performing GWAS meta-analysis. The following functions can be used to configure and run METAL directly from R.
+METAL (<https://github.com/statgen/METAL>) is a common command-line tool for performing GWAS meta-analysis. The following functions can be used to configure and run METAL directly from R.
 
 ### Configure METAL
     
