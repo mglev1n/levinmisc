@@ -85,6 +85,8 @@
 <div class="section level2">
 <h2 id="plotting">Plotting<a class="anchor" aria-label="anchor" href="#plotting"></a>
 </h2>
+<p>These convenience functions are useful for creating plots from GWAS
+summary statistics.</p>
 <div class="section level3">
 <h3 id="manhattan-plots">Manhattan plots<a class="anchor" aria-label="anchor" href="#manhattan-plots"></a>
 </h3>
@@ -112,6 +114,8 @@ GC to quantify any inflation.</p>
 <div class="section level2">
 <h2 id="annotation">Annotation<a class="anchor" aria-label="anchor" href="#annotation"></a>
 </h2>
+<p>These convenience functions are useful for adding additional
+information to GWAS summary stastics.</p>
 <div class="section level3">
 <h3 id="add-rsids">Add rsids<a class="anchor" aria-label="anchor" href="#add-rsids"></a>
 </h3>
@@ -124,35 +128,77 @@ statistics by chromosome:position.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="metal">METAL<a class="anchor" aria-label="anchor" href="#metal"></a>
+<h2 id="gwas-meta-analysis">GWAS Meta-analysis<a class="anchor" aria-label="anchor" href="#gwas-meta-analysis"></a>
 </h2>
+<p>GWAS summary statistics from multiple studies can be combined using
+meta-analysis. The following functions are useful for orchestrating GWAS
+meta-analysis using R.</p>
 <div class="section level3">
-<h3 id="configure-metal">Configure METAL<a class="anchor" aria-label="anchor" href="#configure-metal"></a>
+<h3 id="metal">METAL<a class="anchor" aria-label="anchor" href="#metal"></a>
 </h3>
+<p>METAL <a href="https://github.com/statgen/METAL" class="external-link uri">https://github.com/statgen/METAL</a> is a common
+command-line tool for performing GWAS meta-analysis. The following
+functions can be used to configure and run METAL directly from R.</p>
+<div class="section level4">
+<h4 id="configure-metal">Configure METAL<a class="anchor" aria-label="anchor" href="#configure-metal"></a>
+</h4>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
 <span><span class="co">#' metal_config()</span></span>
 <span><span class="co">#' }</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="run-metal">Run METAL<a class="anchor" aria-label="anchor" href="#run-metal"></a>
-</h3>
+<div class="section level4">
+<h4 id="run-metal">Run METAL<a class="anchor" aria-label="anchor" href="#run-metal"></a>
+</h4>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
 <span><span class="co">#' metal_run(config_file = "config.txt", metal_path = "/path/to/metal_binary")</span></span>
 <span><span class="co">#' }</span></span></code></pre></div>
 </div>
 </div>
+</div>
 <div class="section level2">
 <h2 id="colocalization">Colocalization<a class="anchor" aria-label="anchor" href="#colocalization"></a>
 </h2>
+<p>Colocalization is a technique for evaluating the evidence supporting
+the presence of shared causal variant(s) at a given locus across two or
+more traits. Several methods of colocalization have been described,
+which generally leverage GWAS summary statistics across multiple traits.
+The methods use either proportional or enumeration approaches, which
+make different assumptions and test different hypotheses.</p>
 <div class="section level3">
 <h3 id="hyprcoloc">HyPrColoc<a class="anchor" aria-label="anchor" href="#hyprcoloc"></a>
 </h3>
+<p>This function is a convenience wrapper around
+[hyprcoloc::hyprcoloc()] that takes a dataframe as input, and performs
+mutli-trait colocalization using HyPrColoc, a Bayesian enumeration
+colocalization method which makes the assumption of a single causal
+variant at the locus. Details of the HyPrColoc method are described in
+Foley et al. (Nature Communications 2021): <a href="https://doi.org/10.1038/s41467-020-20885-8" class="external-link uri">https://doi.org/10.1038/s41467-020-20885-8</a>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
 <span><span class="co">#' hyprcoloc_df(gwas_results_df)</span></span>
 <span><span class="co">#' }</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="gene-based-testing">Gene-based Testing<a class="anchor" aria-label="anchor" href="#gene-based-testing"></a>
+</h2>
+<p>GWAS summary statistics can be used to perform gene-based testing for
+associations with the trait/phenotype of interest, rather than
+SNP/variant-level associations found in GWAS.</p>
+<div class="section level3">
+<h3 id="magma">MAGMA<a class="anchor" aria-label="anchor" href="#magma"></a>
+</h3>
+<p>This function provides a wrapper to MAGMA, which performs gene-based
+testing from GWAS summary statistics. Details of MAGMA described in de
+Leeuw et al. (PLoS Cumputational Biology 2015; <a href="https://doi.org/10.1371/journal.pcbi.1004219" class="external-link uri">https://doi.org/10.1371/journal.pcbi.1004219</a>). The MAGMA
+binary and reference files are available from the Complex Trait Genetics
+lab (<a href="https://ctg.cncr.nl/software/magma" class="external-link uri">https://ctg.cncr.nl/software/magma</a>).</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
+<span><span class="co">#' magmar()</span></span>
+<span><span class="co">#' </span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
