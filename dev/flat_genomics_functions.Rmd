@@ -223,7 +223,7 @@ This function can be used rapidly add rsids to GWAS summary statistics by chromo
 #' @param chrom_col Chromosome column 
 #' @param pos_col Position column
 #'
-#' @return
+#' @return A dataframe containing the original contents, with an additional `rsid` column.
 #' 
 #' @export
 #' @concept genomics 
@@ -321,7 +321,7 @@ test_that("annotate_rsids returns a tibble", {
 #' @param NCONTROL (string) Column containing number of controls (this column must be named the same across all input files)
 #' @param SAMPLESIZE (string) Column containing total samplesize (this column must be named the same across all input files)
 #'
-#' @return
+#' @return Path to METAL configuration file
 #' @concept genomics
 #' @export
 

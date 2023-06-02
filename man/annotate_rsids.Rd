@@ -20,6 +20,9 @@ annotate_rsids(
 
 \item{pos_col}{Position column}
 }
+\value{
+A dataframe containing the original contents, with an additional \code{rsid} column.
+}
 \description{
 This function can be used rapidly add rsids to GWAS summary statistics or any other dataframe containing genomic coordinates (eg. chromosome and position). This is a rapid function that does not explicitly account for differences in variants at each position, strand flips, etc.)
 }

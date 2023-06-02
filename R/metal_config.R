@@ -23,7 +23,7 @@
 #' @param NCONTROL (string) Column containing number of controls (this column must be named the same across all input files)
 #' @param SAMPLESIZE (string) Column containing total samplesize (this column must be named the same across all input files)
 #'
-#' @return
+#' @return Path to METAL configuration file
 #' @concept genomics
 #' @export
 

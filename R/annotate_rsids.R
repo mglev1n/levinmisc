@@ -9,7 +9,7 @@
 #' @param chrom_col Chromosome column 
 #' @param pos_col Position column
 #'
-#' @return
+#' @return A dataframe containing the original contents, with an additional `rsid` column.
 #' 
 #' @export
 #' @concept genomics 

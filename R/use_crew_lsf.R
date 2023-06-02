@@ -31,14 +31,14 @@ controller_lsf_normal <- crew.cluster::crew_controller_lsf(
   workers = 20L,
   lsf_memory_gigabytes_limit = 16,
   script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
-  lsf_log_output = 'build_logs/test-%J.log',
-  lsf_log_error = 'build_logs/test-%J.err',
+  lsf_log_output = 'build_logs/crew-%J.log',
+  lsf_log_error = 'build_logs/crew-%J.err',
   script_lines = c(
     \"#BSUB-q voltron_normal\",
     \"export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0\",
     \"export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
     \"module load singularity\",
-    glue::glue(\"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\ \")
+    glue::glue(\"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\\\\")
   ),
   verbose = TRUE
 )
@@ -48,14 +48,14 @@ controller_lsf_long <- crew.cluster::crew_controller_lsf(
   workers = 150L,
   lsf_memory_gigabytes_limit = 10,
   script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
-  lsf_log_output = 'build_logs/test-%J.log',
-  lsf_log_error = 'build_logs/test-%J.err',
+  lsf_log_output = 'build_logs/crew-%J.log',
+  lsf_log_error = 'build_logs/crew-%J.err',
   script_lines = c(
     \"#BSUB-q voltron_long\",
     \"export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0\",
     \"export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
     \"module load singularity\",
-    glue::glue(\"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\ \")
+    glue::glue(\"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\\\\")
   ),
   verbose = TRUE
 )
@@ -65,14 +65,14 @@ controller_lsf_highmem <- crew.cluster::crew_controller_lsf(
   workers = 5L,
   lsf_memory_gigabytes_limit = 96,
   script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
-  lsf_log_output = 'build_logs/test-%J.log',
-  lsf_log_error = 'build_logs/test-%J.err',
+  lsf_log_output = 'build_logs/crew-%J.log',
+  lsf_log_error = 'build_logs/crew-%J.err',
   script_lines = c(
     \"#BSUB-q voltron_normal\",
     \"export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0\",
     \"export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
     \"module load singularity\",
-    glue::glue(\"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\ \")
+    glue::glue(\"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\\\\")
   ),
   verbose = TRUE
 )
