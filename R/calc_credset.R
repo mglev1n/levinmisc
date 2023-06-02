@@ -19,7 +19,7 @@
 
 #' @examples
 #' \dontrun{
-#' calc_credset()
+#' calc_credset(gwas_df)
 #' }
 calc_credset <- function(df, locus_marker_col = locus_marker, effect_col = effect, se_col = std_err, samplesize_col = samplesize, cred_interval = 0.99) {
   df %>%

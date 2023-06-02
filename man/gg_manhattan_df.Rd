@@ -49,7 +49,7 @@ This function is a wrapper around \code{ggfastman::fast_manhattan} which allows 
 }
 \examples{
 \dontrun{
-gg_manhattan_df()
+gg_manhattan_df(sumstats_df)
 }
 }
 \seealso{

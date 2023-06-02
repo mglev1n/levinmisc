@@ -30,7 +30,7 @@
 
 #' @examples
 #' \dontrun{
-#' metal_config()
+#' metal_config(config_name = "name-of-analysis", output_dir = "/path/to/output/", study_files = list("/path/to/sumstats_1.txt", "/path/to/sumstats_2.txt))
 #' }
 metal_config <- function(config_name, output_dir, study_files, SCHEME = "STDERR", AVERAGEFREQ = "ON", MINMAXFREQ = "OFF", TRACKPOSITIONS = "ON", MARKERLABEL = "MARKER", CHROMOSOMELABEL = "CHROM", POSITIONLABEL = "POS", EFFECT_ALLELE = "EFFECT_ALLELE", OTHER_ALLELE = "OTHER_ALLELE", EFFECTLABEL = "BETA", STDERR = "SE", FREQLABEL = "EAF", NCASE = "N_CASE", NCONTROL = "N_CONTROL", SAMPLESIZE = "N") {
   

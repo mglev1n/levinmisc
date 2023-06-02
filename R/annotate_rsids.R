@@ -17,7 +17,7 @@
 
 #' @examples
 #' \dontrun{
-#' annotate_rsids()
+#' annotate_rsids(sumstats_df)
 #' }
 annotate_rsids <- function(df, dbSNP = SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs.Hsapiens.dbSNP144.GRCh37, chrom_col = Chromosome, pos_col = Position) {
   if (sum(stringr::str_detect(names(df), "rsid")) > 0) {

@@ -20,7 +20,7 @@
 
 #' @examples
 #' \dontrun{
-#' ldak_h2()
+#' ldak_h2(sumstats_file = "/path/to/munged_sumstats", ldak_bin = "/path/to/ldak", ldak_tagfile = "/pat/to/tagfile",  hm3_file = "/path/to/hm3")
 #' }
 ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, population_prev = NULL, hm3_file, ldak_cutoff = 0.01) {
   # format paths

@@ -68,11 +68,6 @@ Path to METAL configuration file
 \description{
 This function can be used to generate a configuration for METAL, a tool for performing meta-analysis of GWAS summary statistics \url{https://github.com/statgen/METAL}. The file created by this function can be used to run a meta-analysis. Details of the arguments to METAL are described in the METAL documentation: \url{https://genome.sph.umich.edu/wiki/METAL_Documentation}.
 }
-\examples{
-\dontrun{
-metal_config()
-}
-}
 \seealso{
 Other {metal}: 
 \code{\link{metal_run}()}

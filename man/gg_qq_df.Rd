@@ -21,7 +21,7 @@ This function is a wrapper around \code{ggfastman::fast_qq} which allows for the
 }
 \examples{
 \dontrun{
-gg_qq_df()
+gg_qq_df(sumstats_df)
 }
 }
 \seealso{

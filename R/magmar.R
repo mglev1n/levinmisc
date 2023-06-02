@@ -9,7 +9,7 @@
 #' @param snp_col Column containing rsids
 #' @param samplesize_col Column containing sample size
 #' @param magma_bin Path to MAGMA binary
-#' @param bfile Path to reference data in plink format
+#' @param bfile Path to reference data in plink `bfile` format (path should not include the extensions)
 #' @param gene_file Path to file containing gene locations
 #' @param out_file Output directory + file prefix
 #'
@@ -19,7 +19,7 @@
 #' 
 #' @examples
 #' \dontrun{
-#' magmar()
+#' magmar(sumstats_df, magma_bin = "/path/to/magma", bfile = "/path/to/bfiles", gene_file = "/path/to/genes", out_file = "magma_output")
 #' 
 magmar <- function(sumstats_df, pval_col = p_value, snp_col = rsid, samplesize_col = samplesize, magma_bin, bfile, gene_file, out_file) {
   cli::cli_progress_step("Writing summary statistics to temporary file")

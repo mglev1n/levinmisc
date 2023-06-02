@@ -34,7 +34,7 @@ Description
 }
 \examples{
 \dontrun{
-calc_credset()
+calc_credset(gwas_df)
 }
 }
 \concept{genomics}

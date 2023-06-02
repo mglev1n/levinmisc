@@ -24,7 +24,7 @@
 
 #' @examples
 #' \dontrun{
-#' gg_manhattan_df()
+#' gg_manhattan_df(sumstats_df)
 #' }
 gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromosome, pos_col = position, pval_col = p_value, label_col = gene, build = "hg19", color1 = "#045ea7", color2 = "#82afd3", speed = "slow", ...) {
   if (!is.null((annotation_df))) {

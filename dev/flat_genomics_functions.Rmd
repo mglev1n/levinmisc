@@ -130,7 +130,7 @@ gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromos
   
 ```{r example-gg_manhattan_df}
 #' \dontrun{
-#' gg_manhattan_df()
+#' gg_manhattan_df(sumstats_df)
 #' }
 ```
   
@@ -195,7 +195,7 @@ gg_qq_df <- function(sumstats_df, pval_col = p_value, ...) {
   
 ```{r example-gg_qq_df}
 #' \dontrun{
-#' gg_qq_df()
+#' gg_qq_df(sumstats_df)
 #' }
 ```
   
@@ -285,7 +285,7 @@ annotate_rsids <- function(df, dbSNP = SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs
   
 ```{r example-annotate_rsids}
 #' \dontrun{
-#' annotate_rsids()
+#' annotate_rsids(sumstats_df)
 #' }
 ```
   
@@ -391,7 +391,7 @@ metal_config <- function(config_name, output_dir, study_files, SCHEME = "STDERR"
   
 ```{r example-metal_config}
 #' \dontrun{
-#' metal_config()
+#' metal_config(config_name = "name-of-analysis", output_dir = "/path/to/output/", study_files = list("/path/to/sumstats_1.txt", "/path/to/sumstats_2.txt))
 #' }
 ```
   
@@ -591,7 +591,7 @@ calc_credset <- function(df, locus_marker_col = locus_marker, effect_col = effec
   
 ```{r example-calc_credset}
 #' \dontrun{
-#' calc_credset()
+#' calc_credset(gwas_df)
 #' }
 ```
   
@@ -621,7 +621,7 @@ This function provides a wrapper to MAGMA, which performs gene-based testing fro
 #' @param snp_col Column containing rsids
 #' @param samplesize_col Column containing sample size
 #' @param magma_bin Path to MAGMA binary
-#' @param bfile Path to reference data in plink format
+#' @param bfile Path to reference data in plink `bfile` format (path should not include the extensions)
 #' @param gene_file Path to file containing gene locations
 #' @param out_file Output directory + file prefix
 #'
@@ -666,7 +666,7 @@ magmar <- function(sumstats_df, pval_col = p_value, snp_col = rsid, samplesize_c
   
 ```{r example-magmar}
 #' \dontrun{
-#' magmar()
+#' magmar(sumstats_df, magma_bin = "/path/to/magma", bfile = "/path/to/bfiles", gene_file = "/path/to/genes", out_file = "magma_output")
 #' 
 ```
   
@@ -840,7 +840,7 @@ ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, p
   
 ```{r example-ldak_h2}
 #' \dontrun{
-#' ldak_h2()
+#' ldak_h2(sumstats_file = "/path/to/munged_sumstats", ldak_bin = "/path/to/ldak", ldak_tagfile = "/pat/to/tagfile",  hm3_file = "/path/to/hm3")
 #' }
 ```
   

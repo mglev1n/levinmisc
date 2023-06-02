@@ -26,7 +26,7 @@ magmar(
 
 \item{magma_bin}{Path to MAGMA binary}
 
-\item{bfile}{Path to reference data in plink format}
+\item{bfile}{Path to reference data in plink \code{bfile} format (path should not include the extensions)}
 
 \item{gene_file}{Path to file containing gene locations}
 
