@@ -16,6 +16,8 @@ pkgload::load_all(export_all = FALSE)
 
 # Plotting
 
+These convenience functions are useful for creating plots from GWAS summary statistics.
+
 ## Manhattan plots
 
 The `gg_manhattan_df` function is used to create Manhattan plots. This function can optionally annotated the plot with additional information (eg. gene name, rsid) by using the `annotation_df` amd `label_col` arguments.
@@ -209,6 +211,8 @@ test_that("gg_qq_df returns a ggplot object", {
   
 # Annotation
 
+These convenience functions are useful for adding additional information to GWAS summary stastics.
+
 ## Add rsids
 
 This function can be used rapidly add rsids to GWAS summary statistics by chromosome:position.
@@ -293,9 +297,15 @@ test_that("annotate_rsids returns a tibble", {
 })
 ```
   
-# METAL
+# GWAS Meta-analysis
 
-## Configure METAL
+GWAS summary statistics from multiple studies can be combined using meta-analysis. The following functions are useful for orchestrating GWAS meta-analysis using R.
+
+## METAL
+
+METAL <https://github.com/statgen/METAL> is a common command-line tool for performing GWAS meta-analysis. The following functions can be used to configure and run METAL directly from R.
+
+### Configure METAL
     
 ```{r function-metal_config}
 #' Create a configuration file for METAL
@@ -383,7 +393,7 @@ test_that("metal_config works", {
 })
 ```
 
-## Run METAL
+### Run METAL
     
 ```{r function-metal_run}
 #' Use METAL to run a GWAS meta-analysis
@@ -427,8 +437,12 @@ test_that("metal_run works", {
   
 # Colocalization
 
+Colocalization is a technique for evaluating the evidence supporting the presence of shared causal variant(s) at a given locus across two or more traits. Several methods of colocalization have been described, which generally leverage GWAS summary statistics across multiple traits. The methods use either proportional or enumeration approaches, which make different assumptions and test different hypotheses.
+
 ## HyPrColoc
-    
+
+This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that takes a dataframe as input, and performs mutli-trait colocalization using HyPrColoc, a Bayesian enumeration colocalization method which makes the assumption of a single causal variant at the locus. Details of the HyPrColoc method are described in Foley et al. (Nature Communications 2021): <https://doi.org/10.1038/s41467-020-20885-8>.
+
 ```{r function-hyprcoloc_df}
 #' Run multi-trait colocalization using HyPrColoc
 #' 
@@ -522,6 +536,80 @@ test_that("hyprcoloc_df works", {
 })
 ```
   
+  
+# Gene-based Testing
+
+GWAS summary statistics can be used to perform gene-based testing for associations with the trait/phenotype of interest, rather than SNP/variant-level associations found in GWAS.
+
+## MAGMA
+
+This function provides a wrapper to MAGMA, which performs gene-based testing from GWAS summary statistics. Details of MAGMA described in de Leeuw et al. (PLoS Cumputational Biology 2015; <https://doi.org/10.1371/journal.pcbi.1004219>). The MAGMA binary and reference files are available from the Complex Trait Genetics lab (<https://ctg.cncr.nl/software/magma>).
+    
+```{r function-magmar}
+#' Run MAGMA gene-based analysis
+#' 
+#' This function provides a wrapper to MAGMA, which performs gene-based testing from GWAS summary statistics. Details of MAGMA described in de Leeuw et al. (PLoS Cumputational Biology 2015; <https://doi.org/10.1371/journal.pcbi.1004219>). The MAGMA binary and reference files are available from the Complex Trait Genetics lab (<https://ctg.cncr.nl/software/magma>).
+#' 
+#' @param sumstats_df Dataframe containing GWAS summary statistics
+#' @param pval_col Column containing p-values
+#' @param snp_col Column containing rsids
+#' @param samplesize_col Column containing sample size
+#' @param magma_bin Path to MAGMA binary
+#' @param bfile Path to reference data in plink format
+#' @param gene_file Path to file containing gene locations
+#' @param out_file Output directory + file prefix
+#'
+#' @return Path to MAGMA results file
+#' @concept genomics
+#' @export
+#' 
+magmar <- function(sumstats_df, pval_col = p_value, snp_col = rsid, samplesize_col = samplesize, magma_bin, bfile, gene_file, out_file) {
+  cli::cli_progress_step("Writing summary statistics to temporary file")
+  sumstats_file <- fs::file_temp()
+  sumstats_df %>%
+    select(SNP = {{ snp_col }}, P = {{ pval_col }}, N = {{ samplesize_col }}) %>%
+    vroom::vroom_write(sumstats_file)
+
+
+  cli::cli_progress_step("Running MAGMA")
+
+  # create output path if it doesn't exist
+  fs::dir_create(fs::path_dir(out_file))
+
+  processx::run(magma_bin,
+    args = c(
+      "--bfile", bfile,
+      "--gene-annot", gene_file,
+      "--pval", sumstats_file, "ncol=N",
+      "--gene-model", "snp-wise=mean",
+      "--out", out_file
+    ),
+    error_on_status = FALSE,
+    echo_cmd = TRUE,
+    echo = TRUE
+  )
+
+  genes_out <- paste0(out_file, ".genes.out")
+  genes_raw <- paste0(out_file, ".genes.raw")
+
+  return(
+    c("genes_out" = genes_out)
+  )
+}
+```
+  
+```{r example-magmar}
+#' \dontrun{
+#' magmar()
+#' 
+```
+  
+```{r tests-magmar}
+test_that("magmar works", {
+  expect_true(inherits(magmar, "function")) 
+})
+```
+    
 
 ```{r development-inflate, eval=FALSE}
 # Run but keep eval=FALSE to avoid infinite loop

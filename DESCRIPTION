@@ -36,6 +36,7 @@ Imports:
     tibble,
     tidyr,
     tools,
+    vroom,
     yesno
 Suggests: 
     datasets,

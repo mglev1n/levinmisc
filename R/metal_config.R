@@ -75,3 +75,32 @@ metal_config <- function(config_name, output_dir, study_files, SCHEME = "STDERR"
 
   return(config_outfile)
 }
+
+#' Use METAL to run a GWAS meta-analysis
+#' 
+#' This function is a wrapper for METAL, a tool for performing meta-analysis of GWAS summary statistics <https://github.com/statgen/METAL>. Details of the arguments to METAL are described in the METAL documentation: <https://genome.sph.umich.edu/wiki/METAL_Documentation>.
+#' 
+#' @param config_file (path) Path to a METAL configuration file (this can be generated using [levinmisc::metal_config()])
+#' @param metal_path (path) Path to the METAL binary
+#'
+#' @return Path to .gzipped meta-analysis summary statistics
+#' @concept genomics
+#' @export
+
+#' @examples
+#' \dontrun{
+#' metal_run(config_file = "config.txt", metal_path = "/path/to/metal_binary")
+#' }
+metal_run <- function(config_file, metal_path) {
+  metal_path <- normalizePath(metal_path)
+  config_file <- normalizePath(config_file)
+
+  processx::run(metal_path, args = config_file)
+  output_file <- str_replace(config_file, "-config.txt", "-1.txt")
+
+  processx::run("gzip", c("-f", output_file))
+
+  output_file <- str_replace(output_file, ".txt", ".txt.gz")
+
+  return(output_file)
+}
