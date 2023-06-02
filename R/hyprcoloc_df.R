@@ -16,6 +16,7 @@
 #' @import hyprcoloc tidyr
 #' @importFrom purrr possibly
 #' @concept genomics
+#' @family {colocalization}
 #' @export
 
 #' @examples

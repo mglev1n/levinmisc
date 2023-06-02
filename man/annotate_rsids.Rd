@@ -32,3 +32,4 @@ annotate_rsids()
 }
 }
 \concept{genomics}
+\concept{{annotation}}

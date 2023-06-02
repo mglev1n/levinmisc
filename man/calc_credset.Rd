@@ -38,3 +38,4 @@ calc_credset()
 }
 }
 \concept{genomics}
+\concept{{finemapping}}

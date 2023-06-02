@@ -37,12 +37,13 @@ The `gg_manhattan_df` function is used to create Manhattan plots. This function 
 #' @param color1 (string) Color for odd-numbered chromosomes (passed to `ggfastman`)
 #' @param color2 (string) Color for even-numbered chromosomes (passed to `ggfastman`)
 #' @param speed (string) One of "slow", "fast", or "ultrafast"; passed to `ggfastman` to control plotting speed
-#' @param ... Passed to `ggfastman::fast_manhattan`
+#' @param ... Arguments passed to `ggfastman::fast_manhattan`
 #'
 #' @return A ggplot2 object
 #' @export
 #' @import dplyr ggplot2
 #' @concept genomics
+#' @family {plotting}
 
 gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromosome, pos_col = position, pval_col = p_value, label_col = gene, build = "hg19", color1 = "#045ea7", color2 = "#82afd3", speed = "slow", ...) {
   if (!is.null((annotation_df))) {
@@ -167,13 +168,14 @@ The `gg_qq_df` function can be used to generate a qq plot to visually evaluate f
 #'
 #' @param sumstats_df Dataframe containing GWAS summary statistics
 #' @param pval_col Name of p-value column
-#' @param ... Passed to `ggfastman::fast_qq`
+#' @param ... Arguments passed to `ggfastman::fast_qq`
 #'
 #' @return A ggplot2 object
 #'
 #' @export
 #' @import dplyr ggplot2
 #' @concept genomics
+#' @family {plotting}
 
 gg_qq_df <- function(sumstats_df, pval_col = p_value, ...) {
   df <- sumstats_df %>%
@@ -233,6 +235,7 @@ This function can be used rapidly add rsids to GWAS summary statistics by chromo
 #' 
 #' @export
 #' @concept genomics 
+#' @family {annotation}
 
 annotate_rsids <- function(df, dbSNP = SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs.Hsapiens.dbSNP144.GRCh37, chrom_col = Chromosome, pos_col = Position) {
   if (sum(stringr::str_detect(names(df), "rsid")) > 0) {
@@ -337,6 +340,7 @@ METAL (<https://github.com/statgen/METAL>) is a common command-line tool for per
 #'
 #' @return Path to METAL configuration file
 #' @concept genomics
+#' @family {metal}
 #' @export
 
 metal_config <- function(config_name, output_dir, study_files, SCHEME = "STDERR", AVERAGEFREQ = "ON", MINMAXFREQ = "OFF", TRACKPOSITIONS = "ON", MARKERLABEL = "MARKER", CHROMOSOMELABEL = "CHROM", POSITIONLABEL = "POS", EFFECT_ALLELE = "EFFECT_ALLELE", OTHER_ALLELE = "OTHER_ALLELE", EFFECTLABEL = "BETA", STDERR = "SE", FREQLABEL = "EAF", NCASE = "N_CASE", NCONTROL = "N_CONTROL", SAMPLESIZE = "N") {
@@ -409,6 +413,7 @@ test_that("metal_config works", {
 #'
 #' @return Path to .gzipped meta-analysis summary statistics
 #' @concept genomics
+#' @family {metal}
 #' @export
 
 metal_run <- function(config_file, metal_path) {
@@ -465,6 +470,7 @@ This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that take
 #' @import hyprcoloc tidyr
 #' @importFrom purrr possibly
 #' @concept genomics
+#' @family {colocalization}
 #' @export
 
 hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta, se_col = se, type_col = type, ...) {
@@ -566,6 +572,7 @@ This function implements the simple Bayesian finemapping approach described in M
 #' @return A data.frame containing credible sets at each locus. For each variant within the credible set, the prior probability of being the casual variant is provided.
 #' 
 #' @export
+#' @family {finemapping}
 #' @concept genomics
 
 calc_credset <- function(df, locus_marker_col = locus_marker, effect_col = effect, se_col = std_err, samplesize_col = samplesize, cred_interval = 0.99) {

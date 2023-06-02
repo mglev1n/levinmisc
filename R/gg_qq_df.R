@@ -6,13 +6,14 @@
 #'
 #' @param sumstats_df Dataframe containing GWAS summary statistics
 #' @param pval_col Name of p-value column
-#' @param ... Passed to `ggfastman::fast_qq`
+#' @param ... Arguments passed to `ggfastman::fast_qq`
 #'
 #' @return A ggplot2 object
 #'
 #' @export
 #' @import dplyr ggplot2
 #' @concept genomics
+#' @family {plotting}
 
 #' @examples
 #' \dontrun{

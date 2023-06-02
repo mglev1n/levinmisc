@@ -14,12 +14,13 @@
 #' @param color1 (string) Color for odd-numbered chromosomes (passed to `ggfastman`)
 #' @param color2 (string) Color for even-numbered chromosomes (passed to `ggfastman`)
 #' @param speed (string) One of "slow", "fast", or "ultrafast"; passed to `ggfastman` to control plotting speed
-#' @param ... Passed to `ggfastman::fast_manhattan`
+#' @param ... Arguments passed to `ggfastman::fast_manhattan`
 #'
 #' @return A ggplot2 object
 #' @export
 #' @import dplyr ggplot2
 #' @concept genomics
+#' @family {plotting}
 
 #' @examples
 #' \dontrun{

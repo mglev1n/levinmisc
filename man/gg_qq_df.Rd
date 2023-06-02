@@ -11,7 +11,7 @@ gg_qq_df(sumstats_df, pval_col = p_value, ...)
 
 \item{pval_col}{Name of p-value column}
 
-\item{...}{Passed to \code{ggfastman::fast_qq}}
+\item{...}{Arguments passed to \code{ggfastman::fast_qq}}
 }
 \value{
 A ggplot2 object
@@ -24,4 +24,9 @@ This function is a wrapper around \code{ggfastman::fast_qq} which allows for the
 gg_qq_df()
 }
 }
+\seealso{
+Other {plotting}: 
+\code{\link{gg_manhattan_df}()}
+}
 \concept{genomics}
+\concept{{plotting}}

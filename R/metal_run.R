@@ -9,6 +9,7 @@
 #'
 #' @return Path to .gzipped meta-analysis summary statistics
 #' @concept genomics
+#' @family {metal}
 #' @export
 
 #' @examples

@@ -14,6 +14,7 @@
 #' @return A data.frame containing credible sets at each locus. For each variant within the credible set, the prior probability of being the casual variant is provided.
 #' 
 #' @export
+#' @family {finemapping}
 #' @concept genomics
 
 #' @examples

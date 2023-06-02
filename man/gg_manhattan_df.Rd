@@ -39,7 +39,7 @@ gg_manhattan_df(
 
 \item{speed}{(string) One of "slow", "fast", or "ultrafast"; passed to \code{ggfastman} to control plotting speed}
 
-\item{...}{Passed to \code{ggfastman::fast_manhattan}}
+\item{...}{Arguments passed to \code{ggfastman::fast_manhattan}}
 }
 \value{
 A ggplot2 object
@@ -52,4 +52,9 @@ This function is a wrapper around \code{ggfastman::fast_manhattan} which allows 
 gg_manhattan_df()
 }
 }
+\seealso{
+Other {plotting}: 
+\code{\link{gg_qq_df}()}
+}
 \concept{genomics}
+\concept{{plotting}}

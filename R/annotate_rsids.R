@@ -13,6 +13,7 @@
 #' 
 #' @export
 #' @concept genomics 
+#' @family {annotation}
 
 #' @examples
 #' \dontrun{

@@ -22,4 +22,9 @@ This function is a wrapper for METAL, a tool for performing meta-analysis of GWA
 metal_run(config_file = "config.txt", metal_path = "/path/to/metal_binary")
 }
 }
+\seealso{
+Other {metal}: 
+\code{\link{metal_config}()}
+}
 \concept{genomics}
+\concept{{metal}}

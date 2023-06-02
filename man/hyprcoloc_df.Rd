@@ -41,3 +41,4 @@ hyprcoloc_df(gwas_results_df)
 }
 }
 \concept{genomics}
+\concept{{colocalization}}

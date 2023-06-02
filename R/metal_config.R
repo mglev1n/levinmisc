@@ -25,6 +25,7 @@
 #'
 #' @return Path to METAL configuration file
 #' @concept genomics
+#' @family {metal}
 #' @export
 
 #' @examples

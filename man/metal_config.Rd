@@ -73,4 +73,9 @@ This function can be used to generate a configuration for METAL, a tool for perf
 metal_config()
 }
 }
+\seealso{
+Other {metal}: 
+\code{\link{metal_run}()}
+}
 \concept{genomics}
+\concept{{metal}}
