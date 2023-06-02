@@ -123,7 +123,7 @@ Here are some unit tests to verify the function works as expected.
 -->
 
 
-# use_crew_lsf
+## Use {crew} for parallelization
 
 By default, `populate_targets_proj()` creates a `targets` pipeline that uses the `tar_make_clustermq()` function to execute the pipeline using LPC resources. This function creates a cluster of persistent workers, and therefore is not very flexible in terms of varying the number or resources allocated to complete individual targets. More recently, the `crew` and `crew.cluster` packages have enabled the use of heterogenous workers (<https://books.ropensci.org/targets/crew.html#heterogeneous-workers>), which can be deployed either locally or on HPC resources. The `use_crew_lsf()` function is designed to return a block of code to rapidly enable the use of heterogeneous workers on the Penn LPC. By default, this function creates workers that submit to different queues (eg. `voltron_normal`, `voltron_long`), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory). 
     
