@@ -7,10 +7,10 @@ reference:
   contents:
   - has_concept("targets")
 - title: Genomics
-  desc: Genomics utility functions
+  desc: Genomics utility functions and wrappers around other tools/programs/packages to perform GWAS meta-analysis, fine-mapping, colocalization, and more.
   contents:
   - has_concept("genomics")
 - title: Miscellaneous
-  desc: Miscellaneous functions
+  desc: Miscellaneous functions useful for manipulating/presenting data.
   contents:
   - has_concept("miscellaneous")

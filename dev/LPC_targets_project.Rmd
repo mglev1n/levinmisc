@@ -65,7 +65,7 @@ The `targets` package is a tool for developing reproducible research workflows i
 The `populate_targets_proj` function can be run within a new project folder to initialize the project with the files/folders necessary for deploying a `targets` pipeline on the LPC at Penn. This includes creating LSF templates, a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results.
 
 ```{r function-populate_targets_proj}
-#' Populate Targets Project
+#' Create a minimal targets template in the current project
 #'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
 #' @param log_folder (character) directory for LSF logs

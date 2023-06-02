@@ -2,7 +2,7 @@
 % Please edit documentation in R/populate_targets_proj.R
 \name{populate_targets_proj}
 \alias{populate_targets_proj}
-\title{Populate Targets Project}
+\title{Create a minimal targets template in the current project}
 \usage{
 populate_targets_proj(title, log_folder = "build_logs", overwrite = FALSE)
 }
@@ -14,7 +14,7 @@ populate_targets_proj(title, log_folder = "build_logs", overwrite = FALSE)
 \item{overwrite}{(logical) overwrite existing template files}
 }
 \description{
-Populate Targets Project
+Create a minimal targets template in the current project
 }
 \examples{
 \dontrun{
