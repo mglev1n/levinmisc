@@ -209,6 +209,8 @@ test_that("gg_qq_df returns a ggplot object", {
 })
 ```
   
+---
+
 # Annotation
 
 These convenience functions are useful for adding additional information to GWAS summary stastics.
@@ -297,6 +299,8 @@ test_that("annotate_rsids returns a tibble", {
 })
 ```
   
+---
+
 # GWAS Meta-analysis
 
 GWAS summary statistics from multiple studies can be combined using meta-analysis. The following functions are useful for orchestrating GWAS meta-analysis using R.
@@ -433,7 +437,8 @@ test_that("metal_run works", {
   expect_true(inherits(metal_run, "function")) 
 })
 ```
-  
+
+---  
   
 # Colocalization
 
@@ -536,6 +541,7 @@ test_that("hyprcoloc_df works", {
 })
 ```
   
+---
   
 # Finemapping
 
@@ -587,7 +593,8 @@ test_that("calc_credset works", {
   expect_true(inherits(calc_credset, "function")) 
 })
 ```
-    
+
+---    
   
 # Gene-based Testing
 
