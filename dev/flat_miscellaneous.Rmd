@@ -22,14 +22,14 @@ This function is a wrapper around the `DT::datatable` function, which renders a 
 ```{r function-render_datatable}
 #' Render DataTable to HTML
 #'
-#' This function is a wrapper around the `DT::datatable` function, containing useful defaults.
+#' This function is a wrapper around the `DT::datatable` function, containing useful defaults. This function is particularly useful when to provide interactivity (eg. sorting, saving) to tables when rendering documents using RMarkdown or Quarto.
 #'
 #' @param df Dataframe to render
 #' @param extensions Extensions parameter passed to `DT::datatable`
 #' @param class Class parameters passed to `DT::datatable`
-#' @param rownames (logical) Include rownames in output
+#' @param rownames (logical) Include rownames in output (Default = `FALSE`)
 #' @param options List of options passed to `DT::datatable`
-#' @param height Height of output
+#' @param height Height of output (Default = `400`)
 #' @param ... Additional arguments passed to `DT::datatable`
 #'
 #' @return An HTML widget

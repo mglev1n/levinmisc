@@ -22,11 +22,11 @@ render_datatable(
 
 \item{class}{Class parameters passed to \code{DT::datatable}}
 
-\item{rownames}{(logical) Include rownames in output}
+\item{rownames}{(logical) Include rownames in output (Default = \code{FALSE})}
 
 \item{options}{List of options passed to \code{DT::datatable}}
 
-\item{height}{Height of output}
+\item{height}{Height of output (Default = \code{400})}
 
 \item{...}{Additional arguments passed to \code{DT::datatable}}
 }
@@ -34,7 +34,7 @@ render_datatable(
 An HTML widget
 }
 \description{
-This function is a wrapper around the \code{DT::datatable} function, containing useful defaults.
+This function is a wrapper around the \code{DT::datatable} function, containing useful defaults. This function is particularly useful when to provide interactivity (eg. sorting, saving) to tables when rendering documents using RMarkdown or Quarto.
 }
 \examples{
 render_datatable(datasets::mtcars)
