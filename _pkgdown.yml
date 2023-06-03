@@ -48,7 +48,7 @@ reference:
   desc: >
     Functions that are useful for identifying trait-associated genes from GWAS.
   contents:
-  - has_concept("finemapping")
+  - has_concept("TWAS")
   - has_concept("Gene-based testing")
 
 - title: Miscellaneous
