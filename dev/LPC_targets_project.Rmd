@@ -245,7 +245,8 @@ By default, `populate_targets_proj()` creates a `targets` pipeline that uses the
 #' 
 #' @description
 #' `r lifecycle::badge("experimental")`
-#' This function returns a template for using `crew.cluster` in a targets project, enabling the parallel execution of a targets workflow. By default, the template is pre-filled using parameters specific to the LPC system at Penn.
+#' 
+#' This function returns a template for using `crew.cluster` in a targets project, enabling the parallel execution of a targets workflow. By default, the template is pre-filled using parameters specific to the LPC system at Penn. By default, this function creates workers that submit to different queues (eg. `voltron_normal`, `voltron_long`), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory).
 #'
 #' @return string
 #'
@@ -341,9 +342,7 @@ tar_option_set(
 
   
 ```{r example-use_crew_lsf}
-#' \dontrun{
-#' use_crew_lsf()
-#' }
+use_crew_lsf()
 ```
   
 ```{r tests-use_crew_lsf}

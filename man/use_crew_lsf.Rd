@@ -11,11 +11,10 @@ string
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-This function returns a template for using \code{crew.cluster} in a targets project, enabling the parallel execution of a targets workflow. By default, the template is pre-filled using parameters specific to the LPC system at Penn.
+
+This function returns a template for using \code{crew.cluster} in a targets project, enabling the parallel execution of a targets workflow. By default, the template is pre-filled using parameters specific to the LPC system at Penn. By default, this function creates workers that submit to different queues (eg. \code{voltron_normal}, \code{voltron_long}), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory).
 }
 \examples{
-\dontrun{
 use_crew_lsf()
-}
 }
 \concept{targets}
