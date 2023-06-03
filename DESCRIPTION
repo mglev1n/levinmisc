@@ -14,6 +14,7 @@ Imports:
     coloc (>= 5.2.0),
     crew,
     crew.cluster,
+    data.table,
     dplyr,
     DT,
     fs,
@@ -40,12 +41,12 @@ Imports:
     tidyr,
     tools,
     vroom,
+    withr,
     yesno
 Suggests: 
     knitr,
     rmarkdown,
-    testthat,
-    withr
+    testthat
 VignetteBuilder: 
     knitr
 Remotes: 

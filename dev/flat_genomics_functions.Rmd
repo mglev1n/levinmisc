@@ -863,6 +863,246 @@ test_that("magmar works", {
 })
 ```
     
+
+## S-PrediXcan
+    
+```{r function-s_predixcan}
+#' Run a TWAS using S-PrediXcan
+#' 
+#' This function is a wrapper around S-PrediXcan, a method of integrating GWAS summary statistics with gene-expression/splicing data to identify genes associated with a trait. The PrediXcan/MetaXcan method is described in Barbeira et al. (Nature Communications 2018; <https://doi.org/10.1038/s41467-018-03621-1>). The MetaXcan tools can be found on Github (<https://github.com/hakyimlab/MetaXcan>) and PredictDB (<https://predictdb.org/>). If S-PrediXcan is run across multiple tissues, the results can be integrated using [levinmisc::s_multixcan()].
+
+#' @param df Dataframe containing GWAS summary statistics
+#' @param snp Column containing rsid
+#' @param effect_allele Column containing effect allele
+#' @param other_allele Column containing non-effect allele
+#' @param beta Column containing effect size
+#' @param eaf Column containing effect allele frequency
+#' @param chr Column containing chromosome
+#' @param pos Column containing position
+#' @param se Column containing standard error of the effect estimate
+#' @param pval Column containing p-value
+#' @param samplesize Column containing samplesize
+#' @param data Path to MetaXcan data (eg. `"MetaXcan/data"`)
+#' @param metaxcan Path to MetaXcan (eg. `"MetaXcan/software"`) 
+#' @param output Output directory to save S-PrediXcan results
+#' @param model_db_path Path to PrediXcan model database
+#' @param model_covariance_path Path to PrediXcan model covariance
+#' @param trait_name Name of GWAS trait (used to name output files)
+#'
+#' @return A dataframe containing the S-PrediXcan results
+#' @family TWAS
+#' @concept genomics
+#' @import dplyr
+#' @export
+
+s_predixcan <- function(df, snp = SNP, effect_allele = effect_allele, other_allele = other_allele, beta = beta, eaf = eaf, chr = chr, pos = pos, se = se, pval = pval, samplesize = samplesize, data, metaxcan, output, model_db_path, model_covariance_path, trait_name) {
+  fs::dir_create(output, recurse = TRUE)
+
+  shell <- ifelse(Sys.info()["sysname"] == "Windows", "cmd", "sh")
+  # write temporary summary statistics file for harmonization
+  .fn <- tempfile()
+  df %>%
+    select(rsid = {{ snp }}, noneffect_allele = {{ other_allele }}, effect_allele = {{ effect_allele }}, effect = {{ beta }}, p_value = {{ pval }}) %>%
+    vroom::vroom_write(.fn)
+  
+  .eqtl_name <- fs::path_file(model_db_path) %>% str_replace("\\.db$", "")
+  .harmonize <- paste0(
+    "export DATA=", shQuote(data, type = shell),
+    # "; export GWAS_TOOLS=", shQuote(gwas_tools, type = shell),
+    "; export METAXCAN=", shQuote(metaxcan, type = shell),
+    # "; export OUTPUT=", fn,
+    "; python3 $METAXCAN/M03_betas.py",
+    " --snp_map_file $DATA/coordinate_map/map_snp150_hg19.txt.gz",
+    " --gwas_file ", shQuote(.fn, type = shell),
+    " --snp_column rsid ",
+    " --non_effect_allele_column noneffect_allele ",
+    " --effect_allele_column effect_allele ",
+    " --beta_column effect ",
+    " --pvalue_column p_value ",
+    " --keep_non_rsid ",
+    " --throw ",
+    " --output ", .fn, "_harmonized.txt",
+    "; python3 $METAXCAN/SPrediXcan.py",
+    " --gwas_file ", .fn, "_harmonized.txt",
+    " --snp_column snp",
+    " --effect_allele_column effect_allele",
+    " --non_effect_allele_column non_effect_allele",
+    " --zscore_column zscore",
+    " --model_db_path ", shQuote(model_db_path, type = shell),
+    " --covariance ", shQuote(model_covariance_path, type = shell),
+    " --keep_non_rsid",
+    " --additional_output",
+    " --model_db_snp_key varID",
+    " --throw",
+    " --output_file ", fs::path(output, paste0(trait_name, "_", .eqtl_name, "_S-prediXcan.csv"))
+  )
+  withr::with_envvar(
+    new = c(
+      "DATA" = data,
+      # "GWAS_TOOLS" = gwas_tools,
+      "METAXCAN" = metaxcan,
+      "OUTPUT" = .fn
+    ),
+    system(.harmonize)
+  )
+  on.exit(system(paste0("rm ", .fn, "*")))
+  # system(.harmonize)
+
+  vroom::vroom(fs::path(output, paste0(trait_name, "_", .eqtl_name, "_S-prediXcan.csv"))) %>%
+    mutate(tissue = .eqtl_name) %>%
+    data.table::fwrite(fs::path(output, paste0(trait_name, "_", .eqtl_name, "_S-prediXcan.csv")))
+
+  return(fs::path(output, paste0(trait_name, "_", .eqtl_name, "_S-prediXcan.csv")))
+}
+```
+  
+```{r example-s_predixcan}
+#' \dontrun{
+#' s_predixcan(df, data = "MetaXcan/data", metaxcan = "MetaXcan/software", output = "/path/to/output", model_db_path = "MetaXcan/data/models/eqtl/mashr/mashr_Liver.db", model_covariance_path = "MetaXcan/data/models/eqtl/mashr/mashr_Liver.txt.gz", trait_name = "GWAS_trait")
+#' }
+```
+  
+```{r tests-s_predixcan}
+test_that("s_predixcan works", {
+  expect_true(inherits(s_predixcan, "function")) 
+})
+```
+      
+
+## S-MultiXcan
+    
+```{r function-s_multixcan}
+#' Integrate PrediXcan data across tissues
+#' 
+#' This function is a wrapper around S-MultiXcan, a tool for identifying genes associate with a trait using GWAS summary statistics. This approach leverages the sharing of eQTLs acorss tissues to improve upon tissue-specific TWAS-methods like S-PrediXcan. This method uses data generated by [levinmisc::s_predixcan()]. The S-MultiXcan method was described in Barbeira et al. (PLOS Genetics 2019; <https://doi.org/10.1371/journal.pgen.1007889>). The MetaXcan tools can be found on Github (<https://github.com/hakyimlab/MetaXcan>) and PredictDB (<https://predictdb.org/>). 
+
+#' @param df Dataframe containing GWAS summary statistics
+#' @param snp Column containing rsids
+#' @param effect_allele Column containing effect alleles
+#' @param other_allele Column containing non-effect alleles
+#' @param beta Column containing effect estimates
+#' @param eaf Column containing effect allele frequencies
+#' @param chr Column containing chromosomes
+#' @param pos Column containing positions
+#' @param se Column containing standard errors
+#' @param pval Column containing p-values
+#' @param samplesize Column containing samplesize
+#' @param regularization MetaXcan regularization (default = 0.01)
+#' @param cutoff_condition_number Numer of eigen values to use when truncating SVD components (default = 30)
+#' @param cutoff_eigen_ratio Ratio of eigenvalues to the max eigenvalue, as threshold to use when truncating SVD components. (default = 0.001)
+#' @param cutoff_threshold Threshold of variance eigenvalues when truncating SVD (default = 0.4)
+#' @param cutoff_trace_ratio Ratio of eigenvalues to trace, to use when truncating SVD (default = 0.01)
+#' @param metaxcan_folder Path to folder containing S-PrediXcan result files
+#' @param metaxcan_filter Regular expression to filter results files
+#' @param metaxcan_file_name_parse_pattern Regular expression to get phenotype name and model name from MetaXcan result files. Assumes that a first group will be matched to phenotype name, and the second to model name.
+#' @param models_folder Path to folder containing MetaXcan models (eg. `"MetaXcan/data/models/eqtl/mashr/"`)
+#' @param models_name_filter Filter used to identify model files (default = `".*\\.db"`)
+#' @param models_name_pattern Filter used to extract trait name from the model (default = `"mashr_(.*)\\.db"`)
+#' @param snp_covariance Path to file containing S-MultiXcan covariance (eg. `"MetaXcan/data/models/gtex_v8_expression_mashr_snp_smultixcan_covariance.txt.gz"`)
+#' @param data Path to MetaXcan data (eg. `"MetaXcan/data"`)
+#' @param metaxcan Path to MetaXcan (eg. `"MetaXcan/software"`) 
+#'
+#' @return A dataframe containing S-MultiXcan results
+#' @import dplyr
+#' @export
+#' @family TWAS
+#' @concept genomics
+
+s_multixcan <- function(df, models_folder, models_name_filter = ".*db", models_name_pattern, snp = SNP, effect_allele = effect_allele, other_allele = other_allele, beta = beta, eaf = eaf, chr = chr, pos = pos, se = se, pval = pval, samplesize = samplesize, regularization = 0.01, cutoff_condition_number = 30, cutoff_eigen_ratio = 0.001, cutoff_threshold = 0.4, cutoff_trace_ratio = 0.01, metaxcan_folder, metaxcan_filter, metaxcan_file_name_parse_pattern, snp_covariance, metaxcan, data) {
+  cli::cli_alert_info("Formatting summary statistics")
+
+  gwas_file <- fs::file_temp()
+  df %>%
+    select(rsid = {{ snp }}, noneffect_allele = {{ other_allele }}, effect_allele = {{ effect_allele }}, effect = {{ beta }}, p_value = {{ pval }}) %>%
+    tidyr::drop_na() %>%
+    vroom::vroom_write(gwas_file)
+
+  harmonized_gwas <- fs::file_temp()
+  processx::run("python3",
+    args = c(
+      fs::path(metaxcan, "M03_betas.py"),
+      "--snp_map_file", fs::path(data, "coordinate_map/map_snp150_hg19.txt.gz"),
+      "--gwas_file", gwas_file,
+      "--snp_column", "rsid",
+      "--non_effect_allele_column", "noneffect_allele",
+      "--effect_allele_column", "effect_allele",
+      "--beta_column", "effect",
+      "--pvalue_column", "p_value",
+      "--keep_non_rsid",
+      "--throw",
+      "--output", harmonized_gwas
+    ),
+    error_on_status = FALSE,
+    echo_cmd = TRUE,
+    echo = TRUE
+  )
+
+  cli::cli_alert_info("Running S-metaXcan")
+  multixcan_output <- fs::file_temp()
+  processx::run("python3",
+    args = c(
+      fs::path(metaxcan, "SMulTiXcan.py"),
+      "--models_folder", models_folder,
+      "--models_name_filter", models_name_filter,
+      "--models_name_pattern", models_name_pattern,
+      "--snp_covariance", snp_covariance,
+      "--metaxcan_folder", metaxcan_folder,
+      "--metaxcan_filter", metaxcan_filter,
+      "--metaxcan_file_name_parse_pattern", metaxcan_file_name_parse_pattern,
+      "--gwas_file", harmonized_gwas,
+      "--snp_column", "snp",
+      "--effect_allele_column", "effect_allele",
+      "--non_effect_allele_column", "non_effect_allele",
+      "--keep_non_rsid",
+      # "--beta_column", "effect",
+      # "--pvalue_column", "p_value",
+      # "--snp_map_file", fs::path(data, "coordinate_map/map_snp150_hg19.txt.gz"),
+      "--zscore_column", "zscore",
+      "--model_db_snp_key", "varID",
+      "--cutoff_condition_number", cutoff_condition_number,
+      # "--cutoff_threshold", cutoff_threshold,
+      # "--cutoff_trace_ratio", cutoff_trace_ratio,
+      # "--regularization", regularization,
+      "--throw",
+      "--verbosity", "7",
+      # "--trimmed_ensemble_id",
+      # "--MAX_M", "100",
+      "--output", multixcan_output
+    ),
+    error_on_status = FALSE,
+    echo_cmd = TRUE,
+    echo = TRUE
+  )
+
+  cli::cli_alert_info("Reading results")
+  multixcan_res <- data.table::fread(multixcan_output)
+
+  return(multixcan_res)
+}
+```
+  
+```{r example-s_multixcan}
+#' \dontrun{
+#' s_multixcan(df, 
+#'  models_folder = "MetaXcan/data/models/eqtl/mashr/",
+#'  models_name_filter = ".*\\.db",
+#'  models_name_pattern = "mashr_(.*)\\.db",
+#'  metaxcan_folder = "/path/to/metaxcan_files/,
+#'  metaxcan_filter = "GWAS-trait_mashr_(.*)_S-prediXcan.csv",
+#'  metaxcan_file_name_parse_pattern = "(.*)_mashr_(.*)_S-prediXcan.csv",
+#'  data = "MetaXcan/data",
+#'  metaxcan = "MetaXcan/software",
+#'  snp_covariance = "MetaXcan/data/models/gtex_v8_expression_mashr_snp_smultixcan_covariance.txt.gz")
+#' }
+```
+  
+```{r tests-s_multixcan}
+test_that("s_multixcan works", {
+  expect_true(inherits(s_multixcan, "function")) 
+})
+```
+  
+
 ---
 # Heritability
 
