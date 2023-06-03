@@ -62,5 +62,9 @@ This function is a wrapper around \code{\link[coloc:coloc.abf]{coloc::coloc.abf(
 coloc_run(locus_df)
 }
 }
-\concept{colocalization}
+\seealso{
+Other {colocalization}:
+\code{\link{hyprcoloc_df}()}
+}
 \concept{genomics}
+\concept{{colocalization}}

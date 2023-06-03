@@ -23,7 +23,7 @@
 #' - `results` is an annotated version of the input data containing log approximate Bayes Factors and posterior probability of each SNP being causal if H4 is true.
 #' 
 #' @concept genomics
-#' @family colocalization
+#' @family {colocalization}
 #' @export
 
 #' @examples

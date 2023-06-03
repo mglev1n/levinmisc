@@ -40,5 +40,9 @@ This function is a convenience wrapper around \code{\link[hyprcoloc:hyprcoloc]{h
 hyprcoloc_df(gwas_results_df)
 }
 }
+\seealso{
+Other {colocalization}: 
+\code{\link{coloc_run}()}
+}
 \concept{genomics}
 \concept{{colocalization}}

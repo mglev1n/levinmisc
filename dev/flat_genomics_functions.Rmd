@@ -537,7 +537,7 @@ Colocalization is a technique for evaluating the evidence supporting the presenc
 
 ## HyPrColoc
 
-This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that takes a dataframe as input, and performs mutli-trait colocalization using HyPrColoc, a Bayesian enumeration colocalization method which makes the assumption of a single causal variant at the locus. Details of the HyPrColoc method are described in Foley et al. (Nature Communications 2021): <https://doi.org/10.1038/s41467-020-20885-8>.
+This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that takes a dataframe as input, and performs mutli-trait colocalization using HyPrColoc, a Bayesian enumeration colocalization method which makes the assumption of a single causal variant at the locus. Details of the HyPrColoc method are described in Foley et al. (Nature Communications 2021; <https://doi.org/10.1038/s41467-020-20885-8>).
 
 ```{r function-hyprcoloc_df}
 #' Run multi-trait colocalization using HyPrColoc
@@ -660,7 +660,7 @@ test_that("hyprcoloc_df works", {
 #' - `results` is an annotated version of the input data containing log approximate Bayes Factors and posterior probability of each SNP being causal if H4 is true.
 #' 
 #' @concept genomics
-#' @family colocalization
+#' @family {colocalization}
 #' @export
 
 coloc_run <- function(df, trait_col = trait, variant_col = rsid, beta_col = beta, se_col = se, samplesize_col = samplesize, maf_col = maf, type_col = type, case_prop_col = case_prop, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, ...) {
