@@ -226,9 +226,84 @@ queues (eg. <code>voltron_normal</code>, <code>voltron_long</code>), and
 allocate different resources (eg. a “normal” worker will use 1 core and
 16GB memory, while a “long” worker will use 1 core and 10GB memory).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
-<span><span class="co">#' use_crew_lsf()</span></span>
-<span><span class="co">#' }</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/use_crew_lsf.html">use_crew_lsf</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Copy the below code to the `global` chunk in your targets project:</span> <span style="color: #00BBBB;">──────────</span></span></span>
+<span><span class="co">#&gt; library(targets)</span></span>
+<span><span class="co">#&gt; library(tarchetypes)</span></span>
+<span><span class="co">#&gt; library(crew)</span></span>
+<span><span class="co">#&gt; library(crew.cluster)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; controller_local &lt;- crew_controller_local(</span></span>
+<span><span class="co">#&gt;   name = 'levinmisc_local',</span></span>
+<span><span class="co">#&gt;   workers = 1,</span></span>
+<span><span class="co">#&gt;   seconds_idle = 10</span></span>
+<span><span class="co">#&gt; )</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; controller_lsf_normal &lt;- crew.cluster::crew_controller_lsf(</span></span>
+<span><span class="co">#&gt;   name = 'levinmisc_normal',</span></span>
+<span><span class="co">#&gt;   workers = 20L,</span></span>
+<span><span class="co">#&gt;   lsf_memory_gigabytes_limit = 16,</span></span>
+<span><span class="co">#&gt;   script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),</span></span>
+<span><span class="co">#&gt;   lsf_log_output = 'build_logs/crew-%J.log',</span></span>
+<span><span class="co">#&gt;   lsf_log_error = 'build_logs/crew-%J.err',</span></span>
+<span><span class="co">#&gt;   script_lines = c(</span></span>
+<span><span class="co">#&gt;     "#BSUB-q voltron_normal",</span></span>
+<span><span class="co">#&gt;     "export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0",</span></span>
+<span><span class="co">#&gt;     "export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'",</span></span>
+<span><span class="co">#&gt;     "module load singularity",</span></span>
+<span><span class="co">#&gt;     glue::glue("singularity exec --pwd /home/runner/work/levinmisc/levinmisc/vignettes /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\")</span></span>
+<span><span class="co">#&gt;   ),</span></span>
+<span><span class="co">#&gt;   verbose = TRUE</span></span>
+<span><span class="co">#&gt; )</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; controller_lsf_long &lt;- crew.cluster::crew_controller_lsf(</span></span>
+<span><span class="co">#&gt;   name = 'levinmisc_long',</span></span>
+<span><span class="co">#&gt;   workers = 150L,</span></span>
+<span><span class="co">#&gt;   lsf_memory_gigabytes_limit = 10,</span></span>
+<span><span class="co">#&gt;   script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),</span></span>
+<span><span class="co">#&gt;   lsf_log_output = 'build_logs/crew-%J.log',</span></span>
+<span><span class="co">#&gt;   lsf_log_error = 'build_logs/crew-%J.err',</span></span>
+<span><span class="co">#&gt;   script_lines = c(</span></span>
+<span><span class="co">#&gt;     "#BSUB-q voltron_long",</span></span>
+<span><span class="co">#&gt;     "export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0",</span></span>
+<span><span class="co">#&gt;     "export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'",</span></span>
+<span><span class="co">#&gt;     "module load singularity",</span></span>
+<span><span class="co">#&gt;     glue::glue("singularity exec --pwd /home/runner/work/levinmisc/levinmisc/vignettes /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\")</span></span>
+<span><span class="co">#&gt;   ),</span></span>
+<span><span class="co">#&gt;   verbose = TRUE</span></span>
+<span><span class="co">#&gt; )</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; controller_lsf_highmem &lt;- crew.cluster::crew_controller_lsf(</span></span>
+<span><span class="co">#&gt;   name = 'levinmisc_highmem',</span></span>
+<span><span class="co">#&gt;   workers = 5L,</span></span>
+<span><span class="co">#&gt;   lsf_memory_gigabytes_limit = 96,</span></span>
+<span><span class="co">#&gt;   script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),</span></span>
+<span><span class="co">#&gt;   lsf_log_output = 'build_logs/crew-%J.log',</span></span>
+<span><span class="co">#&gt;   lsf_log_error = 'build_logs/crew-%J.err',</span></span>
+<span><span class="co">#&gt;   script_lines = c(</span></span>
+<span><span class="co">#&gt;     "#BSUB-q voltron_normal",</span></span>
+<span><span class="co">#&gt;     "export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0",</span></span>
+<span><span class="co">#&gt;     "export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'",</span></span>
+<span><span class="co">#&gt;     "module load singularity",</span></span>
+<span><span class="co">#&gt;     glue::glue("singularity exec --pwd /home/runner/work/levinmisc/levinmisc/vignettes /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\")</span></span>
+<span><span class="co">#&gt;   ),</span></span>
+<span><span class="co">#&gt;   verbose = TRUE</span></span>
+<span><span class="co">#&gt; )</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # define some global options/functions common to all targets</span></span>
+<span><span class="co">#&gt; options(tidyverse.quiet = TRUE)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; tar_option_set(</span></span>
+<span><span class="co">#&gt;   packages = c('tidyverse', 'targets', 'tarchetypes', 'arrow', 'vroom', 'data.table', 'qs', 'gt', 'crew', 'crew.cluster'),</span></span>
+<span><span class="co">#&gt;   controller = crew::crew_controller_group(controller_lsf_long, controller_lsf_normal, controller_lsf_highmem, controller_local),</span></span>
+<span><span class="co">#&gt;   resources = tar_resources(</span></span>
+<span><span class="co">#&gt;     crew = tar_resources_crew(controller = 'levinmisc_normal')</span></span>
+<span><span class="co">#&gt;   ),</span></span>
+<span><span class="co">#&gt;   storage = 'worker',</span></span>
+<span><span class="co">#&gt;   retrieval = 'worker',</span></span>
+<span><span class="co">#&gt;   cue = tar_cue(format = FALSE)</span></span>
+<span><span class="co">#&gt; )</span></span></code></pre></div>
 <!-- 
 
 # Inflate your package
