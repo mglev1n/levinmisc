@@ -64,89 +64,14 @@ This function returns a template for using crew.cluster in a targets project, en
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>string</p>
+<p>A code block to copy/paste into a targets project</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">use_crew_lsf</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Copy the below code to the `global` chunk in your targets project:</span> <span style="color: #00BBBB;">──────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> library(targets)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> library(tarchetypes)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> library(crew)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> library(crew.cluster)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> controller_local &lt;- crew_controller_local(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name = 'levinmisc_local',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   workers = 1,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   seconds_idle = 10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> )</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> controller_lsf_normal &lt;- crew.cluster::crew_controller_lsf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name = 'levinmisc_normal',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   workers = 20L,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lsf_memory_gigabytes_limit = 16,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lsf_log_output = 'build_logs/crew-%J.log',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lsf_log_error = 'build_logs/crew-%J.err',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   script_lines = c(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "#BSUB-q voltron_normal",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "module load singularity",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     glue::glue("singularity exec --pwd /home/runner/work/levinmisc/levinmisc/docs/reference /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ),</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   verbose = TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> )</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> controller_lsf_long &lt;- crew.cluster::crew_controller_lsf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name = 'levinmisc_long',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   workers = 150L,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lsf_memory_gigabytes_limit = 10,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lsf_log_output = 'build_logs/crew-%J.log',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lsf_log_error = 'build_logs/crew-%J.err',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   script_lines = c(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "#BSUB-q voltron_long",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "module load singularity",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     glue::glue("singularity exec --pwd /home/runner/work/levinmisc/levinmisc/docs/reference /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ),</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   verbose = TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> )</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> controller_lsf_highmem &lt;- crew.cluster::crew_controller_lsf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name = 'levinmisc_highmem',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   workers = 5L,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lsf_memory_gigabytes_limit = 96,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lsf_log_output = 'build_logs/crew-%J.log',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lsf_log_error = 'build_logs/crew-%J.err',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   script_lines = c(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "#BSUB-q voltron_normal",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     "module load singularity",</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     glue::glue("singularity exec --pwd /home/runner/work/levinmisc/levinmisc/docs/reference /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ),</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   verbose = TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> )</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> # define some global options/functions common to all targets</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> options(tidyverse.quiet = TRUE)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> tar_option_set(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   packages = c('tidyverse', 'targets', 'tarchetypes', 'arrow', 'vroom', 'data.table', 'qs', 'gt', 'crew', 'crew.cluster'),</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   controller = crew::crew_controller_group(controller_lsf_long, controller_lsf_normal, controller_lsf_highmem, controller_local),</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   resources = tar_resources(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     crew = tar_resources_crew(controller = 'levinmisc_normal')</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ),</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   storage = 'worker',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   retrieval = 'worker',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cue = tar_cue(format = FALSE)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> )</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="fu">use_crew_lsf</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
