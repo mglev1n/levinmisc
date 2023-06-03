@@ -4,7 +4,7 @@
 #' 
 #' @description
 #' `r lifecycle::badge("experimental")`
-#' This function returns a template for using `crew.cluster` in a targets project, enabling the parallel execution of a targets workflow.
+#' This function returns a template for using `crew.cluster` in a targets project, enabling the parallel execution of a targets workflow. By default, the template is pre-filled using parameters specific to the LPC system at Penn.
 #'
 #' @return string
 #'

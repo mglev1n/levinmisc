@@ -14,7 +14,7 @@ populate_targets_proj(title, log_folder = "build_logs", overwrite = FALSE)
 \item{overwrite}{(logical) overwrite existing template files}
 }
 \description{
-Create a minimal targets template in the current project
+This function creates a minimal targets template in the current directory. This includes creating a \code{Pipelines.qmd} file containing boilerplate for running analyses, and a \code{Results.qmd} file which can be used to visualize the results. Parallelization of the pipeline is implemented using \code{\link[targets:tar_make_clustermq]{targets::tar_make_clustermq()}}, using pre-filled using parameters specific to the LPC system at Penn.
 }
 \examples{
 \dontrun{

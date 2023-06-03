@@ -66,6 +66,9 @@ The `populate_targets_proj` function can be run within a new project folder to i
 
 ```{r function-populate_targets_proj}
 #' Create a minimal targets template in the current project
+#' 
+#' @description
+#' This function creates a minimal targets template in the current directory. This includes creating a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results. Parallelization of the pipeline is implemented using [targets::tar_make_clustermq()], using pre-filled using parameters specific to the LPC system at Penn.
 #'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
 #' @param log_folder (character) directory for LSF logs
@@ -242,7 +245,7 @@ By default, `populate_targets_proj()` creates a `targets` pipeline that uses the
 #' 
 #' @description
 #' `r lifecycle::badge("experimental")`
-#' This function returns a template for using `crew.cluster` in a targets project, enabling the parallel execution of a targets workflow.
+#' This function returns a template for using `crew.cluster` in a targets project, enabling the parallel execution of a targets workflow. By default, the template is pre-filled using parameters specific to the LPC system at Penn.
 #'
 #' @return string
 #'
