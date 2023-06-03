@@ -92,6 +92,11 @@ This function is a wrapper around S-MultiXcan, a tool for identifying genes asso
 \seealso{
 Other TWAS: 
 \code{\link{s_predixcan}()}
+
+Other Gene-based testing: 
+\code{\link{magmar}()},
+\code{\link{s_predixcan}()}
 }
+\concept{Gene-based testing}
 \concept{TWAS}
 \concept{genomics}

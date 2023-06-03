@@ -24,6 +24,7 @@
 #'
 #' @return A dataframe containing the S-PrediXcan results
 #' @family TWAS
+#' @family Gene-based testing
 #' @concept genomics
 #' @import dplyr
 #' @export

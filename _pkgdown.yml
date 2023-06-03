@@ -10,6 +10,31 @@ reference:
   desc: Genomics utility functions and wrappers around other tools/programs/packages to perform GWAS meta-analysis, fine-mapping, colocalization, and more.
   contents:
   - has_concept("genomics")
+- subtitle: GWAS
+  desc: Functions that are useful for performing GWAS/GWAS meta-analysis
+  contents:
+  - has_concept("GWAS meta-analysis")
+- subtitle: Colocalization
+  desc: >
+    Functions that are useful for performing colocalization.
+    Colocalization is a technique for evaluating the evidence supporting the presence of shared causal variant(s) at a given locus across two or more traits.
+    Several methods of colocalization have been described, which generally leverage GWAS summary statistics across multiple traits.
+    The methods use either proportional or enumeration approaches, which make different assumptions and test different hypotheses.
+  contents:
+  - has_concept("colocalization")
+- subtitle: Finemapping
+  desc: >
+    Functions that are useful for finemapping.
+    Finemapping is an approach for identifying the putative causal variant(s) at a locus identified in a GWAS.
+    Like colocalization, finemapping methods make different assumptions about the configuration of causal variant(s) at the locus.
+  contents:
+  - has_concept("finemapping")
+- subtitle: TWAS/gene-based testing
+  desc: >
+    Functions that are useful for identifying trait-associated genes from GWAS.
+  contents:
+  - has_concept("finemapping")
+  - has_concept("Gene-based testing")
 - title: Miscellaneous
   desc: Miscellaneous functions useful for manipulating/presenting data.
   contents:

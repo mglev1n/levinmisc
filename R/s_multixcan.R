@@ -34,6 +34,7 @@
 #' @import dplyr
 #' @export
 #' @family TWAS
+#' @family Gene-based testing
 #' @concept genomics
 
 #' @examples

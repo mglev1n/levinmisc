@@ -815,6 +815,7 @@ This function provides a wrapper to MAGMA, which performs gene-based testing fro
 #'
 #' @return Path to MAGMA results file
 #' @concept genomics
+#' @family Gene-based testing
 #' @export
 #' 
 magmar <- function(sumstats_df, pval_col = p_value, snp_col = rsid, samplesize_col = samplesize, magma_bin, bfile, gene_file, out_file) {
@@ -892,6 +893,7 @@ test_that("magmar works", {
 #'
 #' @return A dataframe containing the S-PrediXcan results
 #' @family TWAS
+#' @family Gene-based testing
 #' @concept genomics
 #' @import dplyr
 #' @export
@@ -1007,6 +1009,7 @@ test_that("s_predixcan works", {
 #' @import dplyr
 #' @export
 #' @family TWAS
+#' @family Gene-based testing
 #' @concept genomics
 
 s_multixcan <- function(df, models_folder, models_name_filter = ".*db", models_name_pattern, snp = SNP, effect_allele = effect_allele, other_allele = other_allele, beta = beta, eaf = eaf, chr = chr, pos = pos, se = se, pval = pval, samplesize = samplesize, regularization = 0.01, cutoff_condition_number = 30, cutoff_eigen_ratio = 0.001, cutoff_threshold = 0.4, cutoff_trace_ratio = 0.01, metaxcan_folder, metaxcan_filter, metaxcan_file_name_parse_pattern, snp_covariance, metaxcan, data) {

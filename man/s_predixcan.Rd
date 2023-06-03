@@ -73,6 +73,11 @@ s_predixcan(df, data = "MetaXcan/data", metaxcan = "MetaXcan/software", output =
 \seealso{
 Other TWAS: 
 \code{\link{s_multixcan}()}
+
+Other Gene-based testing: 
+\code{\link{magmar}()},
+\code{\link{s_multixcan}()}
 }
+\concept{Gene-based testing}
 \concept{TWAS}
 \concept{genomics}

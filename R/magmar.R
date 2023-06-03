@@ -15,6 +15,7 @@
 #'
 #' @return Path to MAGMA results file
 #' @concept genomics
+#' @family Gene-based testing
 #' @export
 #' 
 #' @examples
