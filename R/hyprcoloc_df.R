@@ -2,7 +2,7 @@
 
 #' Run multi-trait colocalization using HyPrColoc
 #' 
-#' This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that takes a dataframe as input, and performs mutli-trait colocalization. Details of the HyPrColoc method are described in Foley et al. (Nature Communications 2021): <https://doi.org/10.1038/s41467-020-20885-8>.
+#' This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that takes a dataframe as input, and performs mutli-trait colocalization. Details of the HyPrColoc method are described in Foley et al. (Nature Communications 2021; <https://doi.org/10.1038/s41467-020-20885-8>).
 #' 
 #' @param df Dataframe containing summary statistics at a single locus, in a "long" format, with one row per variant per trait.
 #' @param trait_col Column containing trait names

@@ -33,7 +33,7 @@ hyprcoloc_df(
 A list containing a data.frame of HyPrColoc results: each row is a cluster of colocalized traits or is coded NA (if no colocalization is identified)
 }
 \description{
-This function is a convenience wrapper around \code{\link[hyprcoloc:hyprcoloc]{hyprcoloc::hyprcoloc()}} that takes a dataframe as input, and performs mutli-trait colocalization. Details of the HyPrColoc method are described in Foley et al. (Nature Communications 2021): \url{https://doi.org/10.1038/s41467-020-20885-8}.
+This function is a convenience wrapper around \code{\link[hyprcoloc:hyprcoloc]{hyprcoloc::hyprcoloc()}} that takes a dataframe as input, and performs mutli-trait colocalization. Details of the HyPrColoc method are described in Foley et al. (Nature Communications 2021; \url{https://doi.org/10.1038/s41467-020-20885-8}).
 }
 \examples{
 \dontrun{
