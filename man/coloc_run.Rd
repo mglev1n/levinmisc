@@ -10,6 +10,8 @@ coloc_run(
   variant_col = rsid,
   beta_col = beta,
   se_col = se,
+  samplesize_col = samplesize,
+  maf_col = maf,
   type_col = type,
   case_prop_col = case_prop,
   p1 = 1e-04,
@@ -27,7 +29,11 @@ coloc_run(
 
 \item{beta_col}{Column containing effect estimates}
 
-\item{se_col}{Column containing standard errors of the effect estimates (used to estimate var(beta))}
+\item{se_col}{Column containing standard errors}
+
+\item{samplesize_col}{Column containing sample sizes}
+
+\item{maf_col}{Column containing minor allele frequencies}
 
 \item{type_col}{Column containing the type of each trait ("quant" for quantitative traits, "cc" for binary traits)}
 

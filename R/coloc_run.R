@@ -8,7 +8,9 @@
 #' @param trait_col Column containing trait names
 #' @param variant_col Column containing unique variant identifiers (Eg. rsids, chr:pos)
 #' @param beta_col Column containing effect estimates
-#' @param se_col Column containing standard errors of the effect estimates (used to estimate var(beta))
+#' @param se_col Column containing standard errors
+#' @param samplesize_col Column containing sample sizes
+#' @param maf_col Column containing minor allele frequencies
 #' @param type_col Column containing the type of each trait ("quant" for quantitative traits, "cc" for binary traits)
 #' @param case_prop_col Column containing the proportion of cases for case control studies; this column is ignored for quantitative traits
 #' @param p1 Prior probability a SNP is associated with trait 1, default 1e-4
@@ -28,10 +30,10 @@
 #' \dontrun{
 #' coloc_run(locus_df)
 #' }
-coloc_run <- function(df, trait_col = trait, variant_col = rsid, beta_col = beta, se_col = se, type_col = type, case_prop_col = case_prop, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, ...) {
+coloc_run <- function(df, trait_col = trait, variant_col = rsid, beta_col = beta, se_col = se, samplesize_col = samplesize, maf_col = maf, type_col = type, case_prop_col = case_prop, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, ...) {
   
 df <- df %>% 
-    select(trait = {{trait_col}}, maf = {{maf_col}}, type = {{type_col}}, variant_id = {{variant_col}}, beta = {{beta_col}}, se = {{se_col}}) %>%
+    select(trait = {{trait_col}}, maf = {{maf_col}}, type = {{type_col}}, variant_id = {{variant_col}}, beta = {{beta_col}}, se = {{se_col}}, samplesize = {{samplesize_col}}, case_prop = {{case_prop_col}}) %>%
     add_count(variant_id) %>%
     filter(n == 2)
   
