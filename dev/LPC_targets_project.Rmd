@@ -239,6 +239,10 @@ By default, `populate_targets_proj()` creates a `targets` pipeline that uses the
     
 ```{r function-use_crew_lsf}
 #' Use Crew LSF
+#' 
+#' @description
+#' `r lifecycle::badge("experimental")`
+#' This function returns a template for using `crew.cluster` in a targets project, enabling the parallel execution of a targets workflow.
 #'
 #' @return string
 #'

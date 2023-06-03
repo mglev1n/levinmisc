@@ -63,7 +63,7 @@ coloc_run(locus_df)
 }
 }
 \seealso{
-Other {colocalization}:
+Other {colocalization}: 
 \code{\link{hyprcoloc_df}()}
 }
 \concept{genomics}

@@ -26,6 +26,7 @@ Imports:
     here,
     hyprcoloc (>= 1.0),
     janitor,
+    lifecycle,
     magrittr,
     plyranges,
     processx,

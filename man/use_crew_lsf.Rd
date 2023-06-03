@@ -10,7 +10,8 @@ use_crew_lsf()
 string
 }
 \description{
-Use Crew LSF
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+This function returns a template for using \code{crew.cluster} in a targets project, enabling the parallel execution of a targets workflow.
 }
 \examples{
 \dontrun{
