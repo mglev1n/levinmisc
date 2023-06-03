@@ -41,6 +41,8 @@ reference:
 - subtitle: Heritability
   desc: >
     Functions that are useful for estimating heritability.
+    Several tools for performing heritability estimation using GWAS summary statistics have been developed, including LDSC and LDAK.
+    An R implementation of LDSC can be found at: <https://mglev1n.github.io/ldscr/>.
   contents:
   - has_concept("heritability")
 
