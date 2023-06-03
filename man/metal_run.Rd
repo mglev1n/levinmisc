@@ -12,7 +12,7 @@ metal_run(config_file, metal_path)
 \item{metal_path}{(path) Path to the METAL binary}
 }
 \value{
-Path to .gzipped meta-analysis summary statistics
+Path to gzip-formatted text file containing meta-analysis summary statistics
 }
 \description{
 This function is a wrapper for METAL, a tool for performing meta-analysis of GWAS summary statistics \url{https://github.com/statgen/METAL}. Details of the arguments to METAL are described in the METAL documentation: \url{https://genome.sph.umich.edu/wiki/METAL_Documentation}.

@@ -11,6 +11,7 @@ BugReports: https://github.com/mglev1n/levinmisc/issues
 Imports: 
     BSgenome,
     cli,
+    coloc (>= 5.2.0),
     crew,
     crew.cluster,
     dplyr,

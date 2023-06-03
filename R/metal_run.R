@@ -7,7 +7,7 @@
 #' @param config_file (path) Path to a METAL configuration file (this can be generated using [levinmisc::metal_config()])
 #' @param metal_path (path) Path to the METAL binary
 #'
-#' @return Path to .gzipped meta-analysis summary statistics
+#' @return Path to gzip-formatted text file containing meta-analysis summary statistics
 #' @concept genomics
 #' @family GWAS meta-analysis
 #' @seealso Create a METAL configuration file: [levinmisc::metal_config()]
