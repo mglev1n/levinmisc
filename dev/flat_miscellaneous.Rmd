@@ -25,6 +25,12 @@ This function is a wrapper around the `DT::datatable` function, which renders a 
 #' This function is a wrapper around the `DT::datatable` function, containing useful defaults.
 #'
 #' @param df Dataframe to render
+#' @param extensions Extensions parameter passed to `DT::datatable`
+#' @param class Class parameters passed to `DT::datatable`
+#' @param rownames (logical) Include rownames in output
+#' @param options List of options passed to `DT::datatable`
+#' @param height Height of output
+#' @param ... Additional arguments passed to `DT::datatable`
 #'
 #' @return An HTML widget
 #'
@@ -32,21 +38,26 @@ This function is a wrapper around the `DT::datatable` function, which renders a 
 #'
 #' @concept miscellaneous
 
-
-render_datatable <- function(df) {
+render_datatable <- function(df,
+                             extensions = c("Buttons"),
+                             class = c("compact", "stripe", "hover", "row-border"),
+                             rownames = FALSE,
+                             options = list(
+                               dom = "Bfrtip",
+                               buttons = c("copy", "csv"),
+                               scrollX = TRUE,
+                               scrollY = TRUE
+                             ),
+                             height = 400,
+                             ...) {
   DT::datatable(
     df,
-    extensions = c("Buttons"),
-    class = c("compact", "stripe", "hover", "row-border"),
-    rownames = FALSE,
-    # fillContainer = TRUE,
-    options = list(
-      dom = "Bfrtip",
-      buttons = c("copy", "csv"),
-      scrollX = TRUE,
-      scrollY = TRUE
-    ),
-    height = 400
+    extensions = extensions,
+    class = class,
+    rownames = rownames,
+    options = options,
+    height = height,
+    ...
   )
 }
 ```

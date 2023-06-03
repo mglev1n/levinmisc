@@ -4,10 +4,31 @@
 \alias{render_datatable}
 \title{Render DataTable to HTML}
 \usage{
-render_datatable(df)
+render_datatable(
+  df,
+  extensions = c("Buttons"),
+  class = c("compact", "stripe", "hover", "row-border"),
+  rownames = FALSE,
+  options = list(dom = "Bfrtip", buttons = c("copy", "csv"), scrollX = TRUE, scrollY =
+    TRUE),
+  height = 400,
+  ...
+)
 }
 \arguments{
 \item{df}{Dataframe to render}
+
+\item{extensions}{Extensions parameter passed to \code{DT::datatable}}
+
+\item{class}{Class parameters passed to \code{DT::datatable}}
+
+\item{rownames}{(logical) Include rownames in output}
+
+\item{options}{List of options passed to \code{DT::datatable}}
+
+\item{height}{Height of output}
+
+\item{...}{Additional arguments passed to \code{DT::datatable}}
 }
 \value{
 An HTML widget
