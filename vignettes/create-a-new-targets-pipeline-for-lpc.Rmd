@@ -131,7 +131,9 @@ By default, `populate_targets_proj()` creates a `targets` pipeline that uses the
   
 
 ```{r example-use_crew_lsf}
-use_crew_lsf()
+#' \dontrun{
+#' use_crew_lsf()
+#' }
 ```
 
   
