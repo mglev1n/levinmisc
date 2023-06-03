@@ -69,8 +69,11 @@ Path to METAL configuration file
 This function can be used to generate a configuration for METAL, a tool for performing meta-analysis of GWAS summary statistics \url{https://github.com/statgen/METAL}. The file created by this function can be used to run a meta-analysis. Details of the arguments to METAL are described in the METAL documentation: \url{https://genome.sph.umich.edu/wiki/METAL_Documentation}.
 }
 \seealso{
-Other {metal}: 
-\code{\link{metal_run}()}
+Run GWAS meta-analysis using METAL: \code{\link[=metal_run]{metal_run()}}
+
+Other GWAS meta-analysis: 
+\code{\link{metal_run}()},
+\code{\link{mr_mega}()}
 }
+\concept{GWAS meta-analysis}
 \concept{genomics}
-\concept{{metal}}

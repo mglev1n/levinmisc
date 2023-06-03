@@ -25,7 +25,8 @@
 #'
 #' @return Path to METAL configuration file
 #' @concept genomics
-#' @family {metal}
+#' @family GWAS meta-analysis
+#' @seealso Run GWAS meta-analysis using METAL: [levinmisc::metal_run()]
 #' @export
 
 #' @examples

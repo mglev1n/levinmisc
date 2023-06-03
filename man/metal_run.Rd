@@ -23,8 +23,11 @@ metal_run(config_file = "config.txt", metal_path = "/path/to/metal_binary")
 }
 }
 \seealso{
-Other {metal}: 
-\code{\link{metal_config}()}
+Create a METAL configuration file: \code{\link[=metal_config]{metal_config()}}
+
+Other GWAS meta-analysis: 
+\code{\link{metal_config}()},
+\code{\link{mr_mega}()}
 }
+\concept{GWAS meta-analysis}
 \concept{genomics}
-\concept{{metal}}

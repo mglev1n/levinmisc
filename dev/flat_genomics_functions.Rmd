@@ -340,7 +340,8 @@ METAL (<https://github.com/statgen/METAL>) is a common command-line tool for per
 #'
 #' @return Path to METAL configuration file
 #' @concept genomics
-#' @family {metal}
+#' @family GWAS meta-analysis
+#' @seealso Run GWAS meta-analysis using METAL: [levinmisc::metal_run()]
 #' @export
 
 metal_config <- function(config_name, output_dir, study_files, SCHEME = "STDERR", AVERAGEFREQ = "ON", MINMAXFREQ = "OFF", TRACKPOSITIONS = "ON", MARKERLABEL = "MARKER", CHROMOSOMELABEL = "CHROM", POSITIONLABEL = "POS", EFFECT_ALLELE = "EFFECT_ALLELE", OTHER_ALLELE = "OTHER_ALLELE", EFFECTLABEL = "BETA", STDERR = "SE", FREQLABEL = "EAF", NCASE = "N_CASE", NCONTROL = "N_CONTROL", SAMPLESIZE = "N") {
@@ -411,9 +412,10 @@ test_that("metal_config works", {
 #' @param config_file (path) Path to a METAL configuration file (this can be generated using [levinmisc::metal_config()])
 #' @param metal_path (path) Path to the METAL binary
 #'
-#' @return Path to .gzipped meta-analysis summary statistics
+#' @return Path to gzip-formatted text file containing meta-analysis summary statistics
 #' @concept genomics
-#' @family {metal}
+#' @family GWAS meta-analysis
+#' @seealso Create a METAL configuration file: [levinmisc::metal_config()]
 #' @export
 
 metal_run <- function(config_file, metal_path) {
@@ -442,6 +444,90 @@ test_that("metal_run works", {
   expect_true(inherits(metal_run, "function")) 
 })
 ```
+
+## Run MR-MEGA
+    
+```{r function-mr_mega}
+#' Perform multi-ancestry GWAS meta-analysis using MR-MEGA
+#' 
+#' This function is a wrapper around MR-MEGA, which uses meta-regression to combine GWAS summart statistics while accounting for study/population-specific components of genetic variation. The method was described in Magi et al. (Human Molecular Genetics 2017; <https://doi.org/10.1093/hmg/ddx280>), and the package can be obtained from the Estonian Genome Centre (<https://genomics.ut.ee/en/tools>).
+#' 
+#' @param sumstats_files List of files containing GWAS summary statistics. These files should all contain the same column header.
+#' @param mr_mega_bin Path to MR-MEGA binary
+#' @param marker_col Column containing unique markers for each variant
+#' @param chr_col Column containing the chromosome
+#' @param pos_col Column containing the position
+#' @param effect_allele_col Column containing the effect allele
+#' @param other_allele_col Column containing the non-effect allele
+#' @param eaf_col Column containing effect allele frequencies
+#' @param beta_col Column containing effect estimates
+#' @param se_col Column containing standard errors
+#' @param p_value_col Column containing p-value
+#' @param samplesize_col Column containing sample size
+#' @param n_pcs Number of genetic principal components to include in the meta-regression.
+#'
+#' @return A data.frame containing the GWAS summary statistics from the meta-regression
+#' @concept genomics
+#' @family GWAS meta-analysis
+#' @export
+
+mr_mega <- function(sumstats_files, mr_mega_bin, marker_col = MARKER, chr_col = CHROM, pos_col = POS, effect_allele_col = EFFECT_ALLELE, other_allele_col = OTHER_ALLELE, eaf_col = EAF, beta_col = BETA, se_col = SE, p_value_col = P, samplesize_col = N, n_pcs = 3) {
+  # set shell for calling MR-MEGA
+  shell <- ifelse(Sys.info()["sysname"] == "Windows", "cmd", "sh")
+
+  # write sumstats to temporary .txt files and return list of locations
+  cli::cli_alert_info("Writing input files")
+  mrmega_sumstats <- map(sumstats_files, function(sumstats_file) {
+    file <- fs::file_temp()
+    study <- basename(sumstats_file)
+    sumstats_file %>%
+      vroom::vroom() %>%
+      select(MARKERNAME = {{ marker_col }}, EA = {{ effect_allele_col }}, NEA = {{ other_allele_col }}, BETA = {{ beta_col }}, SE = {{ se_col }}, EAF = {{ eaf_col }}, N = {{ samplesize_col }}, CHROMOSOME = {{ chr_col }}, POSITION = {{ pos_col }}) %>%
+      vroom::vroom_write(file)
+
+    return(fs::path_abs(file))
+  })
+
+  # write mrmega.in file with information about temporary files
+  cli::cli_alert_info("Writing MR-MEGA script")
+  mrmega_infile <- fs::file_temp()
+  mrmega_sumstats %>%
+    glue::glue_collapse(sep = "\n") %>%
+    readr::write_lines(mrmega_infile)
+
+  # run MR-MEGA
+  cli::cli_alert_info("Running MR-MEGA")
+  mrmega_outfile <- fs::file_temp()
+
+  # pcs <- length(sumstats_files) - 3
+
+  processx::run(mr_mega_bin,
+    c("-i", mrmega_infile, "--qt", "--pc", n_pcs, "-o", mrmega_outfile),
+    echo_cmd = TRUE,
+    echo = TRUE
+  )
+
+  # read results
+  cli::cli_alert_info("Reading MR-MEGA results")
+  mrmega_res <- vroom(paste0(mrmega_outfile, ".result")) %>%
+    janitor::clean_names()
+
+  return(mrmega_res)
+}
+```
+  
+```{r example-mr_mega}
+#' \dontrun{
+#' mr_mega(sumstats_files = list("/path/to/sumstats_1.txt.gz", "/path/to/sumstats_2.txt.gz), mr_mega_bin = "/path/to/MR-MEGA")
+#' }
+```
+  
+```{r tests-mr_mega}
+test_that("mr_mega works", {
+  expect_true(inherits(mr_mega, "function")) 
+})
+```
+  
 
 ---  
   

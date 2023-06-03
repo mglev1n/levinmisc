@@ -24,6 +24,7 @@ Imports:
     glue,
     here,
     hyprcoloc (>= 1.0),
+    janitor,
     magrittr,
     plyranges,
     processx,

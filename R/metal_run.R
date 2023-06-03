@@ -9,7 +9,8 @@
 #'
 #' @return Path to .gzipped meta-analysis summary statistics
 #' @concept genomics
-#' @family {metal}
+#' @family GWAS meta-analysis
+#' @seealso Create a METAL configuration file: [levinmisc::metal_config()]
 #' @export
 
 #' @examples
