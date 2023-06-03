@@ -71,7 +71,7 @@ s_predixcan(df, data = "MetaXcan/data", metaxcan = "MetaXcan/software", output =
 }
 }
 \seealso{
-Other TWAS:
+Other TWAS: 
 \code{\link{s_multixcan}()}
 }
 \concept{TWAS}

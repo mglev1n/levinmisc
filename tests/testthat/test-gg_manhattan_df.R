@@ -8,11 +8,11 @@ test_that("gg_manhattan_df returns a ggplot object", {
   locus_df <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
-    mutate(p_value = runif(1, min = 1/1e5, max = 0.99)) %>%
+    mutate(p_value = runif(1, min = 1/1e100, max = 0.001)) %>%
     mutate(label = "Test")
 
   plot_res <- locus_df %>%
-    gg_manhattan_df(chr_col = chromosome, pos_col = position, pval_col = p_value)
+    gg_manhattan_df(chr_col = chromosome, pos_col = position, pval_col = p_value, speed = "ultrafast")
   expect_s3_class(plot_res, "ggplot")
 
   plot_res <- locus_df %>%

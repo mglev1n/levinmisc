@@ -31,6 +31,7 @@ The `gg_manhattan_df` function is used to create Manhattan plots. This function 
 #' @param chr_col Name of chromosome column
 #' @param pos_col Name of position column
 #' @param pval_col Name of p-value column
+#' @param pval_threshold Threshold for plotting p-values (p-values greater than this value are excluded from the plot; default = `0.001`)
 #' @param annotation_df Optional dataframe containing chromosome, position, and annotation labels
 #' @param label_col Name of column in `annotation_df` containing annotations to include on the plot
 #' @param build (string) One of "hg18", "hg19", or "hg38" (passed to `ggfastman`)
@@ -45,11 +46,11 @@ The `gg_manhattan_df` function is used to create Manhattan plots. This function 
 #' @concept genomics
 #' @family {plotting}
 
-gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromosome, pos_col = position, pval_col = p_value, label_col = gene, build = "hg19", color1 = "#045ea7", color2 = "#82afd3", speed = "slow", ...) {
+gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromosome, pos_col = position, pval_col = p_value, pval_threshold = 0.001, label_col = gene, build = "hg19", color1 = "#045ea7", color2 = "#82afd3", speed = "slow", ...) {
   if (!is.null((annotation_df))) {
     df <- sumstats_df %>%
       select(chr = {{ chr_col }}, pos = {{ pos_col }}, pvalue = {{ pval_col }}) %>%
-      filter(pvalue < 0.001) %>%
+      filter(pvalue < pval_threshold) %>%
       collect() %>%
       as_tibble() %>%
       mutate(across(.cols = everything(), as.numeric)) %>%
@@ -62,7 +63,7 @@ gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromos
   } else {
     df <- sumstats_df %>%
       select(chr = {{ chr_col }}, pos = {{ pos_col }}, pvalue = {{ pval_col }}) %>%
-      filter(pvalue < 0.001) %>%
+      filter(pvalue < pval_threshold) %>%
       collect() %>%
       as_tibble() %>%
       mutate(across(.cols = everything(), as.numeric)) %>%
@@ -143,11 +144,11 @@ test_that("gg_manhattan_df returns a ggplot object", {
   locus_df <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
-    mutate(p_value = runif(1, min = 1/1e5, max = 0.99)) %>%
+    mutate(p_value = runif(1, min = 1/1e100, max = 0.001)) %>%
     mutate(label = "Test")
 
   plot_res <- locus_df %>%
-    gg_manhattan_df(chr_col = chromosome, pos_col = position, pval_col = p_value)
+    gg_manhattan_df(chr_col = chromosome, pos_col = position, pval_col = p_value, speed = "ultrafast")
   expect_s3_class(plot_res, "ggplot")
 
   plot_res <- locus_df %>%

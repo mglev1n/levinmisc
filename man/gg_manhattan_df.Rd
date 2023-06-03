@@ -10,6 +10,7 @@ gg_manhattan_df(
   chr_col = chromosome,
   pos_col = position,
   pval_col = p_value,
+  pval_threshold = 0.001,
   label_col = gene,
   build = "hg19",
   color1 = "#045ea7",
@@ -28,6 +29,8 @@ gg_manhattan_df(
 \item{pos_col}{Name of position column}
 
 \item{pval_col}{Name of p-value column}
+
+\item{pval_threshold}{Threshold for plotting p-values (p-values greater than this value are excluded from the plot; default = \code{0.001})}
 
 \item{label_col}{Name of column in \code{annotation_df} containing annotations to include on the plot}
 

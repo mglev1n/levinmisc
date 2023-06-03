@@ -8,6 +8,7 @@
 #' @param chr_col Name of chromosome column
 #' @param pos_col Name of position column
 #' @param pval_col Name of p-value column
+#' @param pval_threshold Threshold for plotting p-values (p-values greater than this value are excluded from the plot; default = `0.001`)
 #' @param annotation_df Optional dataframe containing chromosome, position, and annotation labels
 #' @param label_col Name of column in `annotation_df` containing annotations to include on the plot
 #' @param build (string) One of "hg18", "hg19", or "hg38" (passed to `ggfastman`)
@@ -26,11 +27,11 @@
 #' \dontrun{
 #' gg_manhattan_df(sumstats_df)
 #' }
-gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromosome, pos_col = position, pval_col = p_value, label_col = gene, build = "hg19", color1 = "#045ea7", color2 = "#82afd3", speed = "slow", ...) {
+gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromosome, pos_col = position, pval_col = p_value, pval_threshold = 0.001, label_col = gene, build = "hg19", color1 = "#045ea7", color2 = "#82afd3", speed = "slow", ...) {
   if (!is.null((annotation_df))) {
     df <- sumstats_df %>%
       select(chr = {{ chr_col }}, pos = {{ pos_col }}, pvalue = {{ pval_col }}) %>%
-      filter(pvalue < 0.001) %>%
+      filter(pvalue < pval_threshold) %>%
       collect() %>%
       as_tibble() %>%
       mutate(across(.cols = everything(), as.numeric)) %>%
@@ -43,7 +44,7 @@ gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromos
   } else {
     df <- sumstats_df %>%
       select(chr = {{ chr_col }}, pos = {{ pos_col }}, pvalue = {{ pval_col }}) %>%
-      filter(pvalue < 0.001) %>%
+      filter(pvalue < pval_threshold) %>%
       collect() %>%
       as_tibble() %>%
       mutate(across(.cols = everything(), as.numeric)) %>%
