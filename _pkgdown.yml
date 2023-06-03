@@ -2,18 +2,25 @@ url: https://mglev1n.github.io/levinmisc/
 template:
   bootstrap: 5
 reference:
+
 - title: Targets
   desc: Build a simple {targets} project
   contents:
   - has_concept("targets")
+
 - title: Genomics
   desc: Genomics utility functions and wrappers around other tools/programs/packages to perform GWAS meta-analysis, fine-mapping, colocalization, and more.
+
+- subtitle: Annotation
+  desc: Functions that are useful for annotating GWAS summary statistics
   contents:
-  - has_concept("genomics")
+  - has_concept("annotation")
+
 - subtitle: GWAS
   desc: Functions that are useful for performing GWAS/GWAS meta-analysis
   contents:
   - has_concept("GWAS meta-analysis")
+
 - subtitle: Colocalization
   desc: >
     Functions that are useful for performing colocalization.
@@ -22,6 +29,7 @@ reference:
     The methods use either proportional or enumeration approaches, which make different assumptions and test different hypotheses.
   contents:
   - has_concept("colocalization")
+
 - subtitle: Finemapping
   desc: >
     Functions that are useful for finemapping.
@@ -29,13 +37,22 @@ reference:
     Like colocalization, finemapping methods make different assumptions about the configuration of causal variant(s) at the locus.
   contents:
   - has_concept("finemapping")
-- subtitle: TWAS/gene-based testing
+
+- subtitle: Heritability
+  desc: >
+    Functions that are useful for estimating heritability.
+  contents:
+  - has_concept("heritability")
+
+- subtitle: TWAS/Gene-based testing
   desc: >
     Functions that are useful for identifying trait-associated genes from GWAS.
   contents:
   - has_concept("finemapping")
   - has_concept("Gene-based testing")
+
 - title: Miscellaneous
   desc: Miscellaneous functions useful for manipulating/presenting data.
   contents:
   - has_concept("miscellaneous")
+  - has_concept("plotting")
