@@ -56,3 +56,4 @@ reference:
   contents:
   - has_concept("miscellaneous")
   - has_concept("plotting")
+  - lacks_concepts(c("genomics", "targets"))
