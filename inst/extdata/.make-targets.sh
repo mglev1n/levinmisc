@@ -32,7 +32,7 @@ if [[ -z "$num_cpus" ]]; then
 fi
 
 export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.0
-export SINGULARITY_BIND="/project/PMBB/:/project/PMBB/, /scratch/:${HOME}/scratch/"
+export SINGULARITY_BIND="/project/PMBB/:/project/PMBB/, /scratch/:${HOME}/scratch/, /appl/:/appl/, /lsf/:/lsf/"
 export R_WORK_DIR=$(pwd)
 
 module load singularity
