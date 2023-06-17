@@ -41,9 +41,8 @@ controller_lsf_normal <- crew.cluster::crew_controller_lsf(
   script_lines = c(
     \"#BSUB-q voltron_normal\",
     \"export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0\",
-    \"export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
-    \"module load singularity\",
-    glue::glue(\"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\\\\")
+    \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
+    \"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\\\\"
   ),
   verbose = TRUE
 )
@@ -58,9 +57,8 @@ controller_lsf_long <- crew.cluster::crew_controller_lsf(
   script_lines = c(
     \"#BSUB-q voltron_long\",
     \"export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0\",
-    \"export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
-    \"module load singularity\",
-    glue::glue(\"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\\\\")
+    \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
+    \"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\\\\"
   ),
   verbose = TRUE
 )
@@ -75,9 +73,8 @@ controller_lsf_highmem <- crew.cluster::crew_controller_lsf(
   script_lines = c(
     \"#BSUB-q voltron_normal\",
     \"export R_LIBS_USER=$HOME/R/rocker-rstudio/4.0\",
-    \"export SINGULARITY_BIND='/project/:/project/, /scratch/:/scratch/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
-    \"module load singularity\",
-    glue::glue(\"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\\\\")
+    \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
+    \"singularity exec --pwd {getwd()} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif \\\\\"
   ),
   verbose = TRUE
 )

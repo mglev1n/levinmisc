@@ -35,7 +35,7 @@ export R_LIBS_USER=${HOME}/R/rocker-rstudio/4.0
 export SINGULARITY_BIND="/project/PMBB/:/project/PMBB/, /scratch/:${HOME}/scratch/"
 export R_WORK_DIR=$(pwd)
 
-module load singularity/3.8.3
+module load singularity
 
 ulimit -v $(( 1024 * 32000))
 
@@ -46,5 +46,5 @@ echo $num_cpus
 if $slack; then
   singularity exec --bind $(pwd)/ /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif R --no-save --no-restore -e "slackr::slackr_setup(); slackr::slackr_bot('Targets Pipeline Started'); targets::tar_make_clustermq(workers = $num_cpus); slackr::slackr_bot('Targets Pipeline Complete')"
 else
- singularity exec --bind $(pwd)/ /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif R --no-save --no-restore -e "targets::tar_make_clustermq(workers = $num_cpus)"
+  singularity exec --bind $(pwd)/ /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif R --no-save --no-restore -e "targets::tar_make_clustermq(workers = $num_cpus)"
 fi

@@ -37,7 +37,7 @@ This function wraps LDAK, a command-line tool for estimating heritability. The t
 }
 \examples{
 \dontrun{
-ldak_h2(sumstats_file = "/path/to/munged_sumstats", ldak_bin = "/path/to/ldak", ldak_tagfile = "/pat/to/tagfile",  hm3_file = "/path/to/hm3")
+ldak_h2(sumstats_file = "/path/to/munged_sumstats", ldak_bin = "/path/to/ldak", ldak_tagfile = "/path/to/tagfile",  hm3_file = "/path/to/hm3")
 }
 }
 \concept{genomics}
