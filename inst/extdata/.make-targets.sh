@@ -39,9 +39,7 @@ module load singularity
 
 ulimit -v $(( 1024 * 32000))
 
-echo $(pwd)
-echo $slack
-echo $num_cpus
+export SINGULARITYENV_APPEND_PATH=${PATH}
 
 if $slack; then
   singularity exec --bind $(pwd)/ /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif R --no-save --no-restore -e "slackr::slackr_setup(); slackr::slackr_bot('Targets Pipeline Started'); targets::tar_make_clustermq(workers = $num_cpus); slackr::slackr_bot('Targets Pipeline Complete')"
