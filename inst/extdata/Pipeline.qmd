@@ -46,6 +46,8 @@ tar_option_set(
   packages = c("tidyverse", "targets", "tarchetypes", "arrow", "vroom", "data.table", "qs"),
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(memory = 16000,
+                                                        cores = 1,
+                                                        queue = "voltron_normal",
                                                         log_file = "build_logs/clustermq_%J.out"))),
   storage = "worker",
   retrieval = "worker"
