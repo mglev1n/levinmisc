@@ -16,6 +16,9 @@ export MKL_NUM_THREADS={{ cores | 1 }}
 export NUMEXPR_NUM_THREADS={{ cores | 1 }}
 export OMP_NUM_THREADS={{ cores | 1 }}
 
+module load singularity
+export SINGULARITYENV_APPEND_PATH=${PATH}
+
 ulimit -v $(( 1024 * {{ memory | 16384 }} ))
 
 singularity exec --pwd {{ R_WORK_DIR | ~/ }} /project/voltron/rstudio/bioconductor-tidyverse_singularity-latest.sif R --no-save --no-restore -e 'clustermq:::worker("{{ master }}")'
