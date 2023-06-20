@@ -70,6 +70,6 @@ df <- df %>%
                          # {if(unique(trait2$type) == "cc") {s = trait1$case_prop[2]}},
                           MAF = trait2$maf)
   
-  suppressWarnings(coloc_res <- coloc::coloc.abf(dataset1 = trait1_dataset, dataset2 = trait2_dataset, p1, p2, p12, ...))
+  suppressWarnings(coloc_res <- coloc::coloc.abf(dataset1 = trait1_dataset, dataset2 = trait2_dataset, p1 = p1, p2 = p2, p12 = p12, ...))
   return(coloc_res)
 }
