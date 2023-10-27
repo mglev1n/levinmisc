@@ -322,7 +322,7 @@ METAL (<https://github.com/statgen/METAL>) is a common command-line tool for per
 #' 
 #' @param config_name (string) Name of the configuration
 #' @param output_dir (path) Path to output directory where GWAS meta-analysis data should be stored
-#' @param study_files (list) List of paths to summary statistics that should be included in the GWAS
+#' @param study_files (vector) Character vector of paths to summary statistics that should be included in the GWAS
 #' @param SCHEME (string) Either "SAMPLESIZE" or "STDERR" (default), corresponding to the METAL analysis scheme
 #' @param AVERAGEFREQ (string) Either "ON" (default) or "OFF", allowing METAL to report the mean effect allele frequency across files
 #' @param MINMAXFREQ (string) Either "ON" (default) or "OFF", allowing METAL to report the min/max effect allele frequency across files
@@ -393,7 +393,7 @@ metal_config <- function(config_name, output_dir, study_files, SCHEME = "STDERR"
   
 ```{r example-metal_config}
 #' \dontrun{
-#' metal_config(config_name = "name-of-analysis", output_dir = "/path/to/output/", study_files = list("/path/to/sumstats_1.txt", "/path/to/sumstats_2.txt))
+#' metal_config(config_name = "name-of-analysis", output_dir = "/path/to/output/", study_files = c("/path/to/sumstats_1.txt", "/path/to/sumstats_2.txt))
 #' }
 ```
   
@@ -856,7 +856,7 @@ magmar <- function(sumstats_df, pval_col = p_value, snp_col = rsid, samplesize_c
 ```{r example-magmar}
 #' \dontrun{
 #' magmar(sumstats_df, magma_bin = "/path/to/magma", bfile = "/path/to/bfiles", gene_file = "/path/to/genes", out_file = "magma_output")
-#' 
+#' }
 ```
   
 ```{r tests-magmar}

@@ -38,6 +38,11 @@ Path to MAGMA results file
 \description{
 This function provides a wrapper to MAGMA, which performs gene-based testing from GWAS summary statistics. Details of MAGMA described in de Leeuw et al. (PLoS Cumputational Biology 2015; \url{https://doi.org/10.1371/journal.pcbi.1004219}). The MAGMA binary and reference files are available from the Complex Trait Genetics lab (\url{https://ctg.cncr.nl/software/magma}).
 }
+\examples{
+\dontrun{
+magmar(sumstats_df, magma_bin = "/path/to/magma", bfile = "/path/to/bfiles", gene_file = "/path/to/genes", out_file = "magma_output")
+}
+}
 \seealso{
 Other Gene-based testing: 
 \code{\link{s_multixcan}()},

@@ -30,7 +30,7 @@ metal_config(
 
 \item{output_dir}{(path) Path to output directory where GWAS meta-analysis data should be stored}
 
-\item{study_files}{(list) List of paths to summary statistics that should be included in the GWAS}
+\item{study_files}{(vector) Character vector of paths to summary statistics that should be included in the GWAS}
 
 \item{SCHEME}{(string) Either "SAMPLESIZE" or "STDERR" (default), corresponding to the METAL analysis scheme}
 
