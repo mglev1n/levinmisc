@@ -50,6 +50,16 @@ flat_miscellaneous.Rmd:
     check: false
     document: true
     overwrite: 'yes'
+keep:
+  path: keep
+  state: active
+  R:
+  - R/levinmisc-package.R
+  - R/utils-pipe.R
+  tests:
+  - tests/testthat/test-description-of-your-package-submit-targets-sh.R
+  - tests/testthat/test-populate_targets_proj.R
+  vignettes: []
 LPC_targets_project.Rmd:
   path: dev/LPC_targets_project.Rmd
   state: active

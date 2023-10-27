@@ -41,6 +41,7 @@ controller_lsf_normal <- crew.cluster::crew_controller_lsf(
   script_lines = c(
     \"#BSUB-q voltron_normal\",
     \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
+    \"export OMP_NUM_THREADS=1\",
     \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
     \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
   ),
@@ -57,6 +58,7 @@ controller_lsf_long <- crew.cluster::crew_controller_lsf(
   script_lines = c(
     \"#BSUB-q voltron_long\",
     \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
+    \"export OMP_NUM_THREADS=1\",
     \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
     \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
   ),
@@ -73,6 +75,7 @@ controller_lsf_highmem <- crew.cluster::crew_controller_lsf(
   script_lines = c(
     \"#BSUB-q voltron_normal\",
     \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
+    \"export OMP_NUM_THREADS=1\",
     \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
     \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
   ),
@@ -90,6 +93,7 @@ controller_lsf_multicore <- crew.cluster::crew_controller_lsf(
   script_lines = c(
     \"#BSUB-q voltron_normal\",
     \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
+    \"export OMP_NUM_THREADS=16\",
     \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
     \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
   ),
