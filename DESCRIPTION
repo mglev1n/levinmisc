@@ -1,6 +1,6 @@
 Package: levinmisc
 Title: Miscellaneous Convenience Functions
-Version: 0.4.1
+Version: 0.5.0
 Authors@R: 
     person("Michael", "Levin", , "mglev1n@gmail.com", role = c("aut", "cre"))
 Description: A set of miscellaneous convenience functions.
