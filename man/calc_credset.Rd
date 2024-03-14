@@ -37,5 +37,9 @@ Description
 calc_credset(gwas_df)
 }
 }
+\seealso{
+Other {finemapping}: 
+\code{\link{run_carma}()}
+}
 \concept{genomics}
 \concept{{finemapping}}

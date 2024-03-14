@@ -530,6 +530,110 @@ test_that("mr_mega works", {
 ```
   
 
+---
+
+# Linkage Disequilibirium
+
+## plink
+
+The `plink_extract_ld` function is a wrapper around the `plink` v1.9 binary, which takes a list of variants and uses a reference panel to calculate the linkage disequilibrium among variants.
+
+    
+```{r function-plink_extract_ld}
+#' Extract LD matrix using plink 1.9
+#'
+#' @param df Dataframe containing variants to be included in the LD matrix; must contain SNP identifier and effect allele
+#' @param snp_col Name of column containing SNP identifiers
+#' @param effect_allele_col Name of column containing effect alleles (used when considering signed measures of LD like `r`)
+#' @param metric LD metric - either `r` (which will return a signed correlation matrix) or `r2` (which will return squared correlations)
+#' @param bfile Path to plink `bfile` that will be used to extract LD
+#' @param threads Number of threads (default = 1)
+#' @param memory Memory limit (default = 16000 MB)
+#' @param plink_bin Path to plink executable
+#'
+#' @return A square matrix containing the pairwise correlations between genetic variants
+#' @export
+#' @concept genomics
+#' @family {linkage}
+#' 
+plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile, threads = 1, memory = 16000, 
+                             plink_bin) {
+
+  snp_id <- df %>% select(SNP = {{snp_col}}) %>% head(1) %>% pull(SNP)
+  
+  snp_file <- fs::file_temp(pattern = snp_id)
+
+  ld_dir <- fs::path_temp(snp_id)
+  
+  fs::dir_create(ld_dir, recurse = TRUE)
+
+  df %>%
+    select(SNP = {{ snp_col }}, snp_ideffect_allele = {{ effect_allele_col }}) %>%
+    write_tsv(snp_file, col_names = FALSE)
+
+  cli::cli_alert_info("Extracting LD")
+  
+  processx::run(plink_bin,
+    args = c(
+      "--threads", threads,
+      "--memory", 16000,
+      "--bfile", bfile,
+      "--extract", snp_file,
+      "--a1-allele", snp_file,
+      "2 1 '#'",
+      paste0("--", metric), "square", "gz",
+      "--out", fs::path(ld_dir, "LD")
+    ),
+    error_on_status = FALSE,
+    echo_cmd = TRUE,
+    echo = TRUE
+  )
+
+  ld_matrix <- fread(fs::path(ld_dir, "LD.ld.gz"), col.names = df %>% pull({{snp_col}})) %>%
+    as.matrix()
+  
+  rownames(ld_matrix) <- df %>% pull({{snp_col}})
+  
+  return(ld_matrix)
+}
+```
+  
+```{r example-plink_extract_ld}
+#' \dontrun{
+#' plink_extract_ld(df, snp_col, effect_allele_col, metric = "r", bfile = "/path/to/reference/panel/", plink_bin = "/path/to/plink1.9")
+#' }
+```
+  
+```{r tests-plink_extract_ld}
+test_that("plink_extract_ld works", {
+  expect_true(inherits(plink_extract_ld, "function")) 
+})
+```
+  
+
+<!-- ```{r function-plink_extract_ld_possibly} -->
+<!-- #' plink_extract_ld_possibly -->
+<!-- #'  -->
+<!-- #' An internal wrapper around plink_extract_ld_possibly to silently return `NULL` on error -->
+<!-- #'  -->
+<!-- #' @return -->
+<!-- #'  -->
+<!-- #' @noRd -->
+<!-- plink_extract_ld_possibly <- purrr::possibly(levinmisc::plink_extract_ld) -->
+<!-- ``` -->
+
+<!-- ```{r example-plink_extract_ld_possibly} -->
+<!-- #' \dontrun{ -->
+<!-- #' plink_extract_ld_possibly() -->
+<!-- #' } -->
+<!-- ``` -->
+
+<!-- ```{r tests-plink_extract_ld_possibly} -->
+<!-- test_that("plink_extract_ld_possibly works", { -->
+<!--   expect_true(inherits(plink_extract_ld_possibly, "function"))  -->
+<!-- }) -->
+<!-- ``` -->
+  
 ---  
   
 # Colocalization
@@ -788,6 +892,80 @@ test_that("calc_credset works", {
   expect_true(inherits(calc_credset, "function")) 
 })
 ```
+
+## CARMA
+
+This function implements the CARMA finemapping approach described in Yang et al. (Nature Genetics 2023; <https://doi.org/10.1038/s41588-023-01392-0>). This method relaxes the single causal variant assumption, identifying independent credible sets at each fine-mapped locus.
+    
+```{r function-run_carma}
+#' Run CARMA
+#' 
+#' This function takes a dataframe containing variants at a locus and performs Bayesian finemapping using CARMA. The function requires a plink-formatted LD reference panel (`bfile`), which will be used to generate a signed LD matrix at the locus.
+#'
+#' @param df Dataframe containing variants at a locus for finemapping
+#' @param snp_col Name of column containing SNP identifiers
+#' @param z_col Name of column containing signed Z-scores (relative to effect allele)
+#' @param effect_allele_col Name of column containing effect alleles
+#' @param bfile Path to plink `bfile` of reference panel that will be used to extract LD
+#' @param threads Number of threads (default = 1)
+#' @param memory Memory limit (default = 16000 MB)
+#' @param plink_bin Path to plink executable
+#'
+#' @return A dataframe containing the input dataframe, and additional columns denoting which credible set (`CS`) each variant belongs to, as well as the posterior inclusion probability (`PIP`), and an `ld_error` column noting whether there were problems generating the LD matrix that limited fine-mapping.
+#' 
+#' @export
+#' @family {finemapping}
+#' @concept genomics
+
+run_carma <- function(df, snp_col, z_col, effect_allele_col, bfile, threads = 1, memory = 16000, plink_bin) {
+  
+  sumstat <- df
+  
+  ld <- df %>%
+    plink_extract_ld(bfile = bfile, snp_col = {{snp_col}}, effect_allele_col = {{effect_allele_col}})
+  
+  if(is.null(ld)) {
+    return(sumstat %>% mutate(ld_error = TRUE))
+  }
+  
+  # if(!is.null(ld$error)) {
+  #   sumstat <- sumstat %>%
+  #     mutate(ld = ld$error)
+  #   return(sumstat)
+  # }
+  
+  cli::cli_alert_info("Running CARMA")
+  z.list<-list()
+  ld.list<-list()
+  lambda.list<-list()
+  z.list[[1]] <- sumstat %>% pull({{z_col}})
+  ld.list[[1]] <- as.matrix(ld)
+  lambda.list[[1]] <- 1
+  CARMA.results <- CARMA::CARMA(z.list, ld.list, lambda.list=lambda.list, outlier.switch = TRUE)
+  
+  sumstat.result <- sumstat %>% mutate(PIP = CARMA.results[[1]]$PIPs, CS = 0)
+  if(length(CARMA.results[[1]]$`Credible set`[[2]])!=0){
+    for(l in 1:length(CARMA.results[[1]]$`Credible set`[[2]])){
+    sumstat.result$CS[CARMA.results[[1]]$`Credible set`[[2]][[l]]]=l
+    }
+  }
+  
+  return(sumstat.result)
+}
+```
+  
+```{r example-run_carma}
+#' \dontrun{
+#' run_carma(locus_df, snp_col = SNP, z_col = z, effect_allele_col = allele1)
+#' }
+```
+  
+```{r tests-run_carma}
+test_that("run_carma works", {
+  expect_true(inherits(run_carma, "function")) 
+})
+```
+  
 
 ---    
   
