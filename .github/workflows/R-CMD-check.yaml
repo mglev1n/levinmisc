@@ -51,7 +51,8 @@ jobs:
         with:
           pak-version: devel
           cache-version: 2
-          extra-packages: any::rcmdcheck, cnfoley/hyprcoloc=?ignore
+          extra-packages: |
+            any::rcmdcheck
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
