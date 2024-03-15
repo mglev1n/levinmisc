@@ -10,7 +10,7 @@ URL: https://github.com/mglev1n/levinmisc,
 BugReports: https://github.com/mglev1n/levinmisc/issues
 Imports: 
     BSgenome,
-    CARMA,
+    CARMA (>= 1.0),
     cli,
     coloc (>= 5.2.0),
     crew,
@@ -50,9 +50,10 @@ Suggests:
     testthat
 VignetteBuilder: 
     knitr
-Remotes: 
+Remotes:  
     jrs95/hyprcoloc,
-    roman-tremmel/ggfastman
+    roman-tremmel/ggfastman,
+    ZikunY/CARMA
 Config/fusen/version: 0.5.2
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
