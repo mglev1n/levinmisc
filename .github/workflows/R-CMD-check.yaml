@@ -41,11 +41,11 @@ jobs:
 
       - name: Install remotes
         run: |
-          Rscript -e "install.packages('remotes', repos='https://ftp.belnet.be/mirror/CRAN')"
+          Rscript -e "install.packages('pak', repos='https://ftp.belnet.be/mirror/CRAN')"
       - name: Install hyprcoloc
         run: |
-          Rscript -e "install.packages('https://cran.r-project.org/src/contrib/Archive/RcppEigen/RcppEigen_0.3.3.9.4.tar.gz', repos = NULL, type = 'source')"
-          Rscript -e "remotes::install_github('jrs95/hyprcoloc')"
+          Rscript -e "pak::pak('Rcpp', 'RcppEigen')"
+          Rscript -e "pak::pak('jrs95/hyprcoloc')"
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
