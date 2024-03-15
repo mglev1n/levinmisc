@@ -50,8 +50,8 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           pak-version: devel
-          cache-version: 1
-          extra-packages: any::rcmdcheck, hyprcoloc=?ignore
+          cache-version: 2
+          extra-packages: any::rcmdcheck, cnfoley/hyprcoloc=?ignore
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
