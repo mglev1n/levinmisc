@@ -46,7 +46,7 @@ jobs:
           use-public-rspm: true
 
       - name: Install gsl
-        if: contains(matrix.os, 'macos')
+        if: matrix.os == 'macos-latest'
         run: brew install gsl
 
       - name: Install remotes
