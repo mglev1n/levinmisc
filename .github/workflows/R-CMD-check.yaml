@@ -39,13 +39,13 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      # - name: Install remotes
-      #   run: |
-      #     Rscript -e "install.packages('pak')"
-      # - name: Install hyprcoloc
-      #   run: |
-      #     Rscript -e "pak::pak('Rcpp', 'RcppEigen')"
-      #     Rscript -e "pak::pak('jrs95/hyprcoloc')"
+      - name: Install remotes
+        run: |
+          Rscript -e "install.packages('remotes')"
+      - name: Install hyprcoloc
+        run: |
+          Rscript -e "remotes::install_version('RcppEigen', version = '0.3.3.9.4', repos = 'http://cran.us.r-project.org')"
+          Rscript -e "remotes::install_github('jrs95/hyprcoloc')"
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
