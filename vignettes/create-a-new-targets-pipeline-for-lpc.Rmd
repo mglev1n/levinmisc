@@ -75,7 +75,7 @@ This should be a reproducible and working example
 #' }
 ```
 
-The `populate_targets_proj()` function creates several files/folders within the project directory. `.make-targets.sh` and `.clustermq_lsf.tmpl` are hidden helper files which are not designed for user interaction, but necessary for submission of jobs to the LSF scheduler. The other files are designed to be edited/used by the user:
+The `populate_targets_proj()` function creates several files/folders within the project directory. `.make-targets.sh` and is a hidden helper file which is not designed for user interaction, but necessary for submission of jobs to the LSF scheduler. The other files are designed to be edited/used by the user:
 
   - `Pipeline.qmd` - Quarto markdown file which can be used to create a Target Markdown document that specifies a `targets` pipeline for your analyses. See: https://books.ropensci.org/targets/literate-programming.html#target-markdown for details. Remember to knit/render this document in order to generate the pipeline.
   
@@ -125,7 +125,7 @@ Here are some unit tests to verify the function works as expected.
 
 ### Use {crew} for parallelization
 
-By default, `populate_targets_proj()` creates a `targets` pipeline that uses the `tar_make_clustermq()` function to execute the pipeline using LPC resources. This function creates a cluster of persistent workers, and therefore is not very flexible in terms of varying the number or resources allocated to complete individual targets. More recently, the `crew` and `crew.cluster` packages have enabled the use of heterogenous workers (<https://books.ropensci.org/targets/crew.html#heterogeneous-workers>), which can be deployed either locally or on HPC resources. The `use_crew_lsf()` function is designed to return a block of code to rapidly enable the use of heterogeneous workers on the Penn LPC. By default, this function creates workers that submit to different queues (eg. `voltron_normal`, `voltron_long`), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory).
+The `crew` and `crew.cluster` packages have enabled the use of heterogenous workers (<https://books.ropensci.org/targets/crew.html#heterogeneous-workers>), that can be used to deploy `targets` pipelines either locally or on HPC resources. The `use_crew_lsf()` function is designed to return a block of code to rapidly enable the use of heterogeneous workers on the Penn LPC. By default, this function creates workers that submit to different queues (eg. `voltron_normal`, `voltron_long`), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory).
     
 
   

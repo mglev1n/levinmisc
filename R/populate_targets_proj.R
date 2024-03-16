@@ -3,7 +3,7 @@
 #' Create a minimal targets template in the current project
 #' 
 #' @description
-#' This function creates a minimal targets template in the current directory. This includes creating a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results. Parallelization of the pipeline is implemented using [targets::tar_make_clustermq()], using pre-filled using parameters specific to the LPC system at Penn.
+#' This function creates a minimal targets template in the current directory. This includes creating a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results. Parallelization of the pipeline is implemented using [targets::tar_make()] and `crew.cluster`, using pre-filled using parameters specific to the LPC system at Penn.
 #'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
 #' @param log_folder (character) directory for LSF logs
@@ -25,7 +25,7 @@ populate_targets_proj <- function(title,
   }
 
   # Check if files already exist
-  if (file.exists(".clustermq_lsf.tmpl") | file.exists("*-Results.qmd") | file.exists("*-Pipeline.qmd")) {
+  if (file.exists("*-Results.qmd") | file.exists("*-Pipeline.qmd")) {
     cli::cli_alert_danger("Files already exist")
     overwrite <- yesno::yesno("Overwrite existing files?")
     if (!overwrite) cli::cli_abort("Exiting")
@@ -35,38 +35,28 @@ populate_targets_proj <- function(title,
   fs::dir_create(log_folder)
   cli::cli_alert_success("Build log folder created at {.file {log_folder}}")
 
-  # Copy clustermq lsf template
-  fs::file_copy(fs::path_package("extdata", ".clustermq_lsf.tmpl", package = "levinmisc"),
-    ".clustermq_lsf.tmpl",
-    overwrite = overwrite
-  )
-  cli::cli_alert_success("Clustermq template created at {.file .clustermq_lsf.tmpl}")
-
-  # Copy batch script for clustermq
-  fs::file_copy(fs::path_package("extdata", ".make-targets.sh", package = "levinmisc"),
-    ".make-targets.sh",
-    overwrite = overwrite
-  )
-  cli::cli_alert_success("Clustermq template created at {.file .make-targets.sh}")
+  # Copy batch script for job submission
+  usethis::use_template(".make-targets.sh",
+                        save_as = ".make-targets.sh",
+                        package = "levinmisc")
+  cli::cli_alert_success("Submission template created at {.file .make-targets.sh}")
 
   # Copy batch script to submit targets job
-  fs::file_copy(fs::path_package("extdata", "submit-targets.sh", package = "levinmisc"),
-    "submit-targets.sh",
-    overwrite = overwrite
-  )
+  usethis::use_template("submit-targets.sh",
+                        save_as = "submit-targets.sh",
+                        package = "levinmisc")
   cli::cli_alert_success("Targets submission script created at {.file submit-targets.sh}")
 
   # Copy targets pipeline template
-  fs::file_copy(fs::path_package("extdata", "Pipeline.qmd", package = "levinmisc"),
-    paste0(title, "-Pipeline.qmd"),
-    overwrite = overwrite
-  )
+  usethis::use_template("Pipeline.qmd",
+                        save_as = paste0(title, "-Pipeline.qmd"),
+                        data = list(global_options = levinmisc::use_crew_lsf()),
+                        package = "levinmisc")
   cli::cli_alert_success("Targets Pipeline template created at {.file {paste0(title, '-Pipeline.qmd')}}")
 
   # Copy targets results template
-  fs::file_copy(fs::path_package("extdata", "Results.qmd", package = "levinmisc"),
-    paste0(title, "-Results.qmd"),
-    overwrite = overwrite
-  )
+  usethis::use_template("Results.qmd",
+                        save_as = paste0(title, "-Results.qmd"),
+                        package = "levinmisc")
   cli::cli_alert_success("Targets Results template created at {.file {paste0(title, '-Results.qmd')}}")
 }

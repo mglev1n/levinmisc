@@ -41,6 +41,7 @@ Imports:
     tibble,
     tidyr,
     tools,
+    usethis,
     vroom,
     withr,
     yesno

@@ -75,7 +75,7 @@ LPC_targets_project.Rmd:
   inflate:
     flat_file: dev/LPC_targets_project.Rmd
     vignette_name: Create a New Targets Pipeline for LPC
-    open_vignette: true
+    open_vignette: false
     check: false
     document: true
     overwrite: ask
