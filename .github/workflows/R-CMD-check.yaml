@@ -39,9 +39,17 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Install remotes
+      - name: Upgrade gcc to compile without error
+        if: runner.os == 'Linux'
+        run: |
+            sudo apt-get install -y g++-12 gcc-12 # probably already installed
+            sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 60
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 60
+
+      - name: Install devtools
         run: |
           Rscript -e "install.packages('devtools')"
+
       - name: Install hyprcoloc
         run: |
           Rscript -e "devtools::install_github('jrs95/hyprcoloc')"
