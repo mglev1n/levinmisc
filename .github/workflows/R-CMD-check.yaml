@@ -27,7 +27,6 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
-
     steps:
       - uses: actions/checkout@v4
 
@@ -53,7 +52,7 @@ jobs:
       - name: Install hyprcoloc
         run: |
           Rscript -e "remotes::install_version('Rcpp', version = '1.0.11')"
-          Rscript -e "remotes::install_github('jrs95/hyprcoloc', build_opts = c('--resave-data', '--no-manual'))"
+          Rscript -e "remotes::install_github('jrs95/hyprcoloc', build_opts = c('--resave-data', '--no-manual'), upgrade = 'never')"
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
