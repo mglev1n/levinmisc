@@ -10,7 +10,9 @@ URL: https://github.com/mglev1n/levinmisc,
 BugReports: https://github.com/mglev1n/levinmisc/issues
 Imports: 
     BSgenome,
+    CARMA (>= 1.0),
     cli,
+    coloc (>= 5.2.0),
     crew,
     crew.cluster,
     data.table,
@@ -24,6 +26,7 @@ Imports:
     ggtext,
     glue,
     here,
+    hyprcoloc (>= 1.0),
     janitor,
     lifecycle,
     magrittr,
@@ -45,14 +48,10 @@ Suggests:
     knitr,
     rmarkdown,
     testthat
-Extends:
-    CARMA (>= 1.0),
-    coloc (>= 5.2.0),
-    hyprcoloc (>= 1.0)
 VignetteBuilder: 
     knitr
 Remotes:  
-    cnfoley/hyprcoloc,
+    jrs95/hyprcoloc,
     roman-tremmel/ggfastman,
     ZikunY/CARMA
 Config/fusen/version: 0.5.2
