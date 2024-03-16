@@ -45,6 +45,10 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Install gsl
+        if: contains(matrix.os, 'macos')
+        run: brew install gsl
+
       - name: Install remotes
         run: |
           Rscript -e "install.packages('remotes')"
