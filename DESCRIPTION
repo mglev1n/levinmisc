@@ -42,12 +42,13 @@ Imports:
     withr,
     yesno
 Suggests: 
-    CARMA (>= 1.0),
-    coloc (>= 5.2.0),
-    hyprcoloc (>= 1.0),
     knitr,
     rmarkdown,
     testthat
+Extends:
+    CARMA (>= 1.0),
+    coloc (>= 5.2.0),
+    hyprcoloc (>= 1.0)
 VignetteBuilder: 
     knitr
 Remotes:  
