@@ -18,10 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          # - {os: macos-latest,   r: 'release'}
+          - {os: macos-latest,   r: 'release'}
           # - {os: windows-latest, r: 'release'}
           # - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
-          - {os: ubuntu-latest,   r: '4.3.0'}
+          # - {os: ubuntu-latest,   r: 'release'}
           # - {os: ubuntu-latest,   r: 'oldrel-1'}
 
     env:
@@ -52,7 +52,7 @@ jobs:
 
       - name: Install hyprcoloc
         run: |
-          Rscript -e "remotes::install_github('jrs95/hyprcoloc')"
+          Rscript -e "remotes::install_github('jrs95/hyprcoloc', build_opts = c('--resave-data', '--no-manual'))"
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
