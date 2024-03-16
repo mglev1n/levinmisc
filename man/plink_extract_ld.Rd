@@ -44,4 +44,4 @@ plink_extract_ld(df, snp_col, effect_allele_col, metric = "r", bfile = "/path/to
 }
 }
 \concept{genomics}
-\concept{{linkage}}
+\concept{{linkage disequilibrium}}

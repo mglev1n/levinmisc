@@ -21,6 +21,11 @@ reference:
   contents:
   - has_concept("GWAS meta-analysis")
 
+- subtitle: Linkage disequilibrium
+  desc: Functions that are useful for linkage disequilibrium
+  contents:
+  - has_concept("linkage disequilibrium")
+
 - subtitle: Colocalization
   desc: >
     Functions that are useful for performing colocalization.

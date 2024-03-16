@@ -50,7 +50,7 @@ Suggests:
     testthat
 VignetteBuilder: 
     knitr
-Remotes:  
+Remotes: 
     jrs95/hyprcoloc,
     roman-tremmel/ggfastman,
     ZikunY/CARMA

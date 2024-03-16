@@ -14,7 +14,7 @@
 #' @return A square matrix containing the pairwise correlations between genetic variants
 #' @export
 #' @concept genomics
-#' @family {linkage}
+#' @family {linkage disequilibrium}
 #' 
 #' @examples
 #' \dontrun{

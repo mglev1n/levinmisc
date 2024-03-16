@@ -554,7 +554,7 @@ The `plink_extract_ld` function is a wrapper around the `plink` v1.9 binary, whi
 #' @return A square matrix containing the pairwise correlations between genetic variants
 #' @export
 #' @concept genomics
-#' @family {linkage}
+#' @family {linkage disequilibrium}
 #' 
 plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile, threads = 1, memory = 16000, 
                              plink_bin) {
