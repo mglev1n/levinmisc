@@ -2,7 +2,7 @@
 % Please edit documentation in R/plink_extract_ld.R
 \name{plink_extract_ld}
 \alias{plink_extract_ld}
-\title{Extract LD matrix using plink 1.9}
+\title{Extract an LD matrix from a reference panel using plink 1.9}
 \usage{
 plink_extract_ld(
   df,
@@ -36,7 +36,7 @@ plink_extract_ld(
 A square matrix containing the pairwise correlations between genetic variants
 }
 \description{
-Extract LD matrix using plink 1.9
+Extract an LD matrix from a reference panel using plink 1.9
 }
 \examples{
 \dontrun{

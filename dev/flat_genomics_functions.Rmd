@@ -540,7 +540,7 @@ The `plink_extract_ld` function is a wrapper around the `plink` v1.9 binary, whi
 
     
 ```{r function-plink_extract_ld}
-#' Extract LD matrix using plink 1.9
+#' Extract an LD matrix from a reference panel using plink 1.9
 #'
 #' @param df Dataframe containing variants to be included in the LD matrix; must contain SNP identifier and effect allele
 #' @param snp_col Name of column containing SNP identifiers
@@ -850,7 +850,7 @@ Finemapping is an approach for identifying the putative causal variant(s) at a l
 This function implements the simple Bayesian finemapping approach described in Mallard et al. (Nature Genetics 2012; <https://doi.org/10.1038/ng.2435>), adapted in Graham et al. (Nature 2021; <https://doi.org/10.1038/s41586-021-04064-3>). This method assumes a single causal variant configuration at the locus.
     
 ```{r function-calc_credset}
-#' Perform Bayesian finemapping
+#' Perform Bayesian finemapping using the Approximate Bayes Factor approach
 #' 
 #' Description
 #' 
@@ -898,9 +898,9 @@ test_that("calc_credset works", {
 This function implements the CARMA finemapping approach described in Yang et al. (Nature Genetics 2023; <https://doi.org/10.1038/s41588-023-01392-0>). This method relaxes the single causal variant assumption, identifying independent credible sets at each fine-mapped locus.
     
 ```{r function-run_carma}
-#' Run CARMA
+#' Perform Bayesian finemapping using CARMA
 #' 
-#' This function takes a dataframe containing variants at a locus and performs Bayesian finemapping using CARMA. The function requires a plink-formatted LD reference panel (`bfile`), which will be used to generate a signed LD matrix at the locus.
+#' This function is a wrapper around `CARMA::CARMA()` that takes a dataframe containing variants at a locus and performs Bayesian finemapping. The function requires a plink-formatted LD reference panel (`bfile`), which will be used to generate a signed LD matrix at the locus. CARMA was described in Yang et al. (Nature Genetics 2023; <https://doi.org/10.1038/s41588-023-01392-0>)
 #'
 #' @param df Dataframe containing variants at a locus for finemapping
 #' @param snp_col Name of column containing SNP identifiers

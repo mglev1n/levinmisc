@@ -2,7 +2,7 @@
 % Please edit documentation in R/use_crew_lsf.R
 \name{use_crew_lsf}
 \alias{use_crew_lsf}
-\title{Use Crew LSF}
+\title{Use crew lsf to execute a targets pipeline using the LSF HPC scheduler}
 \usage{
 use_crew_lsf()
 }

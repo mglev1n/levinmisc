@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_carma.R
 \name{run_carma}
 \alias{run_carma}
-\title{Run CARMA}
+\title{Perform Bayesian finemapping using CARMA}
 \usage{
 run_carma(
   df,
@@ -36,7 +36,7 @@ run_carma(
 A dataframe containing the input dataframe, and additional columns denoting which credible set (\code{CS}) each variant belongs to, as well as the posterior inclusion probability (\code{PIP}), and an \code{ld_error} column noting whether there were problems generating the LD matrix that limited fine-mapping.
 }
 \description{
-This function takes a dataframe containing variants at a locus and performs Bayesian finemapping using CARMA. The function requires a plink-formatted LD reference panel (\code{bfile}), which will be used to generate a signed LD matrix at the locus.
+This function is a wrapper around \code{CARMA::CARMA()} that takes a dataframe containing variants at a locus and performs Bayesian finemapping. The function requires a plink-formatted LD reference panel (\code{bfile}), which will be used to generate a signed LD matrix at the locus. CARMA was described in Yang et al. (Nature Genetics 2023; \url{https://doi.org/10.1038/s41588-023-01392-0})
 }
 \examples{
 \dontrun{

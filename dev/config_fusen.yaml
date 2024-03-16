@@ -38,7 +38,7 @@ flat_genomics_functions.Rmd:
     flat_file: dev/flat_genomics_functions.Rmd
     vignette_name: Genomics Functions
     open_vignette: true
-    check: true
+    check: false
     document: true
     overwrite: ask
 flat_miscellaneous.Rmd:
@@ -75,7 +75,7 @@ LPC_targets_project.Rmd:
   inflate:
     flat_file: dev/LPC_targets_project.Rmd
     vignette_name: Create a New Targets Pipeline for LPC
-    open_vignette: false
+    open_vignette: true
     check: false
     document: true
-    overwrite: 'yes'
+    overwrite: ask

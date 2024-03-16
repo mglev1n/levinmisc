@@ -2,7 +2,7 @@
 % Please edit documentation in R/calc_credset.R
 \name{calc_credset}
 \alias{calc_credset}
-\title{Perform Bayesian finemapping}
+\title{Perform Bayesian finemapping using the Approximate Bayes Factor approach}
 \usage{
 calc_credset(
   df,
