@@ -38,10 +38,21 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Install gsl
+      - name: Install gsl Mac
         if: runner.os == 'macOS'
         run: |
-          /usr/local/bin/brew install gsl
+          brew update
+          brew install gsl
+
+      - name: Install gsl Windows
+        uses: johnwason/vcpkg-action@v6
+        id: vcpkg
+        with:
+          pkgs: gsl
+          triplet: x64-windows-release
+          token: ${{ github.token }}
+          github-binarycache: true
+        if: runner.os == 'Windows'
 
       - name: Install remotes
         run: |
