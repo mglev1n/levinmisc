@@ -589,7 +589,7 @@ plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile
     echo = TRUE
   )
 
-  ld_matrix <- fread(fs::path(ld_dir, "LD.ld.gz"), col.names = df %>% pull({{snp_col}})) %>%
+  ld_matrix <- data.table::fread(fs::path(ld_dir, "LD.ld.gz"), col.names = df %>% pull({{snp_col}})) %>%
     as.matrix()
   
   rownames(ld_matrix) <- df %>% pull({{snp_col}})
