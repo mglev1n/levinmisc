@@ -52,6 +52,7 @@ jobs:
       - name: Install hyprcoloc
         run: |
           Rscript -e "remotes::install_version('Rcpp', version = '1.0.11')"
+          Rscript -e "remotes::install_version('RcppEigen', version = '0.3.3.9.3')"
           Rscript -e "remotes::install_github('jrs95/hyprcoloc', build_opts = c('--resave-data', '--no-manual'), upgrade = 'never')"
 
       - uses: r-lib/actions/setup-r-dependencies@v2
