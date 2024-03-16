@@ -53,6 +53,7 @@ jobs:
           cache-version: 2
           extra-packages: |
             any::rcmdcheck
+            hyprcoloc=?ignore
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
