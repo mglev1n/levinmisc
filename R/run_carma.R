@@ -27,8 +27,10 @@ run_carma <- function(df, snp_col, z_col, effect_allele_col, bfile, threads = 1,
   
   sumstat <- df
   
+  plink_extract_ld_possibly <- purrr::possibly(levinmisc::plink_extract_ld) 
+  
   ld <- df %>%
-    plink_extract_ld(bfile = bfile, snp_col = {{snp_col}}, effect_allele_col = {{effect_allele_col}})
+    plink_extract_ld_possibly(bfile = bfile, plink_bin = plink_bin, snp_col = {{snp_col}}, effect_allele_col = {{effect_allele_col}})
   
   if(is.null(ld)) {
     return(sumstat %>% mutate(ld_error = TRUE))
