@@ -13,6 +13,9 @@
     <loc>https://mglev1n.github.io/levinmisc/articles/create-a-new-targets-pipeline-for-lpc.html</loc>
   </url>
   <url>
+    <loc>https://mglev1n.github.io/levinmisc/articles/genomics-functions.html</loc>
+  </url>
+  <url>
     <loc>https://mglev1n.github.io/levinmisc/articles/index.html</loc>
   </url>
   <url>
@@ -64,10 +67,16 @@
     <loc>https://mglev1n.github.io/levinmisc/reference/pipe.html</loc>
   </url>
   <url>
+    <loc>https://mglev1n.github.io/levinmisc/reference/plink_extract_ld.html</loc>
+  </url>
+  <url>
     <loc>https://mglev1n.github.io/levinmisc/reference/populate_targets_proj.html</loc>
   </url>
   <url>
     <loc>https://mglev1n.github.io/levinmisc/reference/render_datatable.html</loc>
+  </url>
+  <url>
+    <loc>https://mglev1n.github.io/levinmisc/reference/run_carma.html</loc>
   </url>
   <url>
     <loc>https://mglev1n.github.io/levinmisc/reference/s_multixcan.html</loc>
