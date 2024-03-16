@@ -19,10 +19,10 @@ jobs:
       matrix:
         config:
           - {os: macos-latest,   r: 'release'}
-          # - {os: windows-latest, r: 'release'}
-          # - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
-          # - {os: ubuntu-latest,   r: 'release'}
-          # - {os: ubuntu-latest,   r: 'oldrel-1'}
+          - {os: windows-latest, r: 'release'}
+          - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
+          - {os: ubuntu-latest,   r: 'release'}
+          - {os: ubuntu-latest,   r: 'oldrel-1'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -54,6 +54,7 @@ jobs:
           Rscript -e "remotes::install_version('Rcpp', version = '1.0.11')"
           Rscript -e "remotes::install_version('RcppEigen', version = '0.3.3.9.3')"
           Rscript -e "remotes::install_github('jrs95/hyprcoloc', build_opts = c('--resave-data', '--no-manual'), upgrade = 'never')"
+          Rscript -e "remotes::install_github('ZikunY/CARMA')"
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
