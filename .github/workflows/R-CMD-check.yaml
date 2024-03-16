@@ -21,7 +21,7 @@ jobs:
           # - {os: macos-latest,   r: 'release'}
           # - {os: windows-latest, r: 'release'}
           # - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
-          - {os: ubuntu-latest,   r: 'release'}
+          - {os: ubuntu-latest,   r: '4.3.0'}
           # - {os: ubuntu-latest,   r: 'oldrel-1'}
 
     env:
@@ -31,12 +31,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Upgrade gcc to compile without error
-        if: runner.os == 'Linux'
-        run: |
-            sudo apt-get install -y g++-12 gcc-12 # probably already installed
-            sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 60
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 60
+      # - name: Upgrade gcc to compile without error
+      #   if: runner.os == 'Linux'
+      #   run: |
+      #       sudo apt-get install -y g++-12 gcc-12 # probably already installed
+      #       sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 60
+      #       sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 60
 
       - uses: r-lib/actions/setup-pandoc@v2
 
