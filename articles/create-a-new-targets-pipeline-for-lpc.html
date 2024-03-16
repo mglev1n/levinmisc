@@ -148,10 +148,10 @@ This should be a reproducible and working example
 <span><span class="co">#' }</span></span></code></pre></div>
 <p>The <code><a href="../reference/populate_targets_proj.html">populate_targets_proj()</a></code> function creates several
 files/folders within the project directory.
-<code>.make-targets.sh</code> and <code>.clustermq_lsf.tmpl</code> are
-hidden helper files which are not designed for user interaction, but
-necessary for submission of jobs to the LSF scheduler. The other files
-are designed to be edited/used by the user:</p>
+<code>.make-targets.sh</code> and is a hidden helper file which is not
+designed for user interaction, but necessary for submission of jobs to
+the LSF scheduler. The other files are designed to be edited/used by the
+user:</p>
 <ul>
 <li><p><code>Pipeline.qmd</code> - Quarto markdown file which can be
 used to create a Target Markdown document that specifies a
@@ -211,21 +211,16 @@ Here are some unit tests to verify the function works as expected.
 <div class="section level3">
 <h3 id="use-crew-for-parallelization">Use {crew} for parallelization<a class="anchor" aria-label="anchor" href="#use-crew-for-parallelization"></a>
 </h3>
-<p>By default, <code><a href="../reference/populate_targets_proj.html">populate_targets_proj()</a></code> creates a
-<code>targets</code> pipeline that uses the
-<code>tar_make_clustermq()</code> function to execute the pipeline using
-LPC resources. This function creates a cluster of persistent workers,
-and therefore is not very flexible in terms of varying the number or
-resources allocated to complete individual targets. More recently, the
-<code>crew</code> and <code>crew.cluster</code> packages have enabled
-the use of heterogenous workers (<a href="https://books.ropensci.org/targets/crew.html#heterogeneous-workers" class="external-link uri">https://books.ropensci.org/targets/crew.html#heterogeneous-workers</a>),
-which can be deployed either locally or on HPC resources. The
-<code><a href="../reference/use_crew_lsf.html">use_crew_lsf()</a></code> function is designed to return a block of
-code to rapidly enable the use of heterogeneous workers on the Penn LPC.
-By default, this function creates workers that submit to different
-queues (eg. <code>voltron_normal</code>, <code>voltron_long</code>), and
-allocate different resources (eg. a “normal” worker will use 1 core and
-16GB memory, while a “long” worker will use 1 core and 10GB memory).</p>
+<p>The <code>crew</code> and <code>crew.cluster</code> packages have
+enabled the use of heterogenous workers (<a href="https://books.ropensci.org/targets/crew.html#heterogeneous-workers" class="external-link uri">https://books.ropensci.org/targets/crew.html#heterogeneous-workers</a>),
+that can be used to deploy <code>targets</code> pipelines either locally
+or on HPC resources. The <code><a href="../reference/use_crew_lsf.html">use_crew_lsf()</a></code> function is
+designed to return a block of code to rapidly enable the use of
+heterogeneous workers on the Penn LPC. By default, this function creates
+workers that submit to different queues (eg.
+<code>voltron_normal</code>, <code>voltron_long</code>), and allocate
+different resources (eg. a “normal” worker will use 1 core and 16GB
+memory, while a “long” worker will use 1 core and 10GB memory).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
 <span><span class="co">#' use_crew_lsf()</span></span>
