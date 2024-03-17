@@ -25,7 +25,7 @@
 #' run_carma(locus_df, snp_col = SNP, z_col = z, effect_allele_col = allele1)
 #' }
 
-run_carma <- function(df, snp_col, z_col, effect_allele_col, outlier_switch = TRUE, bfile, threads = 1, memory = 16000, plink_bin) {
+run_carma <- function(df, snp_col, z_col, effect_allele_col, outlier_switch = TRUE, bfile, threads = 1, memory = 16000, plink_bin, ...) {
   
   sumstat <- df
   

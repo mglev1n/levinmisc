@@ -13,7 +13,8 @@ run_carma(
   bfile,
   threads = 1,
   memory = 16000,
-  plink_bin
+  plink_bin,
+  ...
 )
 }
 \arguments{
