@@ -2,16 +2,18 @@
 
 #' Perform Bayesian finemapping using CARMA
 #' 
-#' This function is a wrapper around `CARMA::CARMA()` that takes a dataframe containing variants at a locus and performs Bayesian finemapping. The function requires a plink-formatted LD reference panel (`bfile`), which will be used to generate a signed LD matrix at the locus. CARMA was described in Yang et al. (Nature Genetics 2023; <https://doi.org/10.1038/s41588-023-01392-0>)
+#' This function is a wrapper around [CARMA::CARMA()] that takes a dataframe containing variants at a locus and performs Bayesian finemapping based on their signed z-scores and an LD reference panel. The function requires a plink-formatted LD reference panel (`bfile`), which will be used to generate a signed LD matrix at the locus. CARMA was described in Yang et al. (Nature Genetics 2023; <https://doi.org/10.1038/s41588-023-01392-0>)
 #'
 #' @param df Dataframe containing variants at a locus for finemapping
 #' @param snp_col Name of column containing SNP identifiers
 #' @param z_col Name of column containing signed Z-scores (relative to effect allele)
 #' @param effect_allele_col Name of column containing effect alleles
+#' @param outlier_switch Whether to remove outliers when performing finemapping. Argument is passed to the `outlier.switch` argument of [CARMA::CARMA()]
 #' @param bfile Path to plink `bfile` of reference panel that will be used to extract LD
 #' @param threads Number of threads (default = 1)
 #' @param memory Memory limit (default = 16000 MB)
 #' @param plink_bin Path to plink executable
+#' @param ... additional arguments passsed to [CARMA::CARMA()]
 #'
 #' @return A dataframe containing the input dataframe, and additional columns denoting which credible set (`CS`) each variant belongs to, as well as the posterior inclusion probability (`PIP`), and an `ld_error` column noting whether there were problems generating the LD matrix that limited fine-mapping.
 #' 
@@ -23,7 +25,7 @@
 #' run_carma(locus_df, snp_col = SNP, z_col = z, effect_allele_col = allele1)
 #' }
 
-run_carma <- function(df, snp_col, z_col, effect_allele_col, bfile, threads = 1, memory = 16000, plink_bin) {
+run_carma <- function(df, snp_col, z_col, effect_allele_col, outlier_switch = TRUE, bfile, threads = 1, memory = 16000, plink_bin) {
   
   sumstat <- df
   
@@ -49,7 +51,7 @@ run_carma <- function(df, snp_col, z_col, effect_allele_col, bfile, threads = 1,
   z.list[[1]] <- sumstat %>% pull({{z_col}})
   ld.list[[1]] <- as.matrix(ld)
   lambda.list[[1]] <- 1
-  CARMA.results <- CARMA::CARMA(z.list, ld.list, lambda.list=lambda.list, outlier.switch = TRUE)
+  CARMA.results <- CARMA::CARMA(z.list, ld.list, lambda.list=lambda.list, outlier.switch = outlier_switch, ...)
   
   sumstat.result <- sumstat %>% mutate(PIP = CARMA.results[[1]]$PIPs, CS = 0)
   if(length(CARMA.results[[1]]$`Credible set`[[2]])!=0){

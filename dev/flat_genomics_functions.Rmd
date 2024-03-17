@@ -25,7 +25,7 @@ The `gg_manhattan_df` function is used to create Manhattan plots. This function 
 ```{r function-gg_manhattan_df}
 #' Create a Manhattan Plot
 #'
-#' This function is a wrapper around `ggfastman::fast_manhattan` which allows for the creation of a Manhattan plot from a dataframe containing GWAS summary statistics.
+#' This function is a wrapper around [ggfastman::fast_manhattan] which allows for the creation of a Manhattan plot from a dataframe containing GWAS summary statistics.
 #'
 #' @param sumstats_df Dataframe containing GWAS summary statistics
 #' @param chr_col Name of chromosome column
@@ -38,7 +38,7 @@ The `gg_manhattan_df` function is used to create Manhattan plots. This function 
 #' @param color1 (string) Color for odd-numbered chromosomes (passed to `ggfastman`)
 #' @param color2 (string) Color for even-numbered chromosomes (passed to `ggfastman`)
 #' @param speed (string) One of "slow", "fast", or "ultrafast"; passed to `ggfastman` to control plotting speed
-#' @param ... Arguments passed to `ggfastman::fast_manhattan`
+#' @param ... Arguments passed to [ggfastman::fast_manhattan]
 #'
 #' @return A ggplot2 object
 #' @export
@@ -165,11 +165,11 @@ The `gg_qq_df` function can be used to generate a qq plot to visually evaluate f
 ```{r function-gg_qq_df}
 #' Create a QQ plot
 #'
-#' This function is a wrapper around `ggfastman::fast_qq` which allows for the creation of a QQ plot from a dataframe containing GWAS summary statistics.
+#' This function is a wrapper around [ggfastman::fast_qq] which allows for the creation of a QQ plot from a dataframe containing GWAS summary statistics.
 #'
 #' @param sumstats_df Dataframe containing GWAS summary statistics
 #' @param pval_col Name of p-value column
-#' @param ... Arguments passed to `ggfastman::fast_qq`
+#' @param ... Arguments passed to [ggfastman::fast_qq]
 #'
 #' @return A ggplot2 object
 #'
@@ -900,16 +900,18 @@ This function implements the CARMA finemapping approach described in Yang et al.
 ```{r function-run_carma}
 #' Perform Bayesian finemapping using CARMA
 #' 
-#' This function is a wrapper around `CARMA::CARMA()` that takes a dataframe containing variants at a locus and performs Bayesian finemapping. The function requires a plink-formatted LD reference panel (`bfile`), which will be used to generate a signed LD matrix at the locus. CARMA was described in Yang et al. (Nature Genetics 2023; <https://doi.org/10.1038/s41588-023-01392-0>)
+#' This function is a wrapper around [CARMA::CARMA()] that takes a dataframe containing variants at a locus and performs Bayesian finemapping based on their signed z-scores and an LD reference panel. The function requires a plink-formatted LD reference panel (`bfile`), which will be used to generate a signed LD matrix at the locus. CARMA was described in Yang et al. (Nature Genetics 2023; <https://doi.org/10.1038/s41588-023-01392-0>)
 #'
 #' @param df Dataframe containing variants at a locus for finemapping
 #' @param snp_col Name of column containing SNP identifiers
 #' @param z_col Name of column containing signed Z-scores (relative to effect allele)
 #' @param effect_allele_col Name of column containing effect alleles
+#' @param outlier_switch Whether to remove outliers when performing finemapping. Argument is passed to the `outlier.switch` argument of [CARMA::CARMA()]
 #' @param bfile Path to plink `bfile` of reference panel that will be used to extract LD
 #' @param threads Number of threads (default = 1)
 #' @param memory Memory limit (default = 16000 MB)
 #' @param plink_bin Path to plink executable
+#' @param ... additional arguments passsed to [CARMA::CARMA()]
 #'
 #' @return A dataframe containing the input dataframe, and additional columns denoting which credible set (`CS`) each variant belongs to, as well as the posterior inclusion probability (`PIP`), and an `ld_error` column noting whether there were problems generating the LD matrix that limited fine-mapping.
 #' 
@@ -917,7 +919,7 @@ This function implements the CARMA finemapping approach described in Yang et al.
 #' @family {finemapping}
 #' @concept genomics
 
-run_carma <- function(df, snp_col, z_col, effect_allele_col, bfile, threads = 1, memory = 16000, plink_bin) {
+run_carma <- function(df, snp_col, z_col, effect_allele_col, outlier_switch = TRUE, bfile, threads = 1, memory = 16000, plink_bin) {
   
   sumstat <- df
   
@@ -943,7 +945,7 @@ run_carma <- function(df, snp_col, z_col, effect_allele_col, bfile, threads = 1,
   z.list[[1]] <- sumstat %>% pull({{z_col}})
   ld.list[[1]] <- as.matrix(ld)
   lambda.list[[1]] <- 1
-  CARMA.results <- CARMA::CARMA(z.list, ld.list, lambda.list=lambda.list, outlier.switch = TRUE)
+  CARMA.results <- CARMA::CARMA(z.list, ld.list, lambda.list=lambda.list, outlier.switch = outlier_switch, ...)
   
   sumstat.result <- sumstat %>% mutate(PIP = CARMA.results[[1]]$PIPs, CS = 0)
   if(length(CARMA.results[[1]]$`Credible set`[[2]])!=0){

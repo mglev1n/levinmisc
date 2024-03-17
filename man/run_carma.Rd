@@ -9,6 +9,7 @@ run_carma(
   snp_col,
   z_col,
   effect_allele_col,
+  outlier_switch = TRUE,
   bfile,
   threads = 1,
   memory = 16000,
@@ -24,6 +25,8 @@ run_carma(
 
 \item{effect_allele_col}{Name of column containing effect alleles}
 
+\item{outlier_switch}{Whether to remove outliers when performing finemapping. Argument is passed to the \code{outlier.switch} argument of \code{\link[CARMA:CARMA]{CARMA::CARMA()}}}
+
 \item{bfile}{Path to plink \code{bfile} of reference panel that will be used to extract LD}
 
 \item{threads}{Number of threads (default = 1)}
@@ -31,12 +34,14 @@ run_carma(
 \item{memory}{Memory limit (default = 16000 MB)}
 
 \item{plink_bin}{Path to plink executable}
+
+\item{...}{additional arguments passsed to \code{\link[CARMA:CARMA]{CARMA::CARMA()}}}
 }
 \value{
 A dataframe containing the input dataframe, and additional columns denoting which credible set (\code{CS}) each variant belongs to, as well as the posterior inclusion probability (\code{PIP}), and an \code{ld_error} column noting whether there were problems generating the LD matrix that limited fine-mapping.
 }
 \description{
-This function is a wrapper around \code{CARMA::CARMA()} that takes a dataframe containing variants at a locus and performs Bayesian finemapping. The function requires a plink-formatted LD reference panel (\code{bfile}), which will be used to generate a signed LD matrix at the locus. CARMA was described in Yang et al. (Nature Genetics 2023; \url{https://doi.org/10.1038/s41588-023-01392-0})
+This function is a wrapper around \code{\link[CARMA:CARMA]{CARMA::CARMA()}} that takes a dataframe containing variants at a locus and performs Bayesian finemapping based on their signed z-scores and an LD reference panel. The function requires a plink-formatted LD reference panel (\code{bfile}), which will be used to generate a signed LD matrix at the locus. CARMA was described in Yang et al. (Nature Genetics 2023; \url{https://doi.org/10.1038/s41588-023-01392-0})
 }
 \examples{
 \dontrun{

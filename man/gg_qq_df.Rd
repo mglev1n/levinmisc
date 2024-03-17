@@ -11,13 +11,13 @@ gg_qq_df(sumstats_df, pval_col = p_value, ...)
 
 \item{pval_col}{Name of p-value column}
 
-\item{...}{Arguments passed to \code{ggfastman::fast_qq}}
+\item{...}{Arguments passed to \link[ggfastman:fast_qq]{ggfastman::fast_qq}}
 }
 \value{
 A ggplot2 object
 }
 \description{
-This function is a wrapper around \code{ggfastman::fast_qq} which allows for the creation of a QQ plot from a dataframe containing GWAS summary statistics.
+This function is a wrapper around \link[ggfastman:fast_qq]{ggfastman::fast_qq} which allows for the creation of a QQ plot from a dataframe containing GWAS summary statistics.
 }
 \examples{
 \dontrun{

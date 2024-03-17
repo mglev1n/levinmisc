@@ -42,13 +42,13 @@ gg_manhattan_df(
 
 \item{speed}{(string) One of "slow", "fast", or "ultrafast"; passed to \code{ggfastman} to control plotting speed}
 
-\item{...}{Arguments passed to \code{ggfastman::fast_manhattan}}
+\item{...}{Arguments passed to \link[ggfastman:fast_manhattan]{ggfastman::fast_manhattan}}
 }
 \value{
 A ggplot2 object
 }
 \description{
-This function is a wrapper around \code{ggfastman::fast_manhattan} which allows for the creation of a Manhattan plot from a dataframe containing GWAS summary statistics.
+This function is a wrapper around \link[ggfastman:fast_manhattan]{ggfastman::fast_manhattan} which allows for the creation of a Manhattan plot from a dataframe containing GWAS summary statistics.
 }
 \examples{
 \dontrun{

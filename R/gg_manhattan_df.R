@@ -2,7 +2,7 @@
 
 #' Create a Manhattan Plot
 #'
-#' This function is a wrapper around `ggfastman::fast_manhattan` which allows for the creation of a Manhattan plot from a dataframe containing GWAS summary statistics.
+#' This function is a wrapper around [ggfastman::fast_manhattan] which allows for the creation of a Manhattan plot from a dataframe containing GWAS summary statistics.
 #'
 #' @param sumstats_df Dataframe containing GWAS summary statistics
 #' @param chr_col Name of chromosome column
@@ -15,7 +15,7 @@
 #' @param color1 (string) Color for odd-numbered chromosomes (passed to `ggfastman`)
 #' @param color2 (string) Color for even-numbered chromosomes (passed to `ggfastman`)
 #' @param speed (string) One of "slow", "fast", or "ultrafast"; passed to `ggfastman` to control plotting speed
-#' @param ... Arguments passed to `ggfastman::fast_manhattan`
+#' @param ... Arguments passed to [ggfastman::fast_manhattan]
 #'
 #' @return A ggplot2 object
 #' @export
