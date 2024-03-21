@@ -319,7 +319,7 @@ This function provides a wrapper to MAGMA, which performs gene-based testing fro
 
 ```{r example-s_multixcan}
 #' \dontrun{
-#' s_multixcan(df, 
+#' s_multixcan(df,
 #'  models_folder = "MetaXcan/data/models/eqtl/mashr/",
 #'  models_name_filter = ".*\\.db",
 #'  models_name_pattern = "mashr_(.*)\\.db",

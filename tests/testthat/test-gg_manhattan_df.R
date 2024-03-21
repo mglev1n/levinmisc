@@ -8,7 +8,7 @@ test_that("gg_manhattan_df returns a ggplot object", {
   locus_df <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
-    mutate(p_value = runif(1, min = 1/1e100, max = 0.001)) %>%
+    mutate(p_value = runif(1, min = 1 / 1e100, max = 0.001)) %>%
     mutate(label = "Test")
 
   plot_res <- locus_df %>%

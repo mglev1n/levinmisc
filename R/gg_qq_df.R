@@ -18,7 +18,6 @@
 #' \dontrun{
 #' gg_qq_df(sumstats_df)
 #' }
-
 gg_qq_df <- function(sumstats_df, pval_col = p_value, ...) {
   df <- sumstats_df %>%
     select(pvalue = {{ pval_col }}) %>%

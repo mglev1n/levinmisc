@@ -20,9 +20,9 @@ metal_config(
   EFFECTLABEL = "BETA",
   STDERR = "SE",
   FREQLABEL = "EAF",
-  NCASE = "N_CASE",
-  NCONTROL = "N_CONTROL",
-  SAMPLESIZE = "N"
+  NCASE = NULL,
+  NCONTROL = NULL,
+  SAMPLESIZE = NULL
 )
 }
 \arguments{

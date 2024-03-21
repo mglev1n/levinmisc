@@ -3,13 +3,13 @@
 test_that("populate_targets_proj works", {
   expect_true(inherits(populate_targets_proj, "function"))
 })
-# 
+#
 # # Functions to allow creating files in new temporary directory
 # dir_empty <- function(x) {
 #   unlink(x, recursive = TRUE, force = TRUE)
 #   dir.create(x)
 # }
-# 
+#
 # test_with_dir <- function(desc, ...) {
 #   new <- tempfile()
 #   dir_empty(new)
@@ -23,25 +23,25 @@ test_that("populate_targets_proj works", {
 #   )
 #   invisible()
 # }
-# 
+#
 # test_with_dir("populate_targets_proj creates log folder", {
 #   usethis::proj_set(force = TRUE)
 #   populate_targets_proj()
 #   expect_true(dir.exists("build_logs"))
 # })
-# 
+#
 # test_with_dir("populate_targets_proj creates .make-targets.sh", {
 #   usethis::proj_set(force = TRUE)
 #   populate_targets_proj()
 #   expect_true(file.exists(".make-targets.sh"))
 # })
-# 
+#
 # test_with_dir("populate_targets_proj creates submit-targets.sh", {
 #   usethis::proj_set(force = TRUE)
 #   populate_targets_proj()
 #   expect_true(file.exists("submit-targets.sh"))
 # })
-# 
+#
 # test_with_dir("populate_targets_proj creates pipeline and results .qmd templates", {
 #   usethis::proj_set(force = TRUE)
 #   populate_targets_proj()

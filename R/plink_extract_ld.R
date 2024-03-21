@@ -15,20 +15,22 @@
 #' @export
 #' @concept genomics
 #' @family {linkage disequilibrium}
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' plink_extract_ld(df, snp_col, effect_allele_col, metric = "r", bfile = "/path/to/reference/panel/", plink_bin = "/path/to/plink1.9")
 #' }
-plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile, threads = 1, memory = 16000, 
+plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile, threads = 1, memory = 16000,
                              plink_bin) {
+  snp_id <- df %>%
+    select(SNP = {{ snp_col }}) %>%
+    head(1) %>%
+    pull(SNP)
 
-  snp_id <- df %>% select(SNP = {{snp_col}}) %>% head(1) %>% pull(SNP)
-  
   snp_file <- fs::file_temp(pattern = snp_id)
 
   ld_dir <- fs::path_temp(snp_id)
-  
+
   fs::dir_create(ld_dir, recurse = TRUE)
 
   df %>%
@@ -36,7 +38,7 @@ plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile
     write_tsv(snp_file, col_names = FALSE)
 
   cli::cli_alert_info("Extracting LD")
-  
+
   processx::run(plink_bin,
     args = c(
       "--threads", threads,
@@ -53,10 +55,10 @@ plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile
     echo = TRUE
   )
 
-  ld_matrix <- data.table::fread(fs::path(ld_dir, "LD.ld.gz"), col.names = df %>% pull({{snp_col}})) %>%
+  ld_matrix <- data.table::fread(fs::path(ld_dir, "LD.ld.gz"), col.names = df %>% pull({{ snp_col }})) %>%
     as.matrix()
-  
-  rownames(ld_matrix) <- df %>% pull({{snp_col}})
-  
+
+  rownames(ld_matrix) <- df %>% pull({{ snp_col }})
+
   return(ld_matrix)
 }

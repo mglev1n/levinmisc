@@ -19,7 +19,6 @@
 #' @concept miscellaneous
 #' @examples
 #' render_datatable(datasets::mtcars)
-
 render_datatable <- function(df,
                              extensions = c("Buttons"),
                              class = c("compact", "stripe", "hover", "row-border"),
