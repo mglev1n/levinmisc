@@ -33,14 +33,14 @@ flat_genomics_functions.Rmd:
   - tests/testthat/test-s_predixcan.R
   - tests/testthat/test-s_multixcan.R
   - tests/testthat/test-ldak_h2.R
-  vignettes: vignettes/genomics-functions.Rmd
+  vignettes: []
   inflate:
     flat_file: dev/flat_genomics_functions.Rmd
-    vignette_name: Genomics Functions
-    open_vignette: true
+    vignette_name: .na
+    open_vignette: false
     check: false
     document: true
-    overwrite: ask
+    overwrite: 'yes'
 flat_miscellaneous.Rmd:
   path: dev/flat_miscellaneous.Rmd
   state: active
@@ -78,4 +78,4 @@ LPC_targets_project.Rmd:
     open_vignette: false
     check: false
     document: true
-    overwrite: ask
+    overwrite: 'yes'

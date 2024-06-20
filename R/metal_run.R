@@ -16,6 +16,7 @@
 #' \dontrun{
 #' metal_run(config_file = "config.txt", metal_path = "/path/to/metal_binary")
 #' }
+
 metal_run <- function(config_file, metal_path) {
   metal_path <- normalizePath(metal_path)
   config_file <- normalizePath(config_file)

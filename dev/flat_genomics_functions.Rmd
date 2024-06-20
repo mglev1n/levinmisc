@@ -1,5 +1,5 @@
 ---
-title: "flat_genomics_functions.Rmd empty"
+title: "flat_genomics_functions.Rmd"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -144,7 +144,7 @@ test_that("gg_manhattan_df returns a ggplot object", {
   locus_df <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
-    mutate(p_value = runif(1, min = 1/1e100, max = 0.001)) %>%
+    mutate(p_value = runif(1, min = 1 / 1e100, max = 0.001)) %>%
     mutate(label = "Test")
 
   plot_res <- locus_df %>%
@@ -224,18 +224,18 @@ This function can be used rapidly add rsids to GWAS summary statistics by chromo
     
 ```{r function-annotate_rsids}
 #' Annotate a dataframe containing genomic coordinates with rsids
-#' 
+#'
 #' This function can be used rapidly add rsids to GWAS summary statistics or any other dataframe containing genomic coordinates (eg. chromosome and position). This is a rapid function that does not explicitly account for differences in variants at each position, strand flips, etc.)
-#' 
+#'
 #' @param df Dataframe containing genomic coordinates to annotate with rsid
 #' @param dbSNP Bioconductor object containing SNP locations and alleles to be used for annotation (default: `SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs.Hsapiens.dbSNP144.GRCh37`)
-#' @param chrom_col Chromosome column 
+#' @param chrom_col Chromosome column
 #' @param pos_col Position column
 #'
 #' @return A dataframe containing the original contents, with an additional `rsid` column.
-#' 
+#'
 #' @export
-#' @concept genomics 
+#' @concept genomics
 #' @family {annotation}
 
 annotate_rsids <- function(df, dbSNP = SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs.Hsapiens.dbSNP144.GRCh37, chrom_col = Chromosome, pos_col = Position) {
@@ -292,7 +292,7 @@ annotate_rsids <- function(df, dbSNP = SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs
   
 ```{r tests-annotate_rsids}
 test_that("annotate_rsids works", {
-  expect_true(inherits(annotate_rsids, "function")) 
+  expect_true(inherits(annotate_rsids, "function"))
 })
 
 test_that("annotate_rsids returns a tibble", {
@@ -317,9 +317,9 @@ METAL (<https://github.com/statgen/METAL>) is a common command-line tool for per
     
 ```{r function-metal_config}
 #' Create a configuration file for METAL
-#' 
+#'
 #' This function can be used to generate a configuration for METAL, a tool for performing meta-analysis of GWAS summary statistics <https://github.com/statgen/METAL>. The file created by this function can be used to run a meta-analysis. Details of the arguments to METAL are described in the METAL documentation: <https://genome.sph.umich.edu/wiki/METAL_Documentation>.
-#' 
+#'
 #' @param config_name (string) Name of the configuration
 #' @param output_dir (path) Path to output directory where GWAS meta-analysis data should be stored
 #' @param study_files (vector) Character vector of paths to summary statistics that should be included in the GWAS
@@ -393,12 +393,12 @@ metal_config <- function(config_name, output_dir, study_files, SCHEME = "STDERR"
 
   config_text <- glue::glue("
     {config_text}
-                            
+
     {study_files}
-    
+
     OUTFILE {meta_outfile}_metal- .txt
     ANALYZE HETEROGENEITY
-    
+
     QUIT")
 
   readr::write_lines(x = config_text, file = config_outfile)
@@ -407,15 +407,15 @@ metal_config <- function(config_name, output_dir, study_files, SCHEME = "STDERR"
 }
 ```
   
-```{r example-metal_config}
+```{r example-metal_config, include=FALSE}
 #' \dontrun{
-#' metal_config(config_name = "name-of-analysis", output_dir = "/path/to/output/", study_files = c("/path/to/sumstats_1.txt", "/path/to/sumstats_2.txt))
+metal_config(config_name = "name-of-analysis", output_dir = "/path/to/output/", study_files = c("/path/to/sumstats_1.txt", "/path/to/sumstats_2.txt"))
 #' }
 ```
   
 ```{r tests-metal_config}
 test_that("metal_config works", {
-  expect_true(inherits(metal_config, "function")) 
+  expect_true(inherits(metal_config, "function"))
 })
 ```
 
@@ -423,9 +423,9 @@ test_that("metal_config works", {
     
 ```{r function-metal_run}
 #' Use METAL to run a GWAS meta-analysis
-#' 
+#'
 #' This function is a wrapper for METAL, a tool for performing meta-analysis of GWAS summary statistics <https://github.com/statgen/METAL>. Details of the arguments to METAL are described in the METAL documentation: <https://genome.sph.umich.edu/wiki/METAL_Documentation>.
-#' 
+#'
 #' @param config_file (path) Path to a METAL configuration file (this can be generated using [levinmisc::metal_config()])
 #' @param metal_path (path) Path to the METAL binary
 #'
@@ -450,15 +450,15 @@ metal_run <- function(config_file, metal_path) {
 }
 ```
   
-```{r example-metal_run}
+```{r example-metal_run, include=FALSE}
 #' \dontrun{
-#' metal_run(config_file = "config.txt", metal_path = "/path/to/metal_binary")
+metal_run(config_file = "config.txt", metal_path = "/path/to/metal_binary")
 #' }
 ```
   
 ```{r tests-metal_run}
 test_that("metal_run works", {
-  expect_true(inherits(metal_run, "function")) 
+  expect_true(inherits(metal_run, "function"))
 })
 ```
 
@@ -466,9 +466,9 @@ test_that("metal_run works", {
     
 ```{r function-mr_mega}
 #' Perform multi-ancestry GWAS meta-analysis using MR-MEGA
-#' 
+#'
 #' This function is a wrapper around MR-MEGA, which uses meta-regression to combine GWAS summart statistics while accounting for study/population-specific components of genetic variation. The method was described in Magi et al. (Human Molecular Genetics 2017; <https://doi.org/10.1093/hmg/ddx280>), and the package can be obtained from the Estonian Genome Centre (<https://genomics.ut.ee/en/tools>).
-#' 
+#'
 #' @param sumstats_files List of files containing GWAS summary statistics. These files should all contain the same column header.
 #' @param mr_mega_bin Path to MR-MEGA binary
 #' @param marker_col Column containing unique markers for each variant
@@ -494,12 +494,12 @@ mr_mega <- function(sumstats_files, mr_mega_bin, marker_col = MARKER, chr_col = 
 
   # write sumstats to temporary .txt files and return list of locations
   cli::cli_alert_info("Writing input files")
-  mrmega_sumstats <- map(sumstats_files, function(sumstats_file) {
+  mrmega_sumstats <- purrr::map(sumstats_files, function(sumstats_file) {
     file <- fs::file_temp()
     study <- basename(sumstats_file)
     sumstats_file %>%
       vroom::vroom() %>%
-      select(MARKERNAME = {{ marker_col }}, EA = {{ effect_allele_col }}, NEA = {{ other_allele_col }}, BETA = {{ beta_col }}, SE = {{ se_col }}, EAF = {{ eaf_col }}, N = {{ samplesize_col }}, CHROMOSOME = {{ chr_col }}, POSITION = {{ pos_col }}) %>%
+      dplyr::select(MARKERNAME = {{ marker_col }}, EA = {{ effect_allele_col }}, NEA = {{ other_allele_col }}, BETA = {{ beta_col }}, SE = {{ se_col }}, EAF = {{ eaf_col }}, N = {{ samplesize_col }}, CHROMOSOME = {{ chr_col }}, POSITION = {{ pos_col }}) %>%
       vroom::vroom_write(file)
 
     return(fs::path_abs(file))
@@ -526,7 +526,7 @@ mr_mega <- function(sumstats_files, mr_mega_bin, marker_col = MARKER, chr_col = 
 
   # read results
   cli::cli_alert_info("Reading MR-MEGA results")
-  mrmega_res <- vroom(paste0(mrmega_outfile, ".result")) %>%
+  mrmega_res <- vroom::vroom(paste0(mrmega_outfile, ".result")) %>%
     janitor::clean_names()
 
   return(mrmega_res)
@@ -535,13 +535,13 @@ mr_mega <- function(sumstats_files, mr_mega_bin, marker_col = MARKER, chr_col = 
   
 ```{r example-mr_mega}
 #' \dontrun{
-#' mr_mega(sumstats_files = list("/path/to/sumstats_1.txt.gz", "/path/to/sumstats_2.txt.gz), mr_mega_bin = "/path/to/MR-MEGA")
+mr_mega(sumstats_files = list("/path/to/sumstats_1.txt.gz", "/path/to/sumstats_2.txt.gz"), mr_mega_bin = "/path/to/MR-MEGA")
 #' }
 ```
   
 ```{r tests-mr_mega}
 test_that("mr_mega works", {
-  expect_true(inherits(mr_mega, "function")) 
+  expect_true(inherits(mr_mega, "function"))
 })
 ```
   
@@ -571,24 +571,26 @@ The `plink_extract_ld` function is a wrapper around the `plink` v1.9 binary, whi
 #' @export
 #' @concept genomics
 #' @family {linkage disequilibrium}
-#' 
-plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile, threads = 1, memory = 16000, 
+#'
+plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile, threads = 1, memory = 16000,
                              plink_bin) {
+  snp_id <- df %>%
+    select(SNP = {{ snp_col }}) %>%
+    head(1) %>%
+    pull(SNP)
 
-  snp_id <- df %>% select(SNP = {{snp_col}}) %>% head(1) %>% pull(SNP)
-  
   snp_file <- fs::file_temp(pattern = snp_id)
 
   ld_dir <- fs::path_temp(snp_id)
-  
+
   fs::dir_create(ld_dir, recurse = TRUE)
 
   df %>%
-    select(SNP = {{ snp_col }}, snp_ideffect_allele = {{ effect_allele_col }}) %>%
-    write_tsv(snp_file, col_names = FALSE)
+    dplyr::select(SNP = {{ snp_col }}, snp_ideffect_allele = {{ effect_allele_col }}) %>%
+    readr::write_tsv(snp_file, col_names = FALSE)
 
   cli::cli_alert_info("Extracting LD")
-  
+
   processx::run(plink_bin,
     args = c(
       "--threads", threads,
@@ -605,24 +607,24 @@ plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile
     echo = TRUE
   )
 
-  ld_matrix <- data.table::fread(fs::path(ld_dir, "LD.ld.gz"), col.names = df %>% pull({{snp_col}})) %>%
+  ld_matrix <- data.table::fread(fs::path(ld_dir, "LD.ld.gz"), col.names = df %>% pull({{ snp_col }})) %>%
     as.matrix()
-  
-  rownames(ld_matrix) <- df %>% pull({{snp_col}})
-  
+
+  rownames(ld_matrix) <- df %>% dplyr::pull({{ snp_col }})
+
   return(ld_matrix)
 }
 ```
   
-```{r example-plink_extract_ld}
+```{r example-plink_extract_ld, include=FALSE}
 #' \dontrun{
-#' plink_extract_ld(df, snp_col, effect_allele_col, metric = "r", bfile = "/path/to/reference/panel/", plink_bin = "/path/to/plink1.9")
+plink_extract_ld(df, snp_col, effect_allele_col, metric = "r", bfile = "/path/to/reference/panel/", plink_bin = "/path/to/plink1.9")
 #' }
 ```
   
 ```{r tests-plink_extract_ld}
 test_that("plink_extract_ld works", {
-  expect_true(inherits(plink_extract_ld, "function")) 
+  expect_true(inherits(plink_extract_ld, "function"))
 })
 ```
   
@@ -662,9 +664,9 @@ This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that take
 
 ```{r function-hyprcoloc_df}
 #' Run multi-trait colocalization using HyPrColoc
-#' 
+#'
 #' This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that takes a dataframe as input, and performs mutli-trait colocalization. Details of the HyPrColoc method are described in Foley et al. (Nature Communications 2021; <https://doi.org/10.1038/s41467-020-20885-8>).
-#' 
+#'
 #' @param df Dataframe containing summary statistics at a single locus, in a "long" format, with one row per variant per trait.
 #' @param trait_col Column containing trait names
 #' @param snp_col Column containing variant names (eg. rsid, marker_name), which should be consistent across studies
@@ -682,24 +684,24 @@ This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that take
 
 hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta, se_col = se, type_col = type, ...) {
   df <- df %>%
-    select(trait = {{ trait_col }}, rsid = {{ snp_col }}, beta.exposure = {{ beta_col }}, se.exposure = {{ se_col }}, type = {{ type_col }}) %>%
-    distinct(rsid, trait, .keep_all = TRUE) %>%
+    dplyr::select(trait = {{ trait_col }}, rsid = {{ snp_col }}, beta.exposure = {{ beta_col }}, se.exposure = {{ se_col }}, type = {{ type_col }}) %>%
+    dplyr::distinct(rsid, trait, .keep_all = TRUE) %>%
     tidyr::drop_na()
 
   # return(df)
 
   .betas <- df %>%
-    select(rsid, beta.exposure, trait) %>%
-    distinct(rsid, trait, .keep_all = TRUE) %>%
-    pivot_wider(names_from = trait, values_from = beta.exposure) %>%
+    dplyr::select(rsid, beta.exposure, trait) %>%
+    dplyr::distinct(rsid, trait, .keep_all = TRUE) %>%
+    tidyr::pivot_wider(names_from = trait, values_from = beta.exposure) %>%
     tibble::column_to_rownames(var = "rsid") %>%
     tidyr::drop_na() %>%
     as.matrix()
 
   .ses <- df %>%
-    select(rsid, se.exposure, trait) %>%
-    distinct(rsid, trait, .keep_all = TRUE) %>%
-    pivot_wider(names_from = trait, values_from = se.exposure) %>%
+    dplyr::select(rsid, se.exposure, trait) %>%
+    dplyr::distinct(rsid, trait, .keep_all = TRUE) %>%
+    tidyr::pivot_wider(names_from = trait, values_from = se.exposure) %>%
     tibble::column_to_rownames(var = "rsid") %>%
     tidyr::drop_na() %>%
     as.matrix()
@@ -709,13 +711,13 @@ hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta,
   .trait_names <- colnames(.betas)
 
   .binary <- df %>%
-    select(trait, type) %>%
+    dplyr::select(trait, type) %>%
     unique() %>%
-    pivot_wider(names_from = trait, values_from = type) %>%
+    tidyr::pivot_wider(names_from = trait, values_from = type) %>%
     tidyr::drop_na() %>%
     as.matrix()
 
-  .possibly_hyprcoloc <- possibly(hyprcoloc::hyprcoloc)
+  .possibly_hyprcoloc <- purrr::possibly(hyprcoloc::hyprcoloc)
   # .safely_hyprcoloc <- purrr::safely(hyprcoloc::hyprcoloc)
 
   .result <- .possibly_hyprcoloc(.betas, .ses, trait.names = .trait_names, snp.id = .ids, binary.outcomes = .binary, ...)
@@ -732,24 +734,28 @@ hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta,
 }
 ```
   
-```{r example-hyprcoloc_df}
+```{r example-hyprcoloc_df, include=FALSE}
 #' \dontrun{
-#' hyprcoloc_df(gwas_results_df)
+hyprcoloc_df(gwas_results_df)
 #' }
 ```
   
 ```{r tests-hyprcoloc_df}
 test_that("hyprcoloc_df works", {
-  expect_true(inherits(hyprcoloc_df, "function")) 
-  
-  df <- tibble::tibble(rsid = letters,
-                       beta = runif(26, min = -1, max = 1),
-                       se = runif(26)) %>%
-    tidyr::crossing(trait = letters[1:3],
-             type = c(1, 0, 0))
+  expect_true(inherits(hyprcoloc_df, "function"))
+
+  df <- tibble::tibble(
+    rsid = letters,
+    beta = runif(26, min = -1, max = 1),
+    se = runif(26)
+  ) %>%
+    tidyr::crossing(
+      trait = letters[1:3],
+      type = c(1, 0, 0)
+    )
 
   hyprcoloc_res <- hyprcoloc_df(df)
-  
+
   expect_true(inherits(hyprcoloc_res, "hyprcoloc"))
 })
 ```
@@ -759,9 +765,9 @@ test_that("hyprcoloc_df works", {
     
 ```{r function-coloc_run}
 #' Run Bayesian enumeration colocalization using Coloc
-#' 
+#'
 #' This function is a wrapper around [coloc::coloc.abf()] that takes a dataframe as input, and performs colocalization under the single-causal-variant assumption. Coloc was described in Giambartolomei et al. (PLOS Genetics 2014; <https://doi.org/10.1371/journal.pgen.1004383>).
-#' 
+#'
 #' @param df Dataframe containing summary statistics at a single locus for two traits in a "long" format, with one row per variant per trait.
 #' @param trait_col Column containing trait names
 #' @param variant_col Column containing unique variant identifiers (Eg. rsids, chr:pos)
@@ -779,77 +785,79 @@ test_that("hyprcoloc_df works", {
 #' @return A list containing coloc results.
 #' - `summary` is a named vector containing the number of snps, and the posterior probabilities of the 5 colocalization hypotheses
 #' - `results` is an annotated version of the input data containing log approximate Bayes Factors and posterior probability of each SNP being causal if H4 is true.
-#' 
+#'
 #' @concept genomics
 #' @family {colocalization}
 #' @export
 
 coloc_run <- function(df, trait_col = trait, variant_col = rsid, beta_col = beta, se_col = se, samplesize_col = samplesize, maf_col = maf, type_col = type, case_prop_col = case_prop, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, ...) {
-  
-df <- df %>% 
-    select(trait = {{trait_col}}, maf = {{maf_col}}, type = {{type_col}}, variant_id = {{variant_col}}, beta = {{beta_col}}, se = {{se_col}}, samplesize = {{samplesize_col}}, case_prop = {{case_prop_col}}) %>%
-    add_count(variant_id) %>%
-    filter(n == 2)
-  
+  df <- df %>%
+    dplyr::select(trait = {{ trait_col }}, maf = {{ maf_col }}, type = {{ type_col }}, variant_id = {{ variant_col }}, beta = {{ beta_col }}, se = {{ se_col }}, samplesize = {{ samplesize_col }}, case_prop = {{ case_prop_col }}) %>%
+    dplyr::add_count(variant_id) %>%
+    dplyr::filter(n == 2)
+
   trait_dfs <- df %>%
-    distinct(trait)
-  
-  if(nrow(trait_dfs) != 2) {
+    dplyr::distinct(trait)
+
+  if (nrow(trait_dfs) != 2) {
     cli::cli_abort("The input dataframe must contain only two traits")
   }
-  
+
   trait1 <- df %>%
-    filter(trait == trait_dfs$trait[1]) %>%
-    distinct(variant_id, .keep_all = TRUE)
-  
+    dplyr::filter(trait == trait_dfs$trait[1]) %>%
+    dplyr::distinct(variant_id, .keep_all = TRUE)
+
   trait2 <- df %>%
-    filter(trait == trait_dfs$trait[2]) %>%
-    distinct(variant_id, .keep_all = TRUE)
-  
-  trait1_dataset <- list(beta = trait1$beta, #If log_OR column is full of NAs then use beta column instead
-                          varbeta = trait1$se^2,
-                          # pvalues = trait1$pval,
-                          type = unique(trait1$type), 
-                          snp = trait1$variant_id,
-                          N = trait1$samplesize,
-                          # {if(unique(trait1$type) == "cc") {s = trait1$case_prop[1]}},
-                          MAF = trait1$maf)
-  
-  trait2_dataset <- list(beta = trait2$beta, #If log_OR column is full of NAs then use beta column instead
-                          varbeta = trait2$se^2,
-                          # pvalues = trait2$pval,
-                          type = unique(trait2$type), 
-                          snp = trait2$variant_id,
-                          N = trait2$samplesize,
-                         # {if(unique(trait2$type) == "cc") {s = trait1$case_prop[2]}},
-                          MAF = trait2$maf)
-  
+    dplyr::filter(trait == trait_dfs$trait[2]) %>%
+    dplyr::distinct(variant_id, .keep_all = TRUE)
+
+  trait1_dataset <- list(
+    beta = trait1$beta, # If log_OR column is full of NAs then use beta column instead
+    varbeta = trait1$se^2,
+    # pvalues = trait1$pval,
+    type = unique(trait1$type),
+    snp = trait1$variant_id,
+    N = trait1$samplesize,
+    # {if(unique(trait1$type) == "cc") {s = trait1$case_prop[1]}},
+    MAF = trait1$maf
+  )
+
+  trait2_dataset <- list(
+    beta = trait2$beta, # If log_OR column is full of NAs then use beta column instead
+    varbeta = trait2$se^2,
+    # pvalues = trait2$pval,
+    type = unique(trait2$type),
+    snp = trait2$variant_id,
+    N = trait2$samplesize,
+    # {if(unique(trait2$type) == "cc") {s = trait1$case_prop[2]}},
+    MAF = trait2$maf
+  )
+
   suppressWarnings(coloc_res <- coloc::coloc.abf(dataset1 = trait1_dataset, dataset2 = trait2_dataset, p1 = p1, p2 = p2, p12 = p12, ...))
   return(coloc_res)
 }
 ```
   
-```{r example-coloc_run}
+```{r example-coloc_run, include=FALSE}
 #' \dontrun{
-#' coloc_run(locus_df)
+coloc_run(locus_df)
 #' }
 ```
   
 ```{r tests-coloc_run}
 test_that("coloc_run works", {
-  expect_true(inherits(coloc_run, "function")) 
+  expect_true(inherits(coloc_run, "function"))
 })
 
 test_that("coloc_run returns a list", {
-  
-  locus_df1 <- tibble::tibble(trait = "A", rsid = letters, beta = runif(26, min = -1), se = runif(26, max = 0.2), p_value = runif(1, min = 1/1e5, max = 0.99), samplesize = 10000, maf = runif(26), type = "quant", case_prop = NA)
-  locus_df2 <- tibble::tibble(trait = "B", rsid = letters, beta = runif(26, min = -1), se = runif(26, max = 0.2), p_value = runif(1, min = 1/1e5, max = 0.99), samplesize = 10000, maf = runif(26), type = "cc", case_prop = 0.2)
-  
+  locus_df1 <- tibble::tibble(trait = "A", rsid = letters, beta = runif(26, min = -1), se = runif(26, max = 0.2), p_value = runif(1, min = 1 / 1e5, max = 0.99), samplesize = 10000, maf = runif(26), type = "quant", case_prop = NA)
+  locus_df2 <- tibble::tibble(trait = "B", rsid = letters, beta = runif(26, min = -1), se = runif(26, max = 0.2), p_value = runif(1, min = 1 / 1e5, max = 0.99), samplesize = 10000, maf = runif(26), type = "cc", case_prop = 0.2)
+
   locus_df <- dplyr::bind_rows(locus_df1, locus_df2)
-  
+
   coloc_res <- coloc_run(locus_df)
-  
-  expect_true(inherits(coloc_res, "list")) 
+
+  expect_true(inherits(coloc_res, "list"))
 })
 ```
   
@@ -867,45 +875,45 @@ This function implements the simple Bayesian finemapping approach described in M
     
 ```{r function-calc_credset}
 #' Perform Bayesian finemapping using the Approximate Bayes Factor approach
-#' 
+#'
 #' Description
-#' 
+#'
 #' @param df Dataframe containing GWAS summary statistics
-#' @param locus_marker_col Column containing a locus-level identifier 
+#' @param locus_marker_col Column containing a locus-level identifier
 #' @param effect_col Column containing effect estimates
 #' @param se_col Column containing standard errors fo the effect estimates
 #' @param samplesize_col Column containing sample sizes
 #' @param cred_interval Credible interval for the fine-mapped credible sets (default = 0.99; 0.95 is another common but artbitrarily determined interval)
 #'
 #' @return A data.frame containing credible sets at each locus. For each variant within the credible set, the prior probability of being the casual variant is provided.
-#' 
+#'
 #' @export
 #' @family {finemapping}
 #' @concept genomics
 
 calc_credset <- function(df, locus_marker_col = locus_marker, effect_col = effect, se_col = std_err, samplesize_col = samplesize, cred_interval = 0.99) {
   df %>%
-    group_by({{ locus_marker_col }}) %>%
-    mutate(bf = exp(0.5 * ({{ effect_col }}^2 / {{ se_col }}^2 - log({{ samplesize_col }})))) %>%
-    mutate(posterior_prob = bf / sum(bf)) %>%
-    arrange(desc(posterior_prob)) %>%
-    mutate(cum_sum = cumsum(posterior_prob)) %>%
-    group_by({{ locus_marker_col }}) %>%
-    filter(cum_sum <= cred_interval | posterior_prob > cred_interval) %>%
-    select(-cum_sum) %>%
-    ungroup()
+    dplyr::group_by({{ locus_marker_col }}) %>%
+    dplyr::mutate(bf = exp(0.5 * ({{ effect_col }}^2 / {{ se_col }}^2 - log({{ samplesize_col }})))) %>%
+    dplyr::mutate(posterior_prob = bf / sum(bf)) %>%
+    dplyr::arrange(dplyr::desc(posterior_prob)) %>%
+    dplyr::mutate(cum_sum = cumsum(posterior_prob)) %>%
+    dplyr::group_by({{ locus_marker_col }}) %>%
+    dplyr::filter(cum_sum <= cred_interval | posterior_prob > cred_interval) %>%
+    dplyr::select(-cum_sum) %>%
+    dplyr::ungroup()
 }
 ```
   
-```{r example-calc_credset}
+```{r example-calc_credset, include=FALSE}
 #' \dontrun{
-#' calc_credset(gwas_df)
+calc_credset(gwas_df)
 #' }
 ```
   
 ```{r tests-calc_credset}
 test_that("calc_credset works", {
-  expect_true(inherits(calc_credset, "function")) 
+  expect_true(inherits(calc_credset, "function"))
 })
 ```
 
@@ -915,7 +923,7 @@ This function implements the CARMA finemapping approach described in Yang et al.
     
 ```{r function-run_carma}
 #' Perform Bayesian finemapping using CARMA
-#' 
+#'
 #' This function is a wrapper around [CARMA::CARMA()] that takes a dataframe containing variants at a locus and performs Bayesian finemapping based on their signed z-scores and an LD reference panel. The function requires a plink-formatted LD reference panel (`bfile`), which will be used to generate a signed LD matrix at the locus. CARMA was described in Yang et al. (Nature Genetics 2023; <https://doi.org/10.1038/s41588-023-01392-0>)
 #'
 #' @param df Dataframe containing variants at a locus for finemapping
@@ -930,59 +938,58 @@ This function implements the CARMA finemapping approach described in Yang et al.
 #' @param ... additional arguments passsed to [CARMA::CARMA()]
 #'
 #' @return A dataframe containing the input dataframe, and additional columns denoting which credible set (`CS`) each variant belongs to, as well as the posterior inclusion probability (`PIP`), and an `ld_error` column noting whether there were problems generating the LD matrix that limited fine-mapping.
-#' 
+#'
 #' @export
 #' @family {finemapping}
 #' @concept genomics
 
 run_carma <- function(df, snp_col, z_col, effect_allele_col, outlier_switch = TRUE, bfile, threads = 1, memory = 16000, plink_bin, ...) {
-  
   sumstat <- df
-  
-  plink_extract_ld_possibly <- purrr::possibly(levinmisc::plink_extract_ld) 
-  
+
+  plink_extract_ld_possibly <- purrr::possibly(levinmisc::plink_extract_ld)
+
   ld <- df %>%
-    plink_extract_ld_possibly(bfile = bfile, plink_bin = plink_bin, snp_col = {{snp_col}}, effect_allele_col = {{effect_allele_col}})
-  
-  if(is.null(ld)) {
+    plink_extract_ld_possibly(bfile = bfile, plink_bin = plink_bin, snp_col = {{ snp_col }}, effect_allele_col = {{ effect_allele_col }})
+
+  if (is.null(ld)) {
     return(sumstat %>% mutate(ld_error = TRUE))
   }
-  
+
   # if(!is.null(ld$error)) {
   #   sumstat <- sumstat %>%
   #     mutate(ld = ld$error)
   #   return(sumstat)
   # }
-  
+
   cli::cli_alert_info("Running CARMA")
-  z.list<-list()
-  ld.list<-list()
-  lambda.list<-list()
-  z.list[[1]] <- sumstat %>% pull({{z_col}})
+  z.list <- list()
+  ld.list <- list()
+  lambda.list <- list()
+  z.list[[1]] <- sumstat %>% pull({{ z_col }})
   ld.list[[1]] <- as.matrix(ld)
   lambda.list[[1]] <- 1
-  CARMA.results <- CARMA::CARMA(z.list, ld.list, lambda.list=lambda.list, outlier.switch = outlier_switch, ...)
-  
-  sumstat.result <- sumstat %>% mutate(PIP = CARMA.results[[1]]$PIPs, CS = 0)
-  if(length(CARMA.results[[1]]$`Credible set`[[2]])!=0){
-    for(l in 1:length(CARMA.results[[1]]$`Credible set`[[2]])){
-    sumstat.result$CS[CARMA.results[[1]]$`Credible set`[[2]][[l]]]=l
+  CARMA.results <- CARMA::CARMA(z.list, ld.list, lambda.list = lambda.list, outlier.switch = outlier_switch, ...)
+
+  sumstat.result <- sumstat %>% dplyr::mutate(PIP = CARMA.results[[1]]$PIPs, CS = 0)
+  if (length(CARMA.results[[1]]$`Credible set`[[2]]) != 0) {
+    for (l in 1:length(CARMA.results[[1]]$`Credible set`[[2]])) {
+      sumstat.result$CS[CARMA.results[[1]]$`Credible set`[[2]][[l]]] <- l
     }
   }
-  
+
   return(sumstat.result)
 }
 ```
   
-```{r example-run_carma}
+```{r example-run_carma, include=FALSE}
 #' \dontrun{
-#' run_carma(locus_df, snp_col = SNP, z_col = z, effect_allele_col = allele1)
+run_carma(locus_df, snp_col = SNP, z_col = z, effect_allele_col = allele1)
 #' }
 ```
   
 ```{r tests-run_carma}
 test_that("run_carma works", {
-  expect_true(inherits(run_carma, "function")) 
+  expect_true(inherits(run_carma, "function"))
 })
 ```
   
@@ -999,9 +1006,9 @@ This function provides a wrapper to MAGMA, which performs gene-based testing fro
     
 ```{r function-magmar}
 #' Run MAGMA gene-based analysis
-#' 
+#'
 #' This function provides a wrapper to MAGMA, which performs gene-based testing from GWAS summary statistics. Details of MAGMA described in de Leeuw et al. (PLoS Cumputational Biology 2015; <https://doi.org/10.1371/journal.pcbi.1004219>). The MAGMA binary and reference files are available from the Complex Trait Genetics lab (<https://ctg.cncr.nl/software/magma>).
-#' 
+#'
 #' @param sumstats_df Dataframe containing GWAS summary statistics
 #' @param pval_col Column containing p-values
 #' @param snp_col Column containing rsids
@@ -1015,12 +1022,12 @@ This function provides a wrapper to MAGMA, which performs gene-based testing fro
 #' @concept genomics
 #' @family Gene-based testing
 #' @export
-#' 
+#'
 magmar <- function(sumstats_df, pval_col = p_value, snp_col = rsid, samplesize_col = samplesize, magma_bin, bfile, gene_file, out_file) {
   cli::cli_progress_step("Writing summary statistics to temporary file")
   sumstats_file <- fs::file_temp()
   sumstats_df %>%
-    select(SNP = {{ snp_col }}, P = {{ pval_col }}, N = {{ samplesize_col }}) %>%
+    dplyr::select(SNP = {{ snp_col }}, P = {{ pval_col }}, N = {{ samplesize_col }}) %>%
     vroom::vroom_write(sumstats_file)
 
 
@@ -1051,15 +1058,15 @@ magmar <- function(sumstats_df, pval_col = p_value, snp_col = rsid, samplesize_c
 }
 ```
   
-```{r example-magmar}
+```{r example-magmar, include=FALSE}
 #' \dontrun{
-#' magmar(sumstats_df, magma_bin = "/path/to/magma", bfile = "/path/to/bfiles", gene_file = "/path/to/genes", out_file = "magma_output")
+magmar(sumstats_df, magma_bin = "/path/to/magma", bfile = "/path/to/bfiles", gene_file = "/path/to/genes", out_file = "magma_output")
 #' }
 ```
   
 ```{r tests-magmar}
 test_that("magmar works", {
-  expect_true(inherits(magmar, "function")) 
+  expect_true(inherits(magmar, "function"))
 })
 ```
     
@@ -1068,7 +1075,7 @@ test_that("magmar works", {
     
 ```{r function-s_predixcan}
 #' Run a TWAS using S-PrediXcan
-#' 
+#'
 #' This function is a wrapper around S-PrediXcan, a method of integrating GWAS summary statistics with gene-expression/splicing data to identify genes associated with a trait. The PrediXcan/MetaXcan method is described in Barbeira et al. (Nature Communications 2018; <https://doi.org/10.1038/s41467-018-03621-1>). The MetaXcan tools can be found on Github (<https://github.com/hakyimlab/MetaXcan>) and PredictDB (<https://predictdb.org/>). If S-PrediXcan is run across multiple tissues, the results can be integrated using [levinmisc::s_multixcan()].
 
 #' @param df Dataframe containing GWAS summary statistics
@@ -1083,7 +1090,7 @@ test_that("magmar works", {
 #' @param pval Column containing p-value
 #' @param samplesize Column containing samplesize
 #' @param data Path to MetaXcan data (eg. `"MetaXcan/data"`)
-#' @param metaxcan Path to MetaXcan (eg. `"MetaXcan/software"`) 
+#' @param metaxcan Path to MetaXcan (eg. `"MetaXcan/software"`)
 #' @param output Output directory to save S-PrediXcan results
 #' @param model_db_path Path to PrediXcan model database
 #' @param model_covariance_path Path to PrediXcan model covariance
@@ -1103,9 +1110,9 @@ s_predixcan <- function(df, snp = SNP, effect_allele = effect_allele, other_alle
   # write temporary summary statistics file for harmonization
   .fn <- tempfile()
   df %>%
-    select(rsid = {{ snp }}, noneffect_allele = {{ other_allele }}, effect_allele = {{ effect_allele }}, effect = {{ beta }}, p_value = {{ pval }}) %>%
+    dplyr::select(rsid = {{ snp }}, noneffect_allele = {{ other_allele }}, effect_allele = {{ effect_allele }}, effect = {{ beta }}, p_value = {{ pval }}) %>%
     vroom::vroom_write(.fn)
-  
+
   .eqtl_name <- fs::path_file(model_db_path) %>% str_replace("\\.db$", "")
   .harmonize <- paste0(
     "export DATA=", shQuote(data, type = shell),
@@ -1150,22 +1157,22 @@ s_predixcan <- function(df, snp = SNP, effect_allele = effect_allele, other_alle
   # system(.harmonize)
 
   vroom::vroom(fs::path(output, paste0(trait_name, "_", .eqtl_name, "_S-prediXcan.csv"))) %>%
-    mutate(tissue = .eqtl_name) %>%
+    dplyr::mutate(tissue = .eqtl_name) %>%
     data.table::fwrite(fs::path(output, paste0(trait_name, "_", .eqtl_name, "_S-prediXcan.csv")))
 
   return(fs::path(output, paste0(trait_name, "_", .eqtl_name, "_S-prediXcan.csv")))
 }
 ```
   
-```{r example-s_predixcan}
+```{r example-s_predixcan, include=FALSE}
 #' \dontrun{
-#' s_predixcan(df, data = "MetaXcan/data", metaxcan = "MetaXcan/software", output = "/path/to/output", model_db_path = "MetaXcan/data/models/eqtl/mashr/mashr_Liver.db", model_covariance_path = "MetaXcan/data/models/eqtl/mashr/mashr_Liver.txt.gz", trait_name = "GWAS_trait")
+s_predixcan(df, data = "MetaXcan/data", metaxcan = "MetaXcan/software", output = "/path/to/output", model_db_path = "MetaXcan/data/models/eqtl/mashr/mashr_Liver.db", model_covariance_path = "MetaXcan/data/models/eqtl/mashr/mashr_Liver.txt.gz", trait_name = "GWAS_trait")
 #' }
 ```
   
 ```{r tests-s_predixcan}
 test_that("s_predixcan works", {
-  expect_true(inherits(s_predixcan, "function")) 
+  expect_true(inherits(s_predixcan, "function"))
 })
 ```
       
@@ -1174,8 +1181,8 @@ test_that("s_predixcan works", {
     
 ```{r function-s_multixcan}
 #' Integrate PrediXcan data across tissues
-#' 
-#' This function is a wrapper around S-MultiXcan, a tool for identifying genes associate with a trait using GWAS summary statistics. This approach leverages the sharing of eQTLs acorss tissues to improve upon tissue-specific TWAS-methods like S-PrediXcan. This method uses data generated by [levinmisc::s_predixcan()]. The S-MultiXcan method was described in Barbeira et al. (PLOS Genetics 2019; <https://doi.org/10.1371/journal.pgen.1007889>). The MetaXcan tools can be found on Github (<https://github.com/hakyimlab/MetaXcan>) and PredictDB (<https://predictdb.org/>). 
+#'
+#' This function is a wrapper around S-MultiXcan, a tool for identifying genes associate with a trait using GWAS summary statistics. This approach leverages the sharing of eQTLs acorss tissues to improve upon tissue-specific TWAS-methods like S-PrediXcan. This method uses data generated by [levinmisc::s_predixcan()]. The S-MultiXcan method was described in Barbeira et al. (PLOS Genetics 2019; <https://doi.org/10.1371/journal.pgen.1007889>). The MetaXcan tools can be found on Github (<https://github.com/hakyimlab/MetaXcan>) and PredictDB (<https://predictdb.org/>).
 
 #' @param df Dataframe containing GWAS summary statistics
 #' @param snp Column containing rsids
@@ -1201,7 +1208,7 @@ test_that("s_predixcan works", {
 #' @param models_name_pattern Filter used to extract trait name from the model (default = `"mashr_(.*)\\.db"`)
 #' @param snp_covariance Path to file containing S-MultiXcan covariance (eg. `"MetaXcan/data/models/gtex_v8_expression_mashr_snp_smultixcan_covariance.txt.gz"`)
 #' @param data Path to MetaXcan data (eg. `"MetaXcan/data"`)
-#' @param metaxcan Path to MetaXcan (eg. `"MetaXcan/software"`) 
+#' @param metaxcan Path to MetaXcan (eg. `"MetaXcan/software"`)
 #'
 #' @return A dataframe containing S-MultiXcan results
 #' @import dplyr
@@ -1215,7 +1222,7 @@ s_multixcan <- function(df, models_folder, models_name_filter = ".*db", models_n
 
   gwas_file <- fs::file_temp()
   df %>%
-    select(rsid = {{ snp }}, noneffect_allele = {{ other_allele }}, effect_allele = {{ effect_allele }}, effect = {{ beta }}, p_value = {{ pval }}) %>%
+    dplyr::select(rsid = {{ snp }}, noneffect_allele = {{ other_allele }}, effect_allele = {{ effect_allele }}, effect = {{ beta }}, p_value = {{ pval }}) %>%
     tidyr::drop_na() %>%
     vroom::vroom_write(gwas_file)
 
@@ -1283,24 +1290,25 @@ s_multixcan <- function(df, models_folder, models_name_filter = ".*db", models_n
 }
 ```
   
-```{r example-s_multixcan}
+```{r example-s_multixcan, include=FALSE}
 #' \dontrun{
-#' s_multixcan(df, 
-#'  models_folder = "MetaXcan/data/models/eqtl/mashr/",
-#'  models_name_filter = ".*\\.db",
-#'  models_name_pattern = "mashr_(.*)\\.db",
-#'  metaxcan_folder = "/path/to/metaxcan_files/,
-#'  metaxcan_filter = "GWAS-trait_mashr_(.*)_S-prediXcan.csv",
-#'  metaxcan_file_name_parse_pattern = "(.*)_mashr_(.*)_S-prediXcan.csv",
-#'  data = "MetaXcan/data",
-#'  metaxcan = "MetaXcan/software",
-#'  snp_covariance = "MetaXcan/data/models/gtex_v8_expression_mashr_snp_smultixcan_covariance.txt.gz")
+s_multixcan(df,
+  models_folder = "MetaXcan/data/models/eqtl/mashr/",
+  models_name_filter = ".*\\.db",
+  models_name_pattern = "mashr_(.*)\\.db",
+  metaxcan_folder = "/path/to/metaxcan_files/",
+  metaxcan_filter = "GWAS-trait_mashr_(.*)_S-prediXcan.csv",
+  metaxcan_file_name_parse_pattern = "(.*)_mashr_(.*)_S-prediXcan.csv",
+  data = "MetaXcan/data",
+  metaxcan = "MetaXcan/software",
+  snp_covariance = "MetaXcan/data/models/gtex_v8_expression_mashr_snp_smultixcan_covariance.txt.gz"
+)
 #' }
 ```
   
 ```{r tests-s_multixcan}
 test_that("s_multixcan works", {
-  expect_true(inherits(s_multixcan, "function")) 
+  expect_true(inherits(s_multixcan, "function"))
 })
 ```
   
@@ -1312,15 +1320,15 @@ test_that("s_multixcan works", {
     
 ```{r function-ldak_h2}
 #' Calculate heritability using LDAK
-#' 
+#'
 #' This function wraps LDAK, a command-line tool for estimating heritability. The tool and associated reference files can be download from the LDAK website (<https://ldak.org/>). The method is described in Zhang et al. (Nature Communications 2021; <https://doi.org/10.1038/s41467-021-24485-y).
-#' 
-#' @param sumstats_file Path to "munged" GWAS summary statistics file in LDSC format. The current implementation of this function requires rsids to link to other LDAK files. 
+#'
+#' @param sumstats_file Path to "munged" GWAS summary statistics file in LDSC format. The current implementation of this function requires rsids to link to other LDAK files.
 #' @param ldak_bin Path to LDAK binary
 #' @param ldak_tagfile Path to LDAK tagfile
 #' @param sample_prev Sample prevalence of cases (for case-control studies), `NULL` (default) for quantitative traits
 #' @param population_prev Population prevalence of cases in the sample (for case-control studies), `NULL` (default) for quantitative traits
-#' @param hm3_file Path to hm3 file containing 
+#' @param hm3_file Path to hm3 file containing
 #' @param ldak_cutoff Minor allele frequency cutoff (default = 0.01)
 #'
 #' @return List of dataframes containing LDAK results
@@ -1336,7 +1344,7 @@ ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, p
   ldak_tagfile <- fs::path_abs(ldak_tagfile)
   ldak_in <- fs::file_temp()
   ldak_dir <- fs::path_temp()
-  
+
   # Category annotations
   ldak_annotations <- glue::glue("1 Coding_UCSC*
 2 Coding_UCSC.extend.500
@@ -1404,9 +1412,9 @@ ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, p
 64 CpG_Content_50kb
 65 LDAK_Weightings
 66 Base_Category") %>%
-  read_delim(col_names = c("category", "annotation"), delim = " ") %>%
-  mutate(binary = str_detect(annotation, "\\*")) %>%
-  mutate(annotation = str_replace(annotation, "\\*", ""))
+    readr::read_delim(col_names = c("category", "annotation"), delim = " ") %>%
+    dplyr::mutate(binary = str_detect(annotation, "\\*")) %>%
+    dplyr::mutate(annotation = str_replace(annotation, "\\*", ""))
 
   # read files
   cli::cli_progress_step("Reading files")
@@ -1418,9 +1426,9 @@ ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, p
   # write summary statistics
   cli::cli_progress_step("Writing summary statistics")
   sumstats_df %>%
-    inner_join(hm3_df, by = c("SNP" = "SNP")) %>%
-    select(Predictor, A1, A2, n = N, Z) %>%
-    filter(is.finite(Z)) %>%
+    dplyr::inner_join(hm3_df, by = c("SNP" = "SNP")) %>%
+    dplyr::select(Predictor, A1, A2, n = N, Z) %>%
+    dplyr::filter(is.finite(Z)) %>%
     vroom::vroom_write(ldak_in)
 
   cli::cli_progress_step("Running LDAK")
@@ -1430,8 +1438,12 @@ ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, p
       "--summary", ldak_in,
       "--tagfile", ldak_tagfile,
       "--check-sums", "NO",
-      if(!is.null(population_prev)){c("--prevalence", population_prev)},
-      if(!is.null(sample_prev)){c("--ascertainment", sample_prev)},
+      if (!is.null(population_prev)) {
+        c("--prevalence", population_prev)
+      },
+      if (!is.null(sample_prev)) {
+        c("--ascertainment", sample_prev)
+      },
       "--cutoff", ldak_cutoff
     ),
     error_on_status = FALSE,
@@ -1441,21 +1453,21 @@ ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, p
   )
 
   h2_res <- vroom::vroom(fs::dir_ls(ldak_dir, glob = "*.hers*"), show_col_types = FALSE, col_names = c("component", "h2", "h2_sd", "influence", "influence_sd"), skip = 1) %>%
-    mutate(category = str_match(component, "\\d+")) %>%
+    dplyr::mutate(category = stringr::str_match(component, "\\d+")) %>%
     readr::type_convert() %>%
-    left_join(ldak_annotations)
+    dplyr::left_join(ldak_annotations)
   cat_res <- vroom::vroom(fs::dir_ls(ldak_dir, glob = "*.cats*"), col_names = c("component", "heritability", "sd"), show_col_types = FALSE, skip = 1) %>%
-    mutate(category = str_match(component, "\\d+")) %>%
+    dplyr::mutate(category = stringr::str_match(component, "\\d+")) %>%
     readr::type_convert() %>%
-    left_join(ldak_annotations)
+    dplyr::left_join(ldak_annotations)
   share_res <- vroom::vroom(fs::dir_ls(ldak_dir, glob = "*.share*"), col_names = c("component", "share", "sd"), show_col_types = FALSE, skip = 1) %>%
-    mutate(category = str_match(component, "\\d+")) %>%
+    dplyr::mutate(category = stringr::str_match(component, "\\d+")) %>%
     readr::type_convert() %>%
-    left_join(ldak_annotations)
+    dplyr::left_join(ldak_annotations)
   enrich_res <- vroom::vroom(fs::dir_ls(ldak_dir, glob = "*.enrich*"), col_names = c("component", "share", "share_sd", "expected", "enrichment", "enrichment_sd"), show_col_types = FALSE, skip = 1) %>%
-    mutate(category = str_match(component, "\\d+")) %>%
+    dplyr::mutate(category = str_match(component, "\\d+")) %>%
     readr::type_convert() %>%
-    left_join(ldak_annotations)
+    dplyr::left_join(ldak_annotations)
   # extra_res <- vroom::vroom(fs::dir_ls(ldak_dir, glob = "*.extra*"), show_col_types = FALSE, skip = 1)
 
   return(list(
@@ -1467,23 +1479,22 @@ ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, p
 }
 ```
   
-```{r example-ldak_h2}
+```{r example-ldak_h2, include=FALSE}
 #' \dontrun{
-#' ldak_h2(sumstats_file = "/path/to/munged_sumstats", ldak_bin = "/path/to/ldak", ldak_tagfile = "/path/to/tagfile",  hm3_file = "/path/to/hm3")
+ldak_h2(sumstats_file = "/path/to/munged_sumstats", ldak_bin = "/path/to/ldak", ldak_tagfile = "/path/to/tagfile",  hm3_file = "/path/to/hm3")
 #' }
 ```
   
 ```{r tests-ldak_h2}
 test_that("ldak_h2 works", {
-  expect_true(inherits(ldak_h2, "function")) 
+  expect_true(inherits(ldak_h2, "function"))
 })
 ```
   
 
-```{r development-inflate, eval=FALSE}
-# Run but keep eval=FALSE to avoid infinite loop
+```{r development-inflate, include=FALSE}
+# Run but keep include=FALSE to avoid infinite loop
 # Execute in the console directly
 
-fusen::inflate(flat_file = "dev/flat_genomics_functions.Rmd", vignette_name = "Genomics Functions")
+fusen::inflate(flat_file = "dev/flat_genomics_functions.Rmd", vignette_name = NA)
 ```
-

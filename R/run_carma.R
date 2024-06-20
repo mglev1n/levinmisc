@@ -24,6 +24,7 @@
 #' \dontrun{
 #' run_carma(locus_df, snp_col = SNP, z_col = z, effect_allele_col = allele1)
 #' }
+
 run_carma <- function(df, snp_col, z_col, effect_allele_col, outlier_switch = TRUE, bfile, threads = 1, memory = 16000, plink_bin, ...) {
   sumstat <- df
 
@@ -51,7 +52,7 @@ run_carma <- function(df, snp_col, z_col, effect_allele_col, outlier_switch = TR
   lambda.list[[1]] <- 1
   CARMA.results <- CARMA::CARMA(z.list, ld.list, lambda.list = lambda.list, outlier.switch = outlier_switch, ...)
 
-  sumstat.result <- sumstat %>% mutate(PIP = CARMA.results[[1]]$PIPs, CS = 0)
+  sumstat.result <- sumstat %>% dplyr::mutate(PIP = CARMA.results[[1]]$PIPs, CS = 0)
   if (length(CARMA.results[[1]]$`Credible set`[[2]]) != 0) {
     for (l in 1:length(CARMA.results[[1]]$`Credible set`[[2]])) {
       sumstat.result$CS[CARMA.results[[1]]$`Credible set`[[2]][[l]]] <- l

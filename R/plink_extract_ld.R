@@ -34,8 +34,8 @@ plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile
   fs::dir_create(ld_dir, recurse = TRUE)
 
   df %>%
-    select(SNP = {{ snp_col }}, snp_ideffect_allele = {{ effect_allele_col }}) %>%
-    write_tsv(snp_file, col_names = FALSE)
+    dplyr::select(SNP = {{ snp_col }}, snp_ideffect_allele = {{ effect_allele_col }}) %>%
+    readr::write_tsv(snp_file, col_names = FALSE)
 
   cli::cli_alert_info("Extracting LD")
 
@@ -58,7 +58,7 @@ plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile
   ld_matrix <- data.table::fread(fs::path(ld_dir, "LD.ld.gz"), col.names = df %>% pull({{ snp_col }})) %>%
     as.matrix()
 
-  rownames(ld_matrix) <- df %>% pull({{ snp_col }})
+  rownames(ld_matrix) <- df %>% dplyr::pull({{ snp_col }})
 
   return(ld_matrix)
 }

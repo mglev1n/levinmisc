@@ -19,8 +19,9 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' ldak_h2(sumstats_file = "/path/to/munged_sumstats", ldak_bin = "/path/to/ldak", ldak_tagfile = "/path/to/tagfile", hm3_file = "/path/to/hm3")
+#' ldak_h2(sumstats_file = "/path/to/munged_sumstats", ldak_bin = "/path/to/ldak", ldak_tagfile = "/path/to/tagfile",  hm3_file = "/path/to/hm3")
 #' }
+
 ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, population_prev = NULL, hm3_file, ldak_cutoff = 0.01) {
   # format paths
   cli::cli_progress_step("Formatting paths")
@@ -96,9 +97,9 @@ ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, p
 64 CpG_Content_50kb
 65 LDAK_Weightings
 66 Base_Category") %>%
-    read_delim(col_names = c("category", "annotation"), delim = " ") %>%
-    mutate(binary = str_detect(annotation, "\\*")) %>%
-    mutate(annotation = str_replace(annotation, "\\*", ""))
+    readr::read_delim(col_names = c("category", "annotation"), delim = " ") %>%
+    dplyr::mutate(binary = str_detect(annotation, "\\*")) %>%
+    dplyr::mutate(annotation = str_replace(annotation, "\\*", ""))
 
   # read files
   cli::cli_progress_step("Reading files")
@@ -110,9 +111,9 @@ ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, p
   # write summary statistics
   cli::cli_progress_step("Writing summary statistics")
   sumstats_df %>%
-    inner_join(hm3_df, by = c("SNP" = "SNP")) %>%
-    select(Predictor, A1, A2, n = N, Z) %>%
-    filter(is.finite(Z)) %>%
+    dplyr::inner_join(hm3_df, by = c("SNP" = "SNP")) %>%
+    dplyr::select(Predictor, A1, A2, n = N, Z) %>%
+    dplyr::filter(is.finite(Z)) %>%
     vroom::vroom_write(ldak_in)
 
   cli::cli_progress_step("Running LDAK")
@@ -137,21 +138,21 @@ ldak_h2 <- function(sumstats_file, ldak_bin, ldak_tagfile, sample_prev = NULL, p
   )
 
   h2_res <- vroom::vroom(fs::dir_ls(ldak_dir, glob = "*.hers*"), show_col_types = FALSE, col_names = c("component", "h2", "h2_sd", "influence", "influence_sd"), skip = 1) %>%
-    mutate(category = str_match(component, "\\d+")) %>%
+    dplyr::mutate(category = stringr::str_match(component, "\\d+")) %>%
     readr::type_convert() %>%
-    left_join(ldak_annotations)
+    dplyr::left_join(ldak_annotations)
   cat_res <- vroom::vroom(fs::dir_ls(ldak_dir, glob = "*.cats*"), col_names = c("component", "heritability", "sd"), show_col_types = FALSE, skip = 1) %>%
-    mutate(category = str_match(component, "\\d+")) %>%
+    dplyr::mutate(category = stringr::str_match(component, "\\d+")) %>%
     readr::type_convert() %>%
-    left_join(ldak_annotations)
+    dplyr::left_join(ldak_annotations)
   share_res <- vroom::vroom(fs::dir_ls(ldak_dir, glob = "*.share*"), col_names = c("component", "share", "sd"), show_col_types = FALSE, skip = 1) %>%
-    mutate(category = str_match(component, "\\d+")) %>%
+    dplyr::mutate(category = stringr::str_match(component, "\\d+")) %>%
     readr::type_convert() %>%
-    left_join(ldak_annotations)
+    dplyr::left_join(ldak_annotations)
   enrich_res <- vroom::vroom(fs::dir_ls(ldak_dir, glob = "*.enrich*"), col_names = c("component", "share", "share_sd", "expected", "enrichment", "enrichment_sd"), show_col_types = FALSE, skip = 1) %>%
-    mutate(category = str_match(component, "\\d+")) %>%
+    dplyr::mutate(category = str_match(component, "\\d+")) %>%
     readr::type_convert() %>%
-    left_join(ldak_annotations)
+    dplyr::left_join(ldak_annotations)
   # extra_res <- vroom::vroom(fs::dir_ls(ldak_dir, glob = "*.extra*"), show_col_types = FALSE, skip = 1)
 
   return(list(

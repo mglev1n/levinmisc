@@ -53,6 +53,11 @@ A data.frame containing the GWAS summary statistics from the meta-regression
 \description{
 This function is a wrapper around MR-MEGA, which uses meta-regression to combine GWAS summart statistics while accounting for study/population-specific components of genetic variation. The method was described in Magi et al. (Human Molecular Genetics 2017; \url{https://doi.org/10.1093/hmg/ddx280}), and the package can be obtained from the Estonian Genome Centre (\url{https://genomics.ut.ee/en/tools}).
 }
+\examples{
+\dontrun{
+mr_mega(sumstats_files = list("/path/to/sumstats_1.txt.gz", "/path/to/sumstats_2.txt.gz"), mr_mega_bin = "/path/to/MR-MEGA")
+}
+}
 \seealso{
 Other GWAS meta-analysis: 
 \code{\link{metal_config}()},

@@ -37,12 +37,26 @@
 #' @family Gene-based testing
 #' @concept genomics
 #' @examples
+#' \dontrun{
+#' s_multixcan(df,
+#'   models_folder = "MetaXcan/data/models/eqtl/mashr/",
+#'   models_name_filter = ".*\\.db",
+#'   models_name_pattern = "mashr_(.*)\\.db",
+#'   metaxcan_folder = "/path/to/metaxcan_files/",
+#'   metaxcan_filter = "GWAS-trait_mashr_(.*)_S-prediXcan.csv",
+#'   metaxcan_file_name_parse_pattern = "(.*)_mashr_(.*)_S-prediXcan.csv",
+#'   data = "MetaXcan/data",
+#'   metaxcan = "MetaXcan/software",
+#'   snp_covariance = "MetaXcan/data/models/gtex_v8_expression_mashr_snp_smultixcan_covariance.txt.gz"
+#' )
+#' }
+
 s_multixcan <- function(df, models_folder, models_name_filter = ".*db", models_name_pattern, snp = SNP, effect_allele = effect_allele, other_allele = other_allele, beta = beta, eaf = eaf, chr = chr, pos = pos, se = se, pval = pval, samplesize = samplesize, regularization = 0.01, cutoff_condition_number = 30, cutoff_eigen_ratio = 0.001, cutoff_threshold = 0.4, cutoff_trace_ratio = 0.01, metaxcan_folder, metaxcan_filter, metaxcan_file_name_parse_pattern, snp_covariance, metaxcan, data) {
   cli::cli_alert_info("Formatting summary statistics")
 
   gwas_file <- fs::file_temp()
   df %>%
-    select(rsid = {{ snp }}, noneffect_allele = {{ other_allele }}, effect_allele = {{ effect_allele }}, effect = {{ beta }}, p_value = {{ pval }}) %>%
+    dplyr::select(rsid = {{ snp }}, noneffect_allele = {{ other_allele }}, effect_allele = {{ effect_allele }}, effect = {{ beta }}, p_value = {{ pval }}) %>%
     tidyr::drop_na() %>%
     vroom::vroom_write(gwas_file)
 

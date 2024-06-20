@@ -32,6 +32,7 @@
 #' \dontrun{
 #' s_predixcan(df, data = "MetaXcan/data", metaxcan = "MetaXcan/software", output = "/path/to/output", model_db_path = "MetaXcan/data/models/eqtl/mashr/mashr_Liver.db", model_covariance_path = "MetaXcan/data/models/eqtl/mashr/mashr_Liver.txt.gz", trait_name = "GWAS_trait")
 #' }
+
 s_predixcan <- function(df, snp = SNP, effect_allele = effect_allele, other_allele = other_allele, beta = beta, eaf = eaf, chr = chr, pos = pos, se = se, pval = pval, samplesize = samplesize, data, metaxcan, output, model_db_path, model_covariance_path, trait_name) {
   fs::dir_create(output, recurse = TRUE)
 
@@ -39,7 +40,7 @@ s_predixcan <- function(df, snp = SNP, effect_allele = effect_allele, other_alle
   # write temporary summary statistics file for harmonization
   .fn <- tempfile()
   df %>%
-    select(rsid = {{ snp }}, noneffect_allele = {{ other_allele }}, effect_allele = {{ effect_allele }}, effect = {{ beta }}, p_value = {{ pval }}) %>%
+    dplyr::select(rsid = {{ snp }}, noneffect_allele = {{ other_allele }}, effect_allele = {{ effect_allele }}, effect = {{ beta }}, p_value = {{ pval }}) %>%
     vroom::vroom_write(.fn)
 
   .eqtl_name <- fs::path_file(model_db_path) %>% str_replace("\\.db$", "")
@@ -86,7 +87,7 @@ s_predixcan <- function(df, snp = SNP, effect_allele = effect_allele, other_alle
   # system(.harmonize)
 
   vroom::vroom(fs::path(output, paste0(trait_name, "_", .eqtl_name, "_S-prediXcan.csv"))) %>%
-    mutate(tissue = .eqtl_name) %>%
+    dplyr::mutate(tissue = .eqtl_name) %>%
     data.table::fwrite(fs::path(output, paste0(trait_name, "_", .eqtl_name, "_S-prediXcan.csv")))
 
   return(fs::path(output, paste0(trait_name, "_", .eqtl_name, "_S-prediXcan.csv")))

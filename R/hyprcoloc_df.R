@@ -22,26 +22,27 @@
 #' \dontrun{
 #' hyprcoloc_df(gwas_results_df)
 #' }
+
 hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta, se_col = se, type_col = type, ...) {
   df <- df %>%
-    select(trait = {{ trait_col }}, rsid = {{ snp_col }}, beta.exposure = {{ beta_col }}, se.exposure = {{ se_col }}, type = {{ type_col }}) %>%
-    distinct(rsid, trait, .keep_all = TRUE) %>%
+    dplyr::select(trait = {{ trait_col }}, rsid = {{ snp_col }}, beta.exposure = {{ beta_col }}, se.exposure = {{ se_col }}, type = {{ type_col }}) %>%
+    dplyr::distinct(rsid, trait, .keep_all = TRUE) %>%
     tidyr::drop_na()
 
   # return(df)
 
   .betas <- df %>%
-    select(rsid, beta.exposure, trait) %>%
-    distinct(rsid, trait, .keep_all = TRUE) %>%
-    pivot_wider(names_from = trait, values_from = beta.exposure) %>%
+    dplyr::select(rsid, beta.exposure, trait) %>%
+    dplyr::distinct(rsid, trait, .keep_all = TRUE) %>%
+    tidyr::pivot_wider(names_from = trait, values_from = beta.exposure) %>%
     tibble::column_to_rownames(var = "rsid") %>%
     tidyr::drop_na() %>%
     as.matrix()
 
   .ses <- df %>%
-    select(rsid, se.exposure, trait) %>%
-    distinct(rsid, trait, .keep_all = TRUE) %>%
-    pivot_wider(names_from = trait, values_from = se.exposure) %>%
+    dplyr::select(rsid, se.exposure, trait) %>%
+    dplyr::distinct(rsid, trait, .keep_all = TRUE) %>%
+    tidyr::pivot_wider(names_from = trait, values_from = se.exposure) %>%
     tibble::column_to_rownames(var = "rsid") %>%
     tidyr::drop_na() %>%
     as.matrix()
@@ -51,13 +52,13 @@ hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta,
   .trait_names <- colnames(.betas)
 
   .binary <- df %>%
-    select(trait, type) %>%
+    dplyr::select(trait, type) %>%
     unique() %>%
-    pivot_wider(names_from = trait, values_from = type) %>%
+    tidyr::pivot_wider(names_from = trait, values_from = type) %>%
     tidyr::drop_na() %>%
     as.matrix()
 
-  .possibly_hyprcoloc <- possibly(hyprcoloc::hyprcoloc)
+  .possibly_hyprcoloc <- purrr::possibly(hyprcoloc::hyprcoloc)
   # .safely_hyprcoloc <- purrr::safely(hyprcoloc::hyprcoloc)
 
   .result <- .possibly_hyprcoloc(.betas, .ses, trait.names = .trait_names, snp.id = .ids, binary.outcomes = .binary, ...)

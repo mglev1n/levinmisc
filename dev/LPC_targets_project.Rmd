@@ -1,5 +1,5 @@
 ---
-title: "flat_LPC_targets_project.Rmd empty"
+title: "flat_LPC_targets_project.Rmd"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -128,9 +128,9 @@ Here is an example on how to use the function.
 This should be a reproducible and working example
 -->
 
-```{r examples-populate_targets_proj}
+```{r examples-populate_targets_proj, eval=FALSE}
 #' \dontrun{
-#' populate_targets_proj("test")
+populate_targets_proj("test")
 #' }
 ```
 
@@ -352,9 +352,9 @@ tar_option_set(
 ```
 
   
-```{r example-use_crew_lsf}
+```{r example-use_crew_lsf, eval=FALSE}
 #' \dontrun{
-#' use_crew_lsf()
+use_crew_lsf()
 #' }
 ```
   

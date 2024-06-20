@@ -29,26 +29,27 @@
 #' \dontrun{
 #' coloc_run(locus_df)
 #' }
+
 coloc_run <- function(df, trait_col = trait, variant_col = rsid, beta_col = beta, se_col = se, samplesize_col = samplesize, maf_col = maf, type_col = type, case_prop_col = case_prop, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, ...) {
   df <- df %>%
-    select(trait = {{ trait_col }}, maf = {{ maf_col }}, type = {{ type_col }}, variant_id = {{ variant_col }}, beta = {{ beta_col }}, se = {{ se_col }}, samplesize = {{ samplesize_col }}, case_prop = {{ case_prop_col }}) %>%
-    add_count(variant_id) %>%
-    filter(n == 2)
+    dplyr::select(trait = {{ trait_col }}, maf = {{ maf_col }}, type = {{ type_col }}, variant_id = {{ variant_col }}, beta = {{ beta_col }}, se = {{ se_col }}, samplesize = {{ samplesize_col }}, case_prop = {{ case_prop_col }}) %>%
+    dplyr::add_count(variant_id) %>%
+    dplyr::filter(n == 2)
 
   trait_dfs <- df %>%
-    distinct(trait)
+    dplyr::distinct(trait)
 
   if (nrow(trait_dfs) != 2) {
     cli::cli_abort("The input dataframe must contain only two traits")
   }
 
   trait1 <- df %>%
-    filter(trait == trait_dfs$trait[1]) %>%
-    distinct(variant_id, .keep_all = TRUE)
+    dplyr::filter(trait == trait_dfs$trait[1]) %>%
+    dplyr::distinct(variant_id, .keep_all = TRUE)
 
   trait2 <- df %>%
-    filter(trait == trait_dfs$trait[2]) %>%
-    distinct(variant_id, .keep_all = TRUE)
+    dplyr::filter(trait == trait_dfs$trait[2]) %>%
+    dplyr::distinct(variant_id, .keep_all = TRUE)
 
   trait1_dataset <- list(
     beta = trait1$beta, # If log_OR column is full of NAs then use beta column instead

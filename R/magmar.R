@@ -26,7 +26,7 @@ magmar <- function(sumstats_df, pval_col = p_value, snp_col = rsid, samplesize_c
   cli::cli_progress_step("Writing summary statistics to temporary file")
   sumstats_file <- fs::file_temp()
   sumstats_df %>%
-    select(SNP = {{ snp_col }}, P = {{ pval_col }}, N = {{ samplesize_col }}) %>%
+    dplyr::select(SNP = {{ snp_col }}, P = {{ pval_col }}, N = {{ samplesize_col }}) %>%
     vroom::vroom_write(sumstats_file)
 
 
