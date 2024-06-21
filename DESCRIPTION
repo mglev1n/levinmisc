@@ -33,7 +33,7 @@ Imports:
     plyranges,
     processx,
     purrr,
-    RcppEigen (== 0.3.3.9.3),
+    RcppEigen,
     readr,
     SNPlocs.Hsapiens.dbSNP144.GRCh37,
     stringr,
