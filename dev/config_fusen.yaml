@@ -70,12 +70,16 @@ LPC_targets_project.Rmd:
   R:
   - R/populate_targets_proj.R
   - R/use_crew_lsf.R
-  tests: tests/testthat/test-use_crew_lsf.R
+  tests:
+  - tests/testthat/test-slack-notifications.R
+  - tests/testthat/test-use_crew_lsf.R
   vignettes: vignettes/create-a-new-targets-pipeline-for-lpc.Rmd
   inflate:
     flat_file: dev/LPC_targets_project.Rmd
     vignette_name: Create a New Targets Pipeline for LPC
-    open_vignette: false
-    check: false
+    open_vignette: true
+    check: true
     document: true
-    overwrite: 'yes'
+    overwrite: ask
+    clean: ask
+    codecov: false

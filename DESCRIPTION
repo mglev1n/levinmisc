@@ -33,7 +33,6 @@ Imports:
     plyranges,
     processx,
     purrr,
-    RcppEigen,
     readr,
     SNPlocs.Hsapiens.dbSNP144.GRCh37,
     stringr,
@@ -56,7 +55,7 @@ Remotes:
     jrs95/hyprcoloc,
     roman-tremmel/ggfastman,
     ZikunY/CARMA
-Config/fusen/version: 0.5.2
+Config/fusen/version: 0.7.1
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
