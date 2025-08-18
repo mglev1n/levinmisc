@@ -1,87 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/404.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/articles/create-a-new-targets-pipeline-for-lpc.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/annotate_rsids.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/calc_credset.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/coloc_run.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/gg_manhattan_df.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/gg_qq_df.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/hyprcoloc_df.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/ldak_h2.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/levinmisc-package.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/magmar.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/metal_config.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/metal_run.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/mr_mega.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/pipe.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/plink_extract_ld.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/populate_targets_proj.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/render_datatable.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/run_carma.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/s_multixcan.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/s_predixcan.html</loc>
-  </url>
-  <url>
-    <loc>https://mglev1n.github.io/levinmisc/reference/use_crew_lsf.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://mglev1n.github.io/levinmisc/404.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/LICENSE-text.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/LICENSE.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/articles/create-a-new-targets-pipeline-for-lpc.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/articles/index.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/authors.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/index.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/annotate_rsids.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/calc_credset.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/coloc_run.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/gg_manhattan_df.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/gg_qq_df.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/hyprcoloc_df.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/index.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/ldak_h2.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/levinmisc-package.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/magmar.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/metal_config.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/metal_run.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/mr_mega.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/pipe.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/plink_extract_ld.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/populate_targets_proj.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/render_datatable.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/run_carma.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/s_multixcan.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/s_predixcan.html</loc></url>
+<url><loc>https://mglev1n.github.io/levinmisc/reference/use_crew_lsf.html</loc></url>
 </urlset>
+
