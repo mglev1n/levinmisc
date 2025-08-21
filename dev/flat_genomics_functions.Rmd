@@ -55,7 +55,7 @@ gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromos
       as_tibble() %>%
       mutate(across(.cols = everything(), as.numeric)) %>%
       tidyr::drop_na() %>%
-      left_join(annotation_df %>% select(chr = {{ chr_col }}, pos = {{ pos_col }}, label = {{ label_col }})) %>%
+      bind_rows(annotation_df %>% select(chr = {{ chr_col }}, pos = {{ pos_col }}, label = {{ label_col }})) %>%
       mutate(highlight = case_when(
         pvalue < 5e-8 ~ "#990000",
         TRUE ~ NA_character_
