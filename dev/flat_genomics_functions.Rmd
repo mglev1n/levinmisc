@@ -26,12 +26,16 @@ The `gg_manhattan_df` function is used to create Manhattan plots. This function 
 #' Create a Manhattan Plot
 #'
 #' This function is a wrapper around [ggfastman::fast_manhattan] which allows for the creation of a Manhattan plot from a dataframe containing GWAS summary statistics.
+#' It handles p-value underflow by calculating -log10 p-values directly from beta and standard error when available.
 #'
 #' @param sumstats_df Dataframe containing GWAS summary statistics
 #' @param chr_col Name of chromosome column
 #' @param pos_col Name of position column
-#' @param pval_col Name of p-value column
+#' @param pval_col Name of p-value column (used when beta_col and se_col are not provided)
+#' @param beta_col Name of beta (effect size) column (optional, used with se_col to avoid p-value underflow)
+#' @param se_col Name of standard error column (optional, used with beta_col to avoid p-value underflow)
 #' @param pval_threshold Threshold for plotting p-values (p-values greater than this value are excluded from the plot; default = `0.001`)
+#' @param log10p_threshold Threshold for plotting -log10 p-values when using beta/se (default = `3`, equivalent to p < 0.001)
 #' @param annotation_df Optional dataframe containing chromosome, position, and annotation labels
 #' @param label_col Name of column in `annotation_df` containing annotations to include on the plot
 #' @param build (string) One of "hg18", "hg19", or "hg38" (passed to `ggfastman`)
@@ -46,54 +50,145 @@ The `gg_manhattan_df` function is used to create Manhattan plots. This function 
 #' @concept genomics
 #' @family {plotting}
 
-gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromosome, pos_col = position, pval_col = p_value, pval_threshold = 0.001, label_col = gene, build = "hg19", color1 = "#045ea7", color2 = "#82afd3", speed = "slow", ...) {
-  if (!is.null((annotation_df))) {
-    df <- sumstats_df %>%
-      select(chr = {{ chr_col }}, pos = {{ pos_col }}, pvalue = {{ pval_col }}) %>%
-      filter(pvalue < pval_threshold) %>%
-      collect() %>%
-      as_tibble() %>%
-      mutate(across(.cols = everything(), as.numeric)) %>%
-      tidyr::drop_na() %>%
-      left_join(annotation_df %>% select(chr = {{ chr_col }}, pos = {{ pos_col }}, label = {{ label_col }})) %>%
-      mutate(highlight = case_when(
-        pvalue < 5e-8 ~ "#990000",
-        TRUE ~ NA_character_
-      ))
+gg_manhattan_df <- function(sumstats_df, 
+                           annotation_df = NULL, 
+                           chr_col = chromosome, 
+                           pos_col = position, 
+                           pval_col = p_value, 
+                           beta_col = NULL, 
+                           se_col = NULL,
+                           pval_threshold = 0.001,
+                           log10p_threshold = 3,
+                           label_col = gene, 
+                           build = "hg19", 
+                           color1 = "#045ea7", 
+                           color2 = "#82afd3", 
+                           speed = "slow", 
+                           ...) {
+  
+  # Check if beta and se columns are provided
+  use_beta_se <- !is.null(substitute(beta_col)) && !is.null(substitute(se_col))
+  
+  # Function to calculate -log10 p-values from beta and se
+  calc_log10p <- function(beta, se) {
+    z <- abs(beta / se)
+    # Calculate -log10(2 * pnorm(-z)) avoiding underflow
+    # log10(2) + log10(pnorm(-z)) = log10(2) + pnorm(-z, log.p = TRUE) / log(10)
+    log10_2 <- log10(2)
+    log10_pnorm <- pnorm(-z, log.p = TRUE) / log(10)
+    -log10_2 - log10_pnorm
+  }
+  
+  if (!is.null(annotation_df)) {
+    if (use_beta_se) {
+      cli::cli_alert_info("Using beta and standard error to calculate -log10 p-values")
+      df <- sumstats_df %>%
+        select(chr = {{ chr_col }}, 
+               pos = {{ pos_col }}, 
+               beta = {{ beta_col }}, 
+               se = {{ se_col }}) %>%
+        collect() %>%
+        as_tibble() %>%
+        mutate(across(.cols = everything(), as.numeric)) %>%
+        tidyr::drop_na() %>%
+        mutate(log10p = calc_log10p(beta, se)) %>%
+        filter(log10p > log10p_threshold) %>%
+        left_join(annotation_df %>% 
+                   select(chr = {{ chr_col }}, 
+                          pos = {{ pos_col }}, 
+                          label = {{ label_col }})) %>%
+        mutate(highlight = case_when(
+          log10p > -log10(5e-8) ~ "#990000",
+          TRUE ~ NA_character_
+        ))
+    } else {
+      cli::cli_alert_info("Using p-values directly")
+      df <- sumstats_df %>%
+        select(chr = {{ chr_col }}, pos = {{ pos_col }}, pvalue = {{ pval_col }}) %>%
+        filter(pvalue < pval_threshold) %>%
+        collect() %>%
+        as_tibble() %>%
+        mutate(across(.cols = everything(), as.numeric)) %>%
+        tidyr::drop_na() %>%
+        mutate(log10p = -log10(pvalue)) %>%
+        left_join(annotation_df %>% 
+                   select(chr = {{ chr_col }}, 
+                          pos = {{ pos_col }}, 
+                          label = {{ label_col }})) %>%
+        mutate(highlight = case_when(
+          log10p > -log10(5e-8) ~ "#990000",
+          TRUE ~ NA_character_
+        ))
+    }
+    
     df_annotation <- df %>%
       filter(!is.na(label)) %>%
       group_by(chr, pos, label) %>%
-      slice_min(pvalue)
+      slice_max(log10p)
     
     df <- df %>%
       filter(is.na(label)) %>%
       bind_rows(df_annotation)
     
   } else {
-    df <- sumstats_df %>%
-      select(chr = {{ chr_col }}, pos = {{ pos_col }}, pvalue = {{ pval_col }}) %>%
-      filter(pvalue < pval_threshold) %>%
-      collect() %>%
-      as_tibble() %>%
-      mutate(across(.cols = everything(), as.numeric)) %>%
-      tidyr::drop_na() %>%
-      mutate(highlight = case_when(
-        pvalue < 5e-8 ~ "#990000",
-        TRUE ~ NA_character_
-      ))
+    if (use_beta_se) {
+      cli::cli_alert_info("Using beta and standard error to calculate -log10 p-values")
+      df <- sumstats_df %>%
+        select(chr = {{ chr_col }}, 
+               pos = {{ pos_col }}, 
+               beta = {{ beta_col }}, 
+               se = {{ se_col }}) %>%
+        collect() %>%
+        as_tibble() %>%
+        mutate(across(.cols = everything(), as.numeric)) %>%
+        tidyr::drop_na() %>%
+        mutate(log10p = calc_log10p(beta, se)) %>%
+        filter(log10p > log10p_threshold) %>%
+        mutate(highlight = case_when(
+          log10p > -log10(5e-8) ~ "#990000",
+          TRUE ~ NA_character_
+        ))
+    } else {
+      cli::cli_alert_info("Using p-values directly")
+      df <- sumstats_df %>%
+        select(chr = {{ chr_col }}, pos = {{ pos_col }}, pvalue = {{ pval_col }}) %>%
+        filter(pvalue < pval_threshold) %>%
+        collect() %>%
+        as_tibble() %>%
+        mutate(across(.cols = everything(), as.numeric)) %>%
+        tidyr::drop_na() %>%
+        mutate(log10p = -log10(pvalue)) %>%
+        mutate(highlight = case_when(
+          log10p > -log10(5e-8) ~ "#990000",
+          TRUE ~ NA_character_
+        ))
+    }
   }
 
   cli::cli_alert_info("Creating Manhattan Plot")
-  if (!is.null((annotation_df))) {
-    max_log10_p <- -log10(min(df$pvalue))
+  
+  # Prepare data for fast_manhattan
+  if (use_beta_se) {
+    # We've already calculated -log10(p-values), so pass them directly
+    # and set log10p = FALSE so fast_manhattan doesn't convert again
+    df <- df %>%
+      mutate(pvalue = log10p)  # This contains our pre-calculated -log10(p-values)
+  } else {
+    # Use original p-values and let fast_manhattan do the conversion
+    df <- df %>%
+      mutate(pvalue = 10^(-log10p))  # Convert back to p-values
+  }
+  
+  if (!is.null(annotation_df)) {
+    max_log10_p <- max(df$log10p, na.rm = TRUE)
 
     plot <- df %>%
       ggfastman::fast_manhattan(
         build = build,
         color1 = color1,
         color2 = color2,
-        pointsize = pointsize,
         speed = speed,
+        log10p = !use_beta_se,  # FALSE if using beta/se (we already converted), TRUE otherwise
         ...
       ) +
       geom_hline(yintercept = -log10(5e-8), linetype = "dotted") +
@@ -102,7 +197,7 @@ gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromos
           filter(!is.na(label)),
         aes(label = label),
         color = "black",
-        force_pull = 0, # do not pull toward data points
+        force_pull = 0,
         nudge_y = 10,
         direction = "x",
         angle = 90,
@@ -119,15 +214,18 @@ gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromos
         build = build,
         color1 = color1,
         color2 = color2,
-        pointsize = pointsize,
         speed = speed,
+        log10p = !use_beta_se,  # FALSE if using beta/se (we already converted), TRUE otherwise
         ...
       ) +
       geom_hline(yintercept = -log10(5e-8), linetype = "dotted")
   }
 
   plot <- plot +
-    ggplot2::scale_y_continuous(expand = expansion(mult = c(0.01, 0.30)), name = "-log<sub>10</sub>(p-value)") +
+    ggplot2::scale_y_continuous(
+      expand = expansion(mult = c(0.01, 0.30)), 
+      name = "-log<sub>10</sub>(p-value)"
+    ) +
     theme_bw(base_size = 16) +
     theme(
       panel.grid = element_blank(),
@@ -140,7 +238,11 @@ gg_manhattan_df <- function(sumstats_df, annotation_df = NULL, chr_col = chromos
   
 ```{r example-gg_manhattan_df}
 #' \dontrun{
+#' # Using p-values directly
 #' gg_manhattan_df(sumstats_df)
+#' 
+#' # Using beta and se to avoid p-value underflow
+#' gg_manhattan_df(sumstats_df, beta_col = beta, se_col = se)
 #' }
 ```
   

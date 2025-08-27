@@ -10,7 +10,10 @@ gg_manhattan_df(
   chr_col = chromosome,
   pos_col = position,
   pval_col = p_value,
+  beta_col = NULL,
+  se_col = NULL,
   pval_threshold = 0.001,
+  log10p_threshold = 3,
   label_col = gene,
   build = "hg19",
   color1 = "#045ea7",
@@ -28,9 +31,15 @@ gg_manhattan_df(
 
 \item{pos_col}{Name of position column}
 
-\item{pval_col}{Name of p-value column}
+\item{pval_col}{Name of p-value column (used when beta_col and se_col are not provided)}
+
+\item{beta_col}{Name of beta (effect size) column (optional, used with se_col to avoid p-value underflow)}
+
+\item{se_col}{Name of standard error column (optional, used with beta_col to avoid p-value underflow)}
 
 \item{pval_threshold}{Threshold for plotting p-values (p-values greater than this value are excluded from the plot; default = \code{0.001})}
+
+\item{log10p_threshold}{Threshold for plotting -log10 p-values when using beta/se (default = \code{3}, equivalent to p < 0.001)}
 
 \item{label_col}{Name of column in \code{annotation_df} containing annotations to include on the plot}
 
@@ -49,10 +58,15 @@ A ggplot2 object
 }
 \description{
 This function is a wrapper around \link[ggfastman:fast_manhattan]{ggfastman::fast_manhattan} which allows for the creation of a Manhattan plot from a dataframe containing GWAS summary statistics.
+It handles p-value underflow by calculating -log10 p-values directly from beta and standard error when available.
 }
 \examples{
 \dontrun{
+# Using p-values directly
 gg_manhattan_df(sumstats_df)
+
+# Using beta and se to avoid p-value underflow
+gg_manhattan_df(sumstats_df, beta_col = beta, se_col = se)
 }
 }
 \seealso{
