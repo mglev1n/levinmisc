@@ -43,9 +43,13 @@ jobs:
           # INSTALLED version, and roxygen2 >= 8.0.0 bumps RoxygenNote and
           # rewrites cross-reference link style across every man/*.Rd - either
           # would swamp the real diff with unrelated churn.
+          # 7.3.3 rather than the 7.3.2 recorded in DESCRIPTION: fusen depends on
+          # devtools, which requires roxygen2 (>= 7.3.3), so pinning 7.3.2 makes
+          # the dependency set unsolvable. 7.3.3 is the newest 7.x, so it keeps
+          # the pre-8.0 link style and only bumps RoxygenNote by a patch.
           extra-packages: |
             fusen@0.7.1
-            roxygen2@7.3.2
+            roxygen2@7.3.3
             any::attachment
 
       # clean = TRUE removes files from a previous inflate that the flat file no
