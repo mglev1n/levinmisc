@@ -14,12 +14,17 @@ jobs:
     concurrency:
       group: inflate-${{ github.ref }}
       cancel-in-progress: true
+    # Belt and braces on top of the paths filter above.
+    if: github.actor != 'github-actions[bot]'
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Check out the branch itself, so the commit step has somewhere to push.
+          ref: ${{ github.ref_name }}
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -40,19 +45,29 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           cache-version: 1
+          # Pinned on purpose. fusen writes Config/fusen/version from the
+          # INSTALLED version, and roxygen2 >= 8.0.0 bumps RoxygenNote and
+          # rewrites cross-reference link style across every man/*.Rd - either
+          # would swamp the real diff with unrelated churn.
           extra-packages: |
-            any::fusen
+            fusen@0.7.1
+            roxygen2@7.3.2
             any::attachment
-            any::roxygen2
 
       # clean = TRUE removes files from a previous inflate that the flat file no
-      # longer creates; without it, deleting a chunk leaves a stale R/*.R behind.
+      # longer creates; the default "ask" calls readline(), which returns "" under
+      # Rscript, so orphans would be dropped from the config but left on disk.
+      # update_params = FALSE keeps the stored inflate: block in
+      # dev/config_fusen.yaml from being rewritten to match these calls.
       - name: Inflate flat files
         shell: Rscript {0}
         run: |
-          fusen::inflate(flat_file = "dev/flat_genomics_functions.Rmd", vignette_name = NA, check = FALSE, overwrite = TRUE, open_vignette = FALSE, clean = TRUE)
-          fusen::inflate(flat_file = "dev/flat_miscellaneous.Rmd", vignette_name = NA, check = FALSE, overwrite = TRUE, open_vignette = FALSE, clean = TRUE)
-          fusen::inflate(flat_file = "dev/LPC_targets_project.Rmd", vignette_name = "Create a New Targets Pipeline for LPC", check = FALSE, overwrite = TRUE, open_vignette = FALSE, clean = TRUE)
+          fusen::inflate(flat_file = "dev/flat_genomics_functions.Rmd", vignette_name = NA, check = FALSE, overwrite = TRUE, open_vignette = FALSE, clean = TRUE, update_params = FALSE)
+          fusen::inflate(flat_file = "dev/flat_miscellaneous.Rmd", vignette_name = NA, check = FALSE, overwrite = TRUE, open_vignette = FALSE, clean = TRUE, update_params = FALSE)
+          fusen::inflate(flat_file = "dev/LPC_targets_project.Rmd", vignette_name = "Create a New Targets Pipeline for LPC", check = FALSE, overwrite = TRUE, open_vignette = FALSE, clean = TRUE, update_params = FALSE)
+
+      - name: Show diff
+        run: git --no-pager diff --stat
 
       # Pushes made with GITHUB_TOKEN do not trigger further workflow runs, and
       # the commit touches R/ and man/ rather than dev/**.Rmd, so this cannot loop.
