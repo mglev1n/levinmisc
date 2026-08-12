@@ -13,13 +13,18 @@
 #'
 #' @export
 #' @concept genomics
-#' @family {annotation}
+#' @family annotation
 #' @examples
 #' \dontrun{
 #' annotate_rsids(sumstats_df)
 #' }
 
 annotate_rsids <- function(df, dbSNP = SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs.Hsapiens.dbSNP144.GRCh37, chrom_col = Chromosome, pos_col = Position) {
+  rlang::check_installed(
+    c("BSgenome", "GenomicRanges", "plyranges", "SNPlocs.Hsapiens.dbSNP144.GRCh37"),
+    reason = "to annotate genomic coordinates with rsids."
+  )
+
   if (sum(stringr::str_detect(names(df), "rsid")) > 0) {
     cli::cli_abort("A column named 'rsid' is already present")
   }

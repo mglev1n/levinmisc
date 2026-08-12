@@ -5,6 +5,8 @@ test_that("coloc_run works", {
 })
 
 test_that("coloc_run returns a list", {
+  skip_if_not_installed("coloc")
+
   locus_df1 <- tibble::tibble(trait = "A", rsid = letters, beta = runif(26, min = -1), se = runif(26, max = 0.2), p_value = runif(1, min = 1 / 1e5, max = 0.99), samplesize = 10000, maf = runif(26), type = "quant", case_prop = NA)
   locus_df2 <- tibble::tibble(trait = "B", rsid = letters, beta = runif(26, min = -1), se = runif(26, max = 0.2), p_value = runif(1, min = 1 / 1e5, max = 0.99), samplesize = 10000, maf = runif(26), type = "cc", case_prop = 0.2)
 

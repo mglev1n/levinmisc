@@ -23,7 +23,7 @@
 #' - `results` is an annotated version of the input data containing log approximate Bayes Factors and posterior probability of each SNP being causal if H4 is true.
 #'
 #' @concept genomics
-#' @family {colocalization}
+#' @family colocalization
 #' @export
 #' @examples
 #' \dontrun{
@@ -31,6 +31,8 @@
 #' }
 
 coloc_run <- function(df, trait_col = trait, variant_col = rsid, beta_col = beta, se_col = se, samplesize_col = samplesize, maf_col = maf, type_col = type, case_prop_col = case_prop, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, ...) {
+  rlang::check_installed("coloc", reason = "to run colocalization.")
+
   df <- df %>%
     dplyr::select(trait = {{ trait_col }}, maf = {{ maf_col }}, type = {{ type_col }}, variant_id = {{ variant_col }}, beta = {{ beta_col }}, se = {{ se_col }}, samplesize = {{ samplesize_col }}, case_prop = {{ case_prop_col }}) %>%
     dplyr::add_count(variant_id) %>%

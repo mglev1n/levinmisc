@@ -48,7 +48,7 @@ The `gg_manhattan_df` function is used to create Manhattan plots. This function 
 #' @export
 #' @import dplyr ggplot2
 #' @concept genomics
-#' @family {plotting}
+#' @family plotting
 
 gg_manhattan_df <- function(sumstats_df, 
                            annotation_df = NULL, 
@@ -65,6 +65,8 @@ gg_manhattan_df <- function(sumstats_df,
                            color2 = "#82afd3", 
                            speed = "slow", 
                            ...) {
+  rlang::check_installed("ggfastman", reason = "to draw Manhattan plots.")
+
   
   # Check if beta and se columns are provided
   use_beta_se <- !is.null(substitute(beta_col)) && !is.null(substitute(se_col))
@@ -252,6 +254,8 @@ test_that("gg_manhattan_df works", {
 })
 
 test_that("gg_manhattan_df returns a ggplot object", {
+  skip_if_not_installed("ggfastman")
+
   locus_df <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
@@ -287,9 +291,11 @@ The `gg_qq_df` function can be used to generate a qq plot to visually evaluate f
 #' @export
 #' @import dplyr ggplot2
 #' @concept genomics
-#' @family {plotting}
+#' @family plotting
 
 gg_qq_df <- function(sumstats_df, pval_col = p_value, ...) {
+  rlang::check_installed("ggfastman", reason = "to draw Q-Q plots.")
+
   df <- sumstats_df %>%
     select(pvalue = {{ pval_col }}) %>%
     collect() %>%
@@ -317,6 +323,8 @@ test_that("gg_qq_df works", {
 })
 
 test_that("gg_qq_df returns a ggplot object", {
+  skip_if_not_installed("ggfastman")
+
   plot_res <- tibble(pval = runif(1000)) %>%
     gg_qq_df(pval_col = pval)
   expect_s3_class(plot_res, "ggplot")
@@ -347,9 +355,14 @@ This function can be used rapidly add rsids to GWAS summary statistics by chromo
 #'
 #' @export
 #' @concept genomics
-#' @family {annotation}
+#' @family annotation
 
 annotate_rsids <- function(df, dbSNP = SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs.Hsapiens.dbSNP144.GRCh37, chrom_col = Chromosome, pos_col = Position) {
+  rlang::check_installed(
+    c("BSgenome", "GenomicRanges", "plyranges", "SNPlocs.Hsapiens.dbSNP144.GRCh37"),
+    reason = "to annotate genomic coordinates with rsids."
+  )
+
   if (sum(stringr::str_detect(names(df), "rsid")) > 0) {
     cli::cli_abort("A column named 'rsid' is already present")
   }
@@ -407,6 +420,11 @@ test_that("annotate_rsids works", {
 })
 
 test_that("annotate_rsids returns a tibble", {
+  skip_if_not_installed("BSgenome")
+  skip_if_not_installed("GenomicRanges")
+  skip_if_not_installed("plyranges")
+  skip_if_not_installed("SNPlocs.Hsapiens.dbSNP144.GRCh37")
+
   df <- tibble(Chromosome = 1) %>%
     tidyr::crossing(Position = 1e4:1e5)
   rsids_res <- annotate_rsids(df)
@@ -681,7 +699,7 @@ The `plink_extract_ld` function is a wrapper around the `plink` v1.9 binary, whi
 #' @return A square matrix containing the pairwise correlations between genetic variants
 #' @export
 #' @concept genomics
-#' @family {linkage disequilibrium}
+#' @family linkage disequilibrium
 #'
 plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile, threads = 1, memory = 16000,
                              plink_bin) {
@@ -787,13 +805,15 @@ This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that take
 #' @param ... Arguments passed to [hyprcoloc::hyprcoloc()]
 #'
 #' @return A list containing a data.frame of HyPrColoc results: each row is a cluster of colocalized traits or is coded NA (if no colocalization is identified)
-#' @import hyprcoloc tidyr
+#' @import tidyr
 #' @importFrom purrr possibly
 #' @concept genomics
-#' @family {colocalization}
+#' @family colocalization
 #' @export
 
 hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta, se_col = se, type_col = type, ...) {
+  rlang::check_installed("hyprcoloc", reason = "to run multi-trait colocalization.")
+
   df <- df %>%
     dplyr::select(trait = {{ trait_col }}, rsid = {{ snp_col }}, beta.exposure = {{ beta_col }}, se.exposure = {{ se_col }}, type = {{ type_col }}) %>%
     dplyr::distinct(rsid, trait, .keep_all = TRUE) %>%
@@ -855,6 +875,8 @@ hyprcoloc_df(gwas_results_df)
 test_that("hyprcoloc_df works", {
   expect_true(inherits(hyprcoloc_df, "function"))
 
+  skip_if_not_installed("hyprcoloc")
+
   df <- tibble::tibble(
     rsid = letters,
     beta = runif(26, min = -1, max = 1),
@@ -898,10 +920,12 @@ test_that("hyprcoloc_df works", {
 #' - `results` is an annotated version of the input data containing log approximate Bayes Factors and posterior probability of each SNP being causal if H4 is true.
 #'
 #' @concept genomics
-#' @family {colocalization}
+#' @family colocalization
 #' @export
 
 coloc_run <- function(df, trait_col = trait, variant_col = rsid, beta_col = beta, se_col = se, samplesize_col = samplesize, maf_col = maf, type_col = type, case_prop_col = case_prop, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, ...) {
+  rlang::check_installed("coloc", reason = "to run colocalization.")
+
   df <- df %>%
     dplyr::select(trait = {{ trait_col }}, maf = {{ maf_col }}, type = {{ type_col }}, variant_id = {{ variant_col }}, beta = {{ beta_col }}, se = {{ se_col }}, samplesize = {{ samplesize_col }}, case_prop = {{ case_prop_col }}) %>%
     dplyr::add_count(variant_id) %>%
@@ -961,6 +985,8 @@ test_that("coloc_run works", {
 })
 
 test_that("coloc_run returns a list", {
+  skip_if_not_installed("coloc")
+
   locus_df1 <- tibble::tibble(trait = "A", rsid = letters, beta = runif(26, min = -1), se = runif(26, max = 0.2), p_value = runif(1, min = 1 / 1e5, max = 0.99), samplesize = 10000, maf = runif(26), type = "quant", case_prop = NA)
   locus_df2 <- tibble::tibble(trait = "B", rsid = letters, beta = runif(26, min = -1), se = runif(26, max = 0.2), p_value = runif(1, min = 1 / 1e5, max = 0.99), samplesize = 10000, maf = runif(26), type = "cc", case_prop = 0.2)
 
@@ -999,7 +1025,7 @@ This function implements the simple Bayesian finemapping approach described in M
 #' @return A data.frame containing credible sets at each locus. For each variant within the credible set, the prior probability of being the casual variant is provided.
 #'
 #' @export
-#' @family {finemapping}
+#' @family finemapping
 #' @concept genomics
 
 calc_credset <- function(df, locus_marker_col = locus_marker, effect_col = effect, se_col = std_err, samplesize_col = samplesize, cred_interval = 0.99) {
@@ -1028,82 +1054,6 @@ test_that("calc_credset works", {
 })
 ```
 
-## CARMA
-
-This function implements the CARMA finemapping approach described in Yang et al. (Nature Genetics 2023; <https://doi.org/10.1038/s41588-023-01392-0>). This method relaxes the single causal variant assumption, identifying independent credible sets at each fine-mapped locus.
-    
-```{r function-run_carma}
-#' Perform Bayesian finemapping using CARMA
-#'
-#' This function is a wrapper around [CARMA::CARMA()] that takes a dataframe containing variants at a locus and performs Bayesian finemapping based on their signed z-scores and an LD reference panel. The function requires a plink-formatted LD reference panel (`bfile`), which will be used to generate a signed LD matrix at the locus. CARMA was described in Yang et al. (Nature Genetics 2023; <https://doi.org/10.1038/s41588-023-01392-0>)
-#'
-#' @param df Dataframe containing variants at a locus for finemapping
-#' @param snp_col Name of column containing SNP identifiers
-#' @param z_col Name of column containing signed Z-scores (relative to effect allele)
-#' @param effect_allele_col Name of column containing effect alleles
-#' @param outlier_switch Whether to remove outliers when performing finemapping. Argument is passed to the `outlier.switch` argument of [CARMA::CARMA()]
-#' @param bfile Path to plink `bfile` of reference panel that will be used to extract LD
-#' @param threads Number of threads (default = 1)
-#' @param memory Memory limit (default = 16000 MB)
-#' @param plink_bin Path to plink executable
-#' @param ... additional arguments passsed to [CARMA::CARMA()]
-#'
-#' @return A dataframe containing the input dataframe, and additional columns denoting which credible set (`CS`) each variant belongs to, as well as the posterior inclusion probability (`PIP`), and an `ld_error` column noting whether there were problems generating the LD matrix that limited fine-mapping.
-#'
-#' @export
-#' @family {finemapping}
-#' @concept genomics
-
-run_carma <- function(df, snp_col, z_col, effect_allele_col, outlier_switch = TRUE, bfile, threads = 1, memory = 16000, plink_bin, ...) {
-  sumstat <- df
-
-  plink_extract_ld_possibly <- purrr::possibly(levinmisc::plink_extract_ld)
-
-  ld <- df %>%
-    plink_extract_ld_possibly(bfile = bfile, plink_bin = plink_bin, snp_col = {{ snp_col }}, effect_allele_col = {{ effect_allele_col }})
-
-  if (is.null(ld)) {
-    return(sumstat %>% mutate(ld_error = TRUE))
-  }
-
-  # if(!is.null(ld$error)) {
-  #   sumstat <- sumstat %>%
-  #     mutate(ld = ld$error)
-  #   return(sumstat)
-  # }
-
-  cli::cli_alert_info("Running CARMA")
-  z.list <- list()
-  ld.list <- list()
-  lambda.list <- list()
-  z.list[[1]] <- sumstat %>% pull({{ z_col }})
-  ld.list[[1]] <- as.matrix(ld)
-  lambda.list[[1]] <- 1
-  CARMA.results <- CARMA::CARMA(z.list, ld.list, lambda.list = lambda.list, outlier.switch = outlier_switch, ...)
-
-  sumstat.result <- sumstat %>% dplyr::mutate(PIP = CARMA.results[[1]]$PIPs, CS = 0)
-  if (length(CARMA.results[[1]]$`Credible set`[[2]]) != 0) {
-    for (l in 1:length(CARMA.results[[1]]$`Credible set`[[2]])) {
-      sumstat.result$CS[CARMA.results[[1]]$`Credible set`[[2]][[l]]] <- l
-    }
-  }
-
-  return(sumstat.result)
-}
-```
-  
-```{r example-run_carma, include=FALSE}
-#' \dontrun{
-run_carma(locus_df, snp_col = SNP, z_col = z, effect_allele_col = allele1)
-#' }
-```
-  
-```{r tests-run_carma}
-test_that("run_carma works", {
-  expect_true(inherits(run_carma, "function"))
-})
-```
-  
 
 ---    
   
@@ -1444,7 +1394,7 @@ test_that("s_multixcan works", {
 #'
 #' @return List of dataframes containing LDAK results
 #' @concept genomics
-#' @family {heritability}
+#' @family heritability
 #' @import stringr
 #' @export
 

@@ -27,6 +27,9 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      # The optional wrapper backends (hyprcoloc, ggfastman, coloc, and the
+      # Bioconductor annotation stack) are Suggests and are not installed here.
+      _R_CHECK_FORCE_SUGGESTS_: false
     steps:
       - uses: actions/checkout@v4
 
@@ -39,30 +42,20 @@ jobs:
           use-public-rspm: true
           update-rtools: true
 
-      - name: Install gsl Mac
-        if: runner.os == 'macOS'
-        run: |
-          brew update
-          brew install gsl
-
-      - name: Install remotes
-        run: |
-          Rscript -e "install.packages('remotes')"
-
-      - name: Install hyprcoloc
-        run: |
-          Rscript -e "remotes::install_version('Rcpp', version = '1.0.11')"
-          Rscript -e "remotes::install_version('RcppEigen', version = '0.3.3.9.3')"
-          Rscript -e "remotes::install_github('jrs95/hyprcoloc', build_opts = c('--resave-data', '--no-manual'), upgrade = 'never')"
-          Rscript -e "remotes::install_github('ZikunY/CARMA')"
-
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           # pak-version: stable
           cache-version: 1
+          # Hard dependencies only: the Suggests now include GitHub-only and
+          # Bioconductor packages that are slow and flaky to install and that
+          # nothing in the checked code path needs. The check-time Suggests are
+          # named explicitly below.
+          dependencies: '"hard"'
           extra-packages: |
             any::rcmdcheck
-          needs: check
+            any::knitr
+            any::rmarkdown
+            any::testthat
 
       - uses: r-lib/actions/check-r-package@v2
         with:

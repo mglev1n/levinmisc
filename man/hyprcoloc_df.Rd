@@ -41,8 +41,8 @@ hyprcoloc_df(gwas_results_df)
 }
 }
 \seealso{
-Other {colocalization}: 
+Other colocalization: 
 \code{\link{coloc_run}()}
 }
+\concept{colocalization}
 \concept{genomics}
-\concept{{colocalization}}

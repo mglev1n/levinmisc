@@ -13,10 +13,10 @@
 #' @param ... Arguments passed to [hyprcoloc::hyprcoloc()]
 #'
 #' @return A list containing a data.frame of HyPrColoc results: each row is a cluster of colocalized traits or is coded NA (if no colocalization is identified)
-#' @import hyprcoloc tidyr
+#' @import tidyr
 #' @importFrom purrr possibly
 #' @concept genomics
-#' @family {colocalization}
+#' @family colocalization
 #' @export
 #' @examples
 #' \dontrun{
@@ -24,6 +24,8 @@
 #' }
 
 hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta, se_col = se, type_col = type, ...) {
+  rlang::check_installed("hyprcoloc", reason = "to run multi-trait colocalization.")
+
   df <- df %>%
     dplyr::select(trait = {{ trait_col }}, rsid = {{ snp_col }}, beta.exposure = {{ beta_col }}, se.exposure = {{ se_col }}, type = {{ type_col }}) %>%
     dplyr::distinct(rsid, trait, .keep_all = TRUE) %>%

@@ -31,5 +31,5 @@ This function can be used rapidly add rsids to GWAS summary statistics or any ot
 annotate_rsids(sumstats_df)
 }
 }
+\concept{annotation}
 \concept{genomics}
-\concept{{annotation}}

@@ -5,6 +5,8 @@ test_that("gg_manhattan_df works", {
 })
 
 test_that("gg_manhattan_df returns a ggplot object", {
+  skip_if_not_installed("ggfastman")
+
   locus_df <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%

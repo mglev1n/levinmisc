@@ -14,7 +14,6 @@ flat_genomics_functions.Rmd:
   - R/metal_run.R
   - R/mr_mega.R
   - R/plink_extract_ld.R
-  - R/run_carma.R
   - R/s_multixcan.R
   - R/s_predixcan.R
   tests:
@@ -28,7 +27,6 @@ flat_genomics_functions.Rmd:
   - tests/testthat/test-hyprcoloc_df.R
   - tests/testthat/test-coloc_run.R
   - tests/testthat/test-calc_credset.R
-  - tests/testthat/test-run_carma.R
   - tests/testthat/test-magmar.R
   - tests/testthat/test-s_predixcan.R
   - tests/testthat/test-s_multixcan.R

@@ -1,6 +1,6 @@
 Package: levinmisc
 Title: Miscellaneous Convenience Functions
-Version: 0.6.8
+Version: 0.6.9
 Authors@R: 
     person("Michael", "Levin", , "mglev1n@gmail.com", role = c("aut", "cre"))
 Description: A set of miscellaneous convenience functions.
@@ -9,53 +9,52 @@ URL: https://github.com/mglev1n/levinmisc,
     https://mglev1n.github.io/levinmisc/
 BugReports: https://github.com/mglev1n/levinmisc/issues
 Imports: 
-    BSgenome,
-    CARMA,
     cli,
-    coloc (>= 5.2.0),
-    crew,
-    crew.cluster,
     data.table,
     dplyr,
     DT,
     fs,
-    GenomicRanges,
-    ggfastman,
     ggplot2,
     ggrepel,
     ggtext,
     glue,
     here,
-    hyprcoloc,
     janitor,
     lifecycle,
     magrittr,
-    plyranges,
     processx,
     purrr,
     readr,
-    SNPlocs.Hsapiens.dbSNP144.GRCh37,
+    rlang,
     stringr,
-    tarchetypes,
-    targets,
     tibble,
     tidyr,
-    tools,
     usethis,
     vroom,
     withr,
     yesno
 Suggests: 
+    BSgenome,
+    coloc (>= 5.2.0),
+    crew,
+    crew.cluster,
+    datasets,
+    GenomicRanges,
+    ggfastman,
+    hyprcoloc,
     knitr,
+    plyranges,
     rmarkdown,
+    SNPlocs.Hsapiens.dbSNP144.GRCh37,
+    tarchetypes,
+    targets,
     testthat
 VignetteBuilder: 
     knitr
 Remotes: 
     jrs95/hyprcoloc,
-    roman-tremmel/ggfastman,
-    ZikunY/CARMA
+    roman-tremmel/ggfastman
 Config/fusen/version: 0.7.1
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3

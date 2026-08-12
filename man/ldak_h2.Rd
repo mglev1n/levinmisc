@@ -41,4 +41,4 @@ ldak_h2(sumstats_file = "/path/to/munged_sumstats", ldak_bin = "/path/to/ldak", 
 }
 }
 \concept{genomics}
-\concept{{heritability}}
+\concept{heritability}

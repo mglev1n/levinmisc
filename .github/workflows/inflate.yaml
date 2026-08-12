@@ -1,0 +1,82 @@
+# Regenerate R/, man/, tests/ and NAMESPACE from the {fusen} flat files in dev/,
+# so that editing a flat template does not require a local R installation.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'dev/**.Rmd'
+
+name: inflate
+
+jobs:
+  inflate:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: inflate-${{ github.ref }}
+      cancel-in-progress: true
+    # Belt and braces on top of the paths filter above.
+    if: github.actor != 'github-actions[bot]'
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Check out the branch itself, so the commit step has somewhere to push.
+          ref: ${{ github.ref_name }}
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache-version: 1
+          # att_amend_desc() needs every Imports package loadable, but the
+          # Suggests are deliberately absent - dev/config_attachment.yaml sets
+          # check_if_suggests_is_installed: no to match.
+          dependencies: '"hard"'
+          # Pinned on purpose. fusen writes Config/fusen/version from the
+          # INSTALLED version, and roxygen2 >= 8.0.0 bumps RoxygenNote and
+          # rewrites cross-reference link style across every man/*.Rd - either
+          # would swamp the real diff with unrelated churn.
+          # 7.3.3 rather than the 7.3.2 recorded in DESCRIPTION: fusen depends on
+          # devtools, which requires roxygen2 (>= 7.3.3), so pinning 7.3.2 makes
+          # the dependency set unsolvable. 7.3.3 is the newest 7.x, so it keeps
+          # the pre-8.0 link style and only bumps RoxygenNote by a patch.
+          extra-packages: |
+            fusen@0.7.1
+            roxygen2@7.3.3
+            any::attachment
+
+      # clean = TRUE removes files from a previous inflate that the flat file no
+      # longer creates; the default "ask" calls readline(), which returns "" under
+      # Rscript, so orphans would be dropped from the config but left on disk.
+      # update_params = FALSE keeps the stored inflate: block in
+      # dev/config_fusen.yaml from being rewritten to match these calls.
+      - name: Inflate flat files
+        shell: Rscript {0}
+        run: |
+          fusen::inflate(flat_file = "dev/flat_genomics_functions.Rmd", vignette_name = NA, check = FALSE, overwrite = TRUE, open_vignette = FALSE, clean = TRUE, update_params = FALSE)
+          fusen::inflate(flat_file = "dev/flat_miscellaneous.Rmd", vignette_name = NA, check = FALSE, overwrite = TRUE, open_vignette = FALSE, clean = TRUE, update_params = FALSE)
+          fusen::inflate(flat_file = "dev/LPC_targets_project.Rmd", vignette_name = "Create a New Targets Pipeline for LPC", check = FALSE, overwrite = TRUE, open_vignette = FALSE, clean = TRUE, update_params = FALSE)
+
+      - name: Show diff
+        run: git --no-pager diff --stat
+
+      # Pushes made with GITHUB_TOKEN do not trigger further workflow runs, and
+      # the commit touches R/ and man/ rather than dev/**.Rmd, so this cannot loop.
+      - name: Commit regenerated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A R man tests vignettes NAMESPACE DESCRIPTION dev/config_fusen.yaml
+          if git diff --staged --quiet; then
+            echo "Generated files are already up to date."
+          else
+            git commit -m "chore: inflate flat files [skip ci]"
+            git push
+          fi

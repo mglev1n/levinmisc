@@ -25,7 +25,7 @@
 #' @export
 #' @import dplyr ggplot2
 #' @concept genomics
-#' @family {plotting}
+#' @family plotting
 #' @examples
 #' \dontrun{
 #' # Using p-values directly
@@ -50,6 +50,8 @@ gg_manhattan_df <- function(sumstats_df,
                            color2 = "#82afd3", 
                            speed = "slow", 
                            ...) {
+  rlang::check_installed("ggfastman", reason = "to draw Manhattan plots.")
+
   
   # Check if beta and se columns are provided
   use_beta_se <- !is.null(substitute(beta_col)) && !is.null(substitute(se_col))
