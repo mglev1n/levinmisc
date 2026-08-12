@@ -14,7 +14,7 @@
 #'
 #' @return List of dataframes containing LDAK results
 #' @concept genomics
-#' @family {heritability}
+#' @family heritability
 #' @import stringr
 #' @export
 #' @examples

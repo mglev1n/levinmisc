@@ -13,7 +13,7 @@
 #' @export
 #' @import dplyr ggplot2
 #' @concept genomics
-#' @family {plotting}
+#' @family plotting
 #' @examples
 #' \dontrun{
 #' gg_qq_df(sumstats_df)

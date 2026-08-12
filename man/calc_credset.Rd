@@ -37,5 +37,5 @@ Description
 calc_credset(gwas_df)
 }
 }
+\concept{finemapping}
 \concept{genomics}
-\concept{{finemapping}}

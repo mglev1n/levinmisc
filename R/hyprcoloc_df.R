@@ -16,7 +16,7 @@
 #' @import hyprcoloc tidyr
 #' @importFrom purrr possibly
 #' @concept genomics
-#' @family {colocalization}
+#' @family colocalization
 #' @export
 #' @examples
 #' \dontrun{

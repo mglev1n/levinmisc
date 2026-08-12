@@ -25,8 +25,8 @@ gg_qq_df(sumstats_df)
 }
 }
 \seealso{
-Other {plotting}: 
+Other plotting: 
 \code{\link{gg_manhattan_df}()}
 }
 \concept{genomics}
-\concept{{plotting}}
+\concept{plotting}

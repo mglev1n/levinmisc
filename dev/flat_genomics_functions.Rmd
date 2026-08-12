@@ -48,7 +48,7 @@ The `gg_manhattan_df` function is used to create Manhattan plots. This function 
 #' @export
 #' @import dplyr ggplot2
 #' @concept genomics
-#' @family {plotting}
+#' @family plotting
 
 gg_manhattan_df <- function(sumstats_df, 
                            annotation_df = NULL, 
@@ -287,7 +287,7 @@ The `gg_qq_df` function can be used to generate a qq plot to visually evaluate f
 #' @export
 #' @import dplyr ggplot2
 #' @concept genomics
-#' @family {plotting}
+#' @family plotting
 
 gg_qq_df <- function(sumstats_df, pval_col = p_value, ...) {
   df <- sumstats_df %>%
@@ -347,7 +347,7 @@ This function can be used rapidly add rsids to GWAS summary statistics by chromo
 #'
 #' @export
 #' @concept genomics
-#' @family {annotation}
+#' @family annotation
 
 annotate_rsids <- function(df, dbSNP = SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs.Hsapiens.dbSNP144.GRCh37, chrom_col = Chromosome, pos_col = Position) {
   if (sum(stringr::str_detect(names(df), "rsid")) > 0) {
@@ -681,7 +681,7 @@ The `plink_extract_ld` function is a wrapper around the `plink` v1.9 binary, whi
 #' @return A square matrix containing the pairwise correlations between genetic variants
 #' @export
 #' @concept genomics
-#' @family {linkage disequilibrium}
+#' @family linkage disequilibrium
 #'
 plink_extract_ld <- function(df, snp_col, effect_allele_col, metric = "r", bfile, threads = 1, memory = 16000,
                              plink_bin) {
@@ -790,7 +790,7 @@ This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that take
 #' @import hyprcoloc tidyr
 #' @importFrom purrr possibly
 #' @concept genomics
-#' @family {colocalization}
+#' @family colocalization
 #' @export
 
 hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta, se_col = se, type_col = type, ...) {
@@ -898,7 +898,7 @@ test_that("hyprcoloc_df works", {
 #' - `results` is an annotated version of the input data containing log approximate Bayes Factors and posterior probability of each SNP being causal if H4 is true.
 #'
 #' @concept genomics
-#' @family {colocalization}
+#' @family colocalization
 #' @export
 
 coloc_run <- function(df, trait_col = trait, variant_col = rsid, beta_col = beta, se_col = se, samplesize_col = samplesize, maf_col = maf, type_col = type, case_prop_col = case_prop, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, ...) {
@@ -999,7 +999,7 @@ This function implements the simple Bayesian finemapping approach described in M
 #' @return A data.frame containing credible sets at each locus. For each variant within the credible set, the prior probability of being the casual variant is provided.
 #'
 #' @export
-#' @family {finemapping}
+#' @family finemapping
 #' @concept genomics
 
 calc_credset <- function(df, locus_marker_col = locus_marker, effect_col = effect, se_col = std_err, samplesize_col = samplesize, cred_interval = 0.99) {
@@ -1368,7 +1368,7 @@ test_that("s_multixcan works", {
 #'
 #' @return List of dataframes containing LDAK results
 #' @concept genomics
-#' @family {heritability}
+#' @family heritability
 #' @import stringr
 #' @export
 

@@ -13,7 +13,7 @@
 #'
 #' @export
 #' @concept genomics
-#' @family {annotation}
+#' @family annotation
 #' @examples
 #' \dontrun{
 #' annotate_rsids(sumstats_df)

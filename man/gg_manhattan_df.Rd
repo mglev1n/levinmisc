@@ -70,8 +70,8 @@ gg_manhattan_df(sumstats_df, beta_col = beta, se_col = se)
 }
 }
 \seealso{
-Other {plotting}: 
+Other plotting: 
 \code{\link{gg_qq_df}()}
 }
 \concept{genomics}
-\concept{{plotting}}
+\concept{plotting}
