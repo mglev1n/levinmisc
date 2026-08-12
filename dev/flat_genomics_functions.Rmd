@@ -65,6 +65,8 @@ gg_manhattan_df <- function(sumstats_df,
                            color2 = "#82afd3", 
                            speed = "slow", 
                            ...) {
+  rlang::check_installed("ggfastman", reason = "to draw Manhattan plots.")
+
   
   # Check if beta and se columns are provided
   use_beta_se <- !is.null(substitute(beta_col)) && !is.null(substitute(se_col))
@@ -350,6 +352,11 @@ This function can be used rapidly add rsids to GWAS summary statistics by chromo
 #' @family annotation
 
 annotate_rsids <- function(df, dbSNP = SNPlocs.Hsapiens.dbSNP144.GRCh37::SNPlocs.Hsapiens.dbSNP144.GRCh37, chrom_col = Chromosome, pos_col = Position) {
+  rlang::check_installed(
+    c("BSgenome", "GenomicRanges", "plyranges", "SNPlocs.Hsapiens.dbSNP144.GRCh37"),
+    reason = "to annotate genomic coordinates with rsids."
+  )
+
   if (sum(stringr::str_detect(names(df), "rsid")) > 0) {
     cli::cli_abort("A column named 'rsid' is already present")
   }
@@ -787,13 +794,15 @@ This function is a convenience wrapper around [hyprcoloc::hyprcoloc()] that take
 #' @param ... Arguments passed to [hyprcoloc::hyprcoloc()]
 #'
 #' @return A list containing a data.frame of HyPrColoc results: each row is a cluster of colocalized traits or is coded NA (if no colocalization is identified)
-#' @import hyprcoloc tidyr
+#' @import tidyr
 #' @importFrom purrr possibly
 #' @concept genomics
 #' @family colocalization
 #' @export
 
 hyprcoloc_df <- function(df, trait_col = trait, snp_col = rsid, beta_col = beta, se_col = se, type_col = type, ...) {
+  rlang::check_installed("hyprcoloc", reason = "to run multi-trait colocalization.")
+
   df <- df %>%
     dplyr::select(trait = {{ trait_col }}, rsid = {{ snp_col }}, beta.exposure = {{ beta_col }}, se.exposure = {{ se_col }}, type = {{ type_col }}) %>%
     dplyr::distinct(rsid, trait, .keep_all = TRUE) %>%
@@ -902,6 +911,8 @@ test_that("hyprcoloc_df works", {
 #' @export
 
 coloc_run <- function(df, trait_col = trait, variant_col = rsid, beta_col = beta, se_col = se, samplesize_col = samplesize, maf_col = maf, type_col = type, case_prop_col = case_prop, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, ...) {
+  rlang::check_installed("coloc", reason = "to run colocalization.")
+
   df <- df %>%
     dplyr::select(trait = {{ trait_col }}, maf = {{ maf_col }}, type = {{ type_col }}, variant_id = {{ variant_col }}, beta = {{ beta_col }}, se = {{ se_col }}, samplesize = {{ samplesize_col }}, case_prop = {{ case_prop_col }}) %>%
     dplyr::add_count(variant_id) %>%

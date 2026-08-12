@@ -3,10 +3,31 @@ path.d: DESCRIPTION
 dir.r: R
 dir.v: vignettes
 dir.t: tests
-extra.suggests: ~
-pkg_ignore: ~
+# These packages back single wrapper functions and are guarded at runtime with
+# rlang::check_installed(), so they belong in Suggests rather than Imports.
+# att_amend_desc() derives Imports from the pkg:: calls in R/, so without
+# pkg_ignore it would move every one of them back. pkg_ignore is applied to the
+# detected imports first, then extra.suggests is appended - so the pair is what
+# keeps them in Suggests across an inflate.
+extra.suggests:
+  - BSgenome
+  - coloc
+  - GenomicRanges
+  - ggfastman
+  - hyprcoloc
+  - plyranges
+  - SNPlocs.Hsapiens.dbSNP144.GRCh37
+pkg_ignore:
+  - BSgenome
+  - coloc
+  - GenomicRanges
+  - ggfastman
+  - hyprcoloc
+  - plyranges
+  - SNPlocs.Hsapiens.dbSNP144.GRCh37
 document: yes
 normalize: yes
 inside_rmd: no
 must.exist: yes
-check_if_suggests_is_installed: yes
+# The optional packages above are deliberately absent on CI runners.
+check_if_suggests_is_installed: no
