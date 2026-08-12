@@ -20,6 +20,8 @@
 #' }
 
 gg_qq_df <- function(sumstats_df, pval_col = p_value, ...) {
+  rlang::check_installed("ggfastman", reason = "to draw Q-Q plots.")
+
   df <- sumstats_df %>%
     select(pvalue = {{ pval_col }}) %>%
     collect() %>%

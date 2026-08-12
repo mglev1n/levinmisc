@@ -254,6 +254,8 @@ test_that("gg_manhattan_df works", {
 })
 
 test_that("gg_manhattan_df returns a ggplot object", {
+  skip_if_not_installed("ggfastman")
+
   locus_df <- tibble(position = sample.int(1000, 100)) %>%
     tidyr::crossing(chromosome = 1:22) %>%
     rowwise() %>%
@@ -292,6 +294,8 @@ The `gg_qq_df` function can be used to generate a qq plot to visually evaluate f
 #' @family plotting
 
 gg_qq_df <- function(sumstats_df, pval_col = p_value, ...) {
+  rlang::check_installed("ggfastman", reason = "to draw Q-Q plots.")
+
   df <- sumstats_df %>%
     select(pvalue = {{ pval_col }}) %>%
     collect() %>%
@@ -319,6 +323,8 @@ test_that("gg_qq_df works", {
 })
 
 test_that("gg_qq_df returns a ggplot object", {
+  skip_if_not_installed("ggfastman")
+
   plot_res <- tibble(pval = runif(1000)) %>%
     gg_qq_df(pval_col = pval)
   expect_s3_class(plot_res, "ggplot")
@@ -414,6 +420,11 @@ test_that("annotate_rsids works", {
 })
 
 test_that("annotate_rsids returns a tibble", {
+  skip_if_not_installed("BSgenome")
+  skip_if_not_installed("GenomicRanges")
+  skip_if_not_installed("plyranges")
+  skip_if_not_installed("SNPlocs.Hsapiens.dbSNP144.GRCh37")
+
   df <- tibble(Chromosome = 1) %>%
     tidyr::crossing(Position = 1e4:1e5)
   rsids_res <- annotate_rsids(df)
@@ -864,6 +875,8 @@ hyprcoloc_df(gwas_results_df)
 test_that("hyprcoloc_df works", {
   expect_true(inherits(hyprcoloc_df, "function"))
 
+  skip_if_not_installed("hyprcoloc")
+
   df <- tibble::tibble(
     rsid = letters,
     beta = runif(26, min = -1, max = 1),
@@ -972,6 +985,8 @@ test_that("coloc_run works", {
 })
 
 test_that("coloc_run returns a list", {
+  skip_if_not_installed("coloc")
+
   locus_df1 <- tibble::tibble(trait = "A", rsid = letters, beta = runif(26, min = -1), se = runif(26, max = 0.2), p_value = runif(1, min = 1 / 1e5, max = 0.99), samplesize = 10000, maf = runif(26), type = "quant", case_prop = NA)
   locus_df2 <- tibble::tibble(trait = "B", rsid = letters, beta = runif(26, min = -1), se = runif(26, max = 0.2), p_value = runif(1, min = 1 / 1e5, max = 0.99), samplesize = 10000, maf = runif(26), type = "cc", case_prop = 0.2)
 

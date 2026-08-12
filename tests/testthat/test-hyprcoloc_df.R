@@ -3,6 +3,8 @@
 test_that("hyprcoloc_df works", {
   expect_true(inherits(hyprcoloc_df, "function"))
 
+  skip_if_not_installed("hyprcoloc")
+
   df <- tibble::tibble(
     rsid = letters,
     beta = runif(26, min = -1, max = 1),

@@ -5,6 +5,8 @@ test_that("gg_qq_df works", {
 })
 
 test_that("gg_qq_df returns a ggplot object", {
+  skip_if_not_installed("ggfastman")
+
   plot_res <- tibble(pval = runif(1000)) %>%
     gg_qq_df(pval_col = pval)
   expect_s3_class(plot_res, "ggplot")

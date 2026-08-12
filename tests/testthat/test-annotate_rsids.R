@@ -5,6 +5,11 @@ test_that("annotate_rsids works", {
 })
 
 test_that("annotate_rsids returns a tibble", {
+  skip_if_not_installed("BSgenome")
+  skip_if_not_installed("GenomicRanges")
+  skip_if_not_installed("plyranges")
+  skip_if_not_installed("SNPlocs.Hsapiens.dbSNP144.GRCh37")
+
   df <- tibble(Chromosome = 1) %>%
     tidyr::crossing(Position = 1e4:1e5)
   rsids_res <- annotate_rsids(df)
