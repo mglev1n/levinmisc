@@ -36,6 +36,8 @@ Imports:
 Suggests: 
     BSgenome,
     coloc (>= 5.2.0),
+    crew,
+    crew.cluster,
     datasets,
     GenomicRanges,
     ggfastman,
@@ -44,6 +46,8 @@ Suggests:
     plyranges,
     rmarkdown,
     SNPlocs.Hsapiens.dbSNP144.GRCh37,
+    tarchetypes,
+    targets,
     testthat
 VignetteBuilder: 
     knitr

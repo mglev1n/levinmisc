@@ -9,14 +9,27 @@ dir.t: tests
 # pkg_ignore it would move every one of them back. pkg_ignore is applied to the
 # detected imports first, then extra.suggests is appended - so the pair is what
 # keeps them in Suggests across an inflate.
+#
+# crew, crew.cluster, tarchetypes and targets are a separate case: use_crew_lsf()
+# only names them inside the glue template it writes out as the user's
+# _targets.R, so attachment detects no calls and would drop them from DESCRIPTION
+# entirely. The emitted template starts with library() calls for all four, and
+# populate_targets_proj() documents [targets::tar_make()], so they need to stay
+# declared. They are listed here but deliberately NOT in pkg_ignore - nothing
+# detects them as imports, and pkg_ignore runs first, so listing them in both
+# would cancel this out.
 extra.suggests:
   - BSgenome
   - coloc
+  - crew
+  - crew.cluster
   - GenomicRanges
   - ggfastman
   - hyprcoloc
   - plyranges
   - SNPlocs.Hsapiens.dbSNP144.GRCh37
+  - tarchetypes
+  - targets
 pkg_ignore:
   - BSgenome
   - coloc
