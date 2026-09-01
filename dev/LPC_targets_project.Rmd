@@ -64,7 +64,7 @@ The `targets` package is a tool for developing reproducible research workflows i
 
 The `populate_targets_proj` function can be run within a new project folder to initialize the project with the files/folders necessary for deploying a `targets` pipeline on the LPC at Penn. This includes creating LSF templates, a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results.
 
-The `runtime` argument chooses the R installation the pipeline runs against. `"container"` (the default) runs the main `targets` process and every LSF worker inside the LPC's RStudio Singularity image, reading packages from a library built against that image's R. `"native"` loads the LPC's R module (`module load R/4.5`) instead and leaves the package library to `renv`, which is the right choice for a project whose library was built against a module-provided R. Mixing the two fails at run time: a worker that loads a library built for a different R version reports errors such as `unused arguments (controller = ...)`, because the worker and the controller end up running different `crew` versions.
+The `runtime` argument chooses the R installation the pipeline runs against. `"native"` (the default) loads the LPC's R module (`module load R/4.5`) and leaves the package library to `renv`. `"container"` instead runs the main `targets` process and every LSF worker inside the LPC's RStudio Singularity image, reading packages from a library built against that image's R, which is the right choice only for a project whose library was built against that image. Mixing the two fails at run time: a worker that loads a library built for a different R version reports errors such as `unused arguments (controller = ...)`, because the worker and the controller end up running different `crew` versions.
 
 ```{r function-populate_targets_proj}
 #' Create a minimal targets template in the current project
@@ -72,11 +72,11 @@ The `runtime` argument chooses the R installation the pipeline runs against. `"c
 #' @description
 #' This function creates a minimal targets template in the current directory. This includes creating a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results. Parallelization of the pipeline is implemented using [targets::tar_make()] and `crew.cluster`, using pre-filled using parameters specific to the LPC system at Penn.
 #'
-#' The `runtime` argument selects the R installation the pipeline runs against, and is passed through to [use_crew_lsf()]. `"container"` runs the main `targets` process and every worker inside the LPC's RStudio Singularity image; `"native"` loads the LPC's R module instead and leaves the package library to `renv`.
+#' The `runtime` argument selects the R installation the pipeline runs against, and is passed through to [use_crew_lsf()]. `"native"`, the default, loads the LPC's R module and leaves the package library to `renv`; `"container"` instead runs the main `targets` process and every worker inside the LPC's RStudio Singularity image.
 #'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
 #' @param log_folder (character) directory for LSF logs
-#' @param runtime (character) R runtime the pipeline and its LSF workers use: `"container"` for the LPC RStudio Singularity image, or `"native"` for the module-provided R
+#' @param runtime (character) R runtime the pipeline and its LSF workers use: `"native"` (the default) for the module-provided R, or `"container"` for the LPC RStudio Singularity image
 #' @param overwrite (logical) overwrite existing template files
 #'
 #' @export
@@ -84,7 +84,7 @@ The `runtime` argument chooses the R installation the pipeline runs against. `"c
 
 populate_targets_proj <- function(title,
                                   log_folder = "build_logs",
-                                  runtime = c("container", "native"),
+                                  runtime = c("native", "container"),
                                   overwrite = FALSE) {
   runtime <- rlang::arg_match(runtime)
 
@@ -144,7 +144,7 @@ This should be a reproducible and working example
 ```{r examples-populate_targets_proj, eval=FALSE}
 #' \dontrun{
 populate_targets_proj("test")
-populate_targets_proj("test", runtime = "native")
+populate_targets_proj("test", runtime = "container")
 #' }
 ```
 
@@ -257,16 +257,16 @@ The `crew` and `crew.cluster` packages have enabled the use of heterogenous work
 #' 
 #' This function returns a template for using `crew.cluster` in a targets project, enabling the parallel execution of a targets workflow. By default, the template is pre-filled using parameters specific to the LPC system at Penn. By default, this function creates workers that submit to different queues (eg. `voltron_normal`, `voltron_long`), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory).
 #'
-#' The `runtime` argument selects the R installation the workers run against. `"container"` runs each worker inside the LPC's RStudio Singularity image, and `"native"` loads the LPC's R module instead, leaving the package library to `renv`. Use `"native"` when the project library was built against a module-provided R: a worker that loads a library built for a different R version fails with errors such as `unused arguments (controller = ...)`, because the worker and the controller then run different `crew` versions.
+#' The `runtime` argument selects the R installation the workers run against. `"native"`, the default, loads the LPC's R module and leaves the package library to `renv`; `"container"` runs each worker inside the LPC's RStudio Singularity image instead. Use `"container"` only when the project library was built against that image: a worker that loads a library built for a different R version fails with errors such as `unused arguments (controller = ...)`, because the worker and the controller then run different `crew` versions.
 #'
-#' @param runtime (character) R runtime the LSF workers use: `"container"` for the LPC RStudio Singularity image, or `"native"` for the module-provided R
+#' @param runtime (character) R runtime the LSF workers use: `"native"` (the default) for the module-provided R, or `"container"` for the LPC RStudio Singularity image
 #'
 #' @return A code block to copy/paste into a targets project
 #'
 #' @export
 #' @concept targets
 
-use_crew_lsf <- function(runtime = c("container", "native")) {
+use_crew_lsf <- function(runtime = c("native", "container")) {
   runtime <- rlang::arg_match(runtime)
 
   title <- basename(here::here())
@@ -307,10 +307,10 @@ use_crew_lsf <- function(runtime = c("container", "native")) {
   }
 
   # A single `crew_controller_lsf()` call, rendered as the source the user
-  # pastes into their pipeline. The container runtime keeps the `lsf_*`
-  # arguments, which are what the crew.cluster build inside the image
-  # understands; the native runtime uses the current `crew_options_lsf()`
-  # interface that replaced them.
+  # pastes into their pipeline. The native runtime uses the current
+  # `crew_options_lsf()` interface; the container runtime keeps the `lsf_*`
+  # arguments it replaced, which are what the crew.cluster build inside the
+  # image understands.
   controller <- function(suffix, workers, queue, memory, threads = 1, cores = NULL) {
     if (runtime == "container") {
       glue::glue(
@@ -394,7 +394,7 @@ tar_option_set(
 ```{r example-use_crew_lsf, eval=FALSE}
 #' \dontrun{
 use_crew_lsf()
-use_crew_lsf(runtime = "native")
+use_crew_lsf(runtime = "container")
 #' }
 ```
   
@@ -403,22 +403,22 @@ test_that("use_crew_lsf works", {
   expect_true(inherits(use_crew_lsf, "function"))
 })
 
-test_that("use_crew_lsf defaults to the container runtime", {
+test_that("use_crew_lsf defaults to the native runtime", {
   template <- suppressMessages(use_crew_lsf())
   expect_identical(
     as.character(template),
-    as.character(suppressMessages(use_crew_lsf(runtime = "container")))
+    as.character(suppressMessages(use_crew_lsf(runtime = "native")))
   )
-  expect_true(grepl("singularity exec", template, fixed = TRUE))
-  expect_true(grepl("export SINGULARITY_BIND=", template, fixed = TRUE))
-  expect_false(grepl("module load", template, fixed = TRUE))
-})
-
-test_that("use_crew_lsf loads an R module under the native runtime", {
-  template <- suppressMessages(use_crew_lsf(runtime = "native"))
   expect_true(grepl("module load R/", template, fixed = TRUE))
   expect_false(grepl("singularity exec", template, fixed = TRUE))
   expect_false(grepl("R_LIBS_USER", template, fixed = TRUE))
+})
+
+test_that("use_crew_lsf runs workers in the image under the container runtime", {
+  template <- suppressMessages(use_crew_lsf(runtime = "container"))
+  expect_true(grepl("singularity exec", template, fixed = TRUE))
+  expect_true(grepl("export SINGULARITY_BIND=", template, fixed = TRUE))
+  expect_false(grepl("module load", template, fixed = TRUE))
 })
 
 test_that("use_crew_lsf returns parseable R code for either runtime", {

@@ -4,22 +4,22 @@ test_that("use_crew_lsf works", {
   expect_true(inherits(use_crew_lsf, "function"))
 })
 
-test_that("use_crew_lsf defaults to the container runtime", {
+test_that("use_crew_lsf defaults to the native runtime", {
   template <- suppressMessages(use_crew_lsf())
   expect_identical(
     as.character(template),
-    as.character(suppressMessages(use_crew_lsf(runtime = "container")))
+    as.character(suppressMessages(use_crew_lsf(runtime = "native")))
   )
-  expect_true(grepl("singularity exec", template, fixed = TRUE))
-  expect_true(grepl("export SINGULARITY_BIND=", template, fixed = TRUE))
-  expect_false(grepl("module load", template, fixed = TRUE))
-})
-
-test_that("use_crew_lsf loads an R module under the native runtime", {
-  template <- suppressMessages(use_crew_lsf(runtime = "native"))
   expect_true(grepl("module load R/", template, fixed = TRUE))
   expect_false(grepl("singularity exec", template, fixed = TRUE))
   expect_false(grepl("R_LIBS_USER", template, fixed = TRUE))
+})
+
+test_that("use_crew_lsf runs workers in the image under the container runtime", {
+  template <- suppressMessages(use_crew_lsf(runtime = "container"))
+  expect_true(grepl("singularity exec", template, fixed = TRUE))
+  expect_true(grepl("export SINGULARITY_BIND=", template, fixed = TRUE))
+  expect_false(grepl("module load", template, fixed = TRUE))
 })
 
 test_that("use_crew_lsf returns parseable R code for either runtime", {

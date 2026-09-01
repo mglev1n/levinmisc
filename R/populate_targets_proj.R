@@ -5,11 +5,11 @@
 #' @description
 #' This function creates a minimal targets template in the current directory. This includes creating a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results. Parallelization of the pipeline is implemented using [targets::tar_make()] and `crew.cluster`, using pre-filled using parameters specific to the LPC system at Penn.
 #'
-#' The `runtime` argument selects the R installation the pipeline runs against, and is passed through to [use_crew_lsf()]. `"container"` runs the main `targets` process and every worker inside the LPC's RStudio Singularity image; `"native"` loads the LPC's R module instead and leaves the package library to `renv`.
+#' The `runtime` argument selects the R installation the pipeline runs against, and is passed through to [use_crew_lsf()]. `"native"`, the default, loads the LPC's R module and leaves the package library to `renv`; `"container"` instead runs the main `targets` process and every worker inside the LPC's RStudio Singularity image.
 #'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
 #' @param log_folder (character) directory for LSF logs
-#' @param runtime (character) R runtime the pipeline and its LSF workers use: `"container"` for the LPC RStudio Singularity image, or `"native"` for the module-provided R
+#' @param runtime (character) R runtime the pipeline and its LSF workers use: `"native"` (the default) for the module-provided R, or `"container"` for the LPC RStudio Singularity image
 #' @param overwrite (logical) overwrite existing template files
 #'
 #' @export
@@ -17,12 +17,12 @@
 #' @examples
 #' \dontrun{
 #' populate_targets_proj("test")
-#' populate_targets_proj("test", runtime = "native")
+#' populate_targets_proj("test", runtime = "container")
 #' }
 
 populate_targets_proj <- function(title,
                                   log_folder = "build_logs",
-                                  runtime = c("container", "native"),
+                                  runtime = c("native", "container"),
                                   overwrite = FALSE) {
   runtime <- rlang::arg_match(runtime)
 

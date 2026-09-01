@@ -7,9 +7,9 @@
 #' 
 #' This function returns a template for using `crew.cluster` in a targets project, enabling the parallel execution of a targets workflow. By default, the template is pre-filled using parameters specific to the LPC system at Penn. By default, this function creates workers that submit to different queues (eg. `voltron_normal`, `voltron_long`), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory).
 #'
-#' The `runtime` argument selects the R installation the workers run against. `"container"` runs each worker inside the LPC's RStudio Singularity image, and `"native"` loads the LPC's R module instead, leaving the package library to `renv`. Use `"native"` when the project library was built against a module-provided R: a worker that loads a library built for a different R version fails with errors such as `unused arguments (controller = ...)`, because the worker and the controller then run different `crew` versions.
+#' The `runtime` argument selects the R installation the workers run against. `"native"`, the default, loads the LPC's R module and leaves the package library to `renv`; `"container"` runs each worker inside the LPC's RStudio Singularity image instead. Use `"container"` only when the project library was built against that image: a worker that loads a library built for a different R version fails with errors such as `unused arguments (controller = ...)`, because the worker and the controller then run different `crew` versions.
 #'
-#' @param runtime (character) R runtime the LSF workers use: `"container"` for the LPC RStudio Singularity image, or `"native"` for the module-provided R
+#' @param runtime (character) R runtime the LSF workers use: `"native"` (the default) for the module-provided R, or `"container"` for the LPC RStudio Singularity image
 #'
 #' @return A code block to copy/paste into a targets project
 #'
@@ -18,10 +18,10 @@
 #' @examples
 #' \dontrun{
 #' use_crew_lsf()
-#' use_crew_lsf(runtime = "native")
+#' use_crew_lsf(runtime = "container")
 #' }
 
-use_crew_lsf <- function(runtime = c("container", "native")) {
+use_crew_lsf <- function(runtime = c("native", "container")) {
   runtime <- rlang::arg_match(runtime)
 
   title <- basename(here::here())
@@ -62,10 +62,10 @@ use_crew_lsf <- function(runtime = c("container", "native")) {
   }
 
   # A single `crew_controller_lsf()` call, rendered as the source the user
-  # pastes into their pipeline. The container runtime keeps the `lsf_*`
-  # arguments, which are what the crew.cluster build inside the image
-  # understands; the native runtime uses the current `crew_options_lsf()`
-  # interface that replaced them.
+  # pastes into their pipeline. The native runtime uses the current
+  # `crew_options_lsf()` interface; the container runtime keeps the `lsf_*`
+  # arguments it replaced, which are what the crew.cluster build inside the
+  # image understands.
   controller <- function(suffix, workers, queue, memory, threads = 1, cores = NULL) {
     if (runtime == "container") {
       glue::glue(

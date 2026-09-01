@@ -58,7 +58,7 @@ The `targets` package is a tool for developing reproducible research workflows i
 
 The `populate_targets_proj` function can be run within a new project folder to initialize the project with the files/folders necessary for deploying a `targets` pipeline on the LPC at Penn. This includes creating LSF templates, a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results.
 
-The `runtime` argument chooses the R installation the pipeline runs against. `"container"` (the default) runs the main `targets` process and every LSF worker inside the LPC's RStudio Singularity image, reading packages from a library built against that image's R. `"native"` loads the LPC's R module (`module load R/4.5`) instead and leaves the package library to `renv`, which is the right choice for a project whose library was built against a module-provided R. Mixing the two fails at run time: a worker that loads a library built for a different R version reports errors such as `unused arguments (controller = ...)`, because the worker and the controller end up running different `crew` versions.
+The `runtime` argument chooses the R installation the pipeline runs against. `"native"` (the default) loads the LPC's R module (`module load R/4.5`) and leaves the package library to `renv`. `"container"` instead runs the main `targets` process and every LSF worker inside the LPC's RStudio Singularity image, reading packages from a library built against that image's R, which is the right choice only for a project whose library was built against that image. Mixing the two fails at run time: a worker that loads a library built for a different R version reports errors such as `unused arguments (controller = ...)`, because the worker and the controller end up running different `crew` versions.
 
 <!--
 Here is an example on how to use the function.
@@ -69,7 +69,7 @@ This should be a reproducible and working example
 
 #' \dontrun{
 populate_targets_proj("test")
-populate_targets_proj("test", runtime = "native")
+populate_targets_proj("test", runtime = "container")
 #' }
 ```
 
@@ -131,7 +131,7 @@ The `crew` and `crew.cluster` packages have enabled the use of heterogenous work
 
 #' \dontrun{
 use_crew_lsf()
-use_crew_lsf(runtime = "native")
+use_crew_lsf(runtime = "container")
 #' }
 ```
 

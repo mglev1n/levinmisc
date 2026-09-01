@@ -7,7 +7,7 @@
 populate_targets_proj(
   title,
   log_folder = "build_logs",
-  runtime = c("container", "native"),
+  runtime = c("native", "container"),
   overwrite = FALSE
 )
 }
@@ -16,19 +16,19 @@ populate_targets_proj(
 
 \item{log_folder}{(character) directory for LSF logs}
 
-\item{runtime}{(character) R runtime the pipeline and its LSF workers use: \code{"container"} for the LPC RStudio Singularity image, or \code{"native"} for the module-provided R}
+\item{runtime}{(character) R runtime the pipeline and its LSF workers use: \code{"native"} (the default) for the module-provided R, or \code{"container"} for the LPC RStudio Singularity image}
 
 \item{overwrite}{(logical) overwrite existing template files}
 }
 \description{
 This function creates a minimal targets template in the current directory. This includes creating a \code{Pipelines.qmd} file containing boilerplate for running analyses, and a \code{Results.qmd} file which can be used to visualize the results. Parallelization of the pipeline is implemented using \code{\link[targets:tar_make]{targets::tar_make()}} and \code{crew.cluster}, using pre-filled using parameters specific to the LPC system at Penn.
 
-The \code{runtime} argument selects the R installation the pipeline runs against, and is passed through to \code{\link[=use_crew_lsf]{use_crew_lsf()}}. \code{"container"} runs the main \code{targets} process and every worker inside the LPC's RStudio Singularity image; \code{"native"} loads the LPC's R module instead and leaves the package library to \code{renv}.
+The \code{runtime} argument selects the R installation the pipeline runs against, and is passed through to \code{\link[=use_crew_lsf]{use_crew_lsf()}}. \code{"native"}, the default, loads the LPC's R module and leaves the package library to \code{renv}; \code{"container"} instead runs the main \code{targets} process and every worker inside the LPC's RStudio Singularity image.
 }
 \examples{
 \dontrun{
 populate_targets_proj("test")
-populate_targets_proj("test", runtime = "native")
+populate_targets_proj("test", runtime = "container")
 }
 }
 \concept{targets}
