@@ -123,6 +123,18 @@ Penn. This includes creating LSF templates, a <code>Pipelines.qmd</code>
 file containing boilerplate for running analyses, and a
 <code>Results.qmd</code> file which can be used to visualize the
 results.</p>
+<p>The <code>runtime</code> argument chooses the R installation the
+pipeline runs against. <code>"native"</code> (the default) loads the
+LPC’s R module (<code>module load R/4.5</code>) and leaves the package
+library to <code>renv</code>. <code>"container"</code> instead runs the
+main <code>targets</code> process and every LSF worker inside the LPC’s
+RStudio Singularity image, reading packages from a library built against
+that image’s R, which is the right choice only for a project whose
+library was built against that image. Mixing the two fails at run time:
+a worker that loads a library built for a different R version reports
+errors such as <code>unused arguments (controller = ...)</code>, because
+the worker and the controller end up running different <code>crew</code>
+versions.</p>
 <!--
 Here is an example on how to use the function.
 This should be a reproducible and working example
@@ -130,13 +142,16 @@ This should be a reproducible and working example
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
 <span><span class="fu"><a href="../reference/populate_targets_proj.html">populate_targets_proj</a></span><span class="op">(</span><span class="st">"test"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/populate_targets_proj.html">populate_targets_proj</a></span><span class="op">(</span><span class="st">"test"</span>, runtime <span class="op">=</span> <span class="st">"container"</span><span class="op">)</span></span>
 <span><span class="co">#' }</span></span></code></pre></div>
 <p>The <code><a href="../reference/populate_targets_proj.html">populate_targets_proj()</a></code> function creates several
 files/folders within the project directory.
 <code>.make-targets.sh</code> and is a hidden helper file which is not
 designed for user interaction, but necessary for submission of jobs to
-the LSF scheduler. The other files are designed to be edited/used by the
-user:</p>
+the LSF scheduler; its contents follow the <code>runtime</code>
+argument, so that the main <code>targets</code> process runs under the
+same R as the workers. The other files are designed to be edited/used by
+the user:</p>
 <ul>
 <li><p><code>Pipeline.qmd</code> - Quarto markdown file which can be
 used to create a Target Markdown document that specifies a
@@ -206,9 +221,25 @@ workers that submit to different queues (eg.
 <code>voltron_normal</code>, <code>voltron_long</code>), and allocate
 different resources (eg. a “normal” worker will use 1 core and 16GB
 memory, while a “long” worker will use 1 core and 10GB memory).</p>
+<p><code><a href="../reference/use_crew_lsf.html">use_crew_lsf()</a></code> takes the same <code>runtime</code>
+argument as <code><a href="../reference/populate_targets_proj.html">populate_targets_proj()</a></code>, which controls the
+shell lines that open each worker script. Under <code>"container"</code>
+the worker exports <code>R_LIBS_USER</code> and
+<code>SINGULARITY_BIND</code> and then runs R through
+<code>singularity exec</code>; under <code>"native"</code> it runs
+<code>module load R/4.5</code> and nothing else, so the project library
+comes from <code>renv/activate.R</code> (<code>crew_options_lsf()</code>
+defaults <code>cwd</code> to the project directory). The two branches
+also differ in the <code>crew.cluster</code> interface they emit: the
+container branch keeps the older <code>lsf_*</code> arguments to
+<code>crew_controller_lsf()</code>, which is what the
+<code>crew.cluster</code> build inside the image understands, while the
+native branch uses the <code>crew_options_lsf()</code> interface that
+replaced them.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
 <span><span class="fu"><a href="../reference/use_crew_lsf.html">use_crew_lsf</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/use_crew_lsf.html">use_crew_lsf</a></span><span class="op">(</span>runtime <span class="op">=</span> <span class="st">"container"</span><span class="op">)</span></span>
 <span><span class="co">#' }</span></span></code></pre></div>
 <!-- 
 # Inflate your package

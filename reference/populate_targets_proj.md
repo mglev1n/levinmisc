@@ -7,10 +7,22 @@ used to visualize the results. Parallelization of the pipeline is
 implemented using `targets::tar_make()` and `crew.cluster`, using
 pre-filled using parameters specific to the LPC system at Penn.
 
+The `runtime` argument selects the R installation the pipeline runs
+against, and is passed through to
+[`use_crew_lsf()`](https://mglev1n.github.io/levinmisc/reference/use_crew_lsf.md).
+`"native"`, the default, loads the LPC's R module and leaves the package
+library to `renv`; `"container"` instead runs the main `targets` process
+and every worker inside the LPC's RStudio Singularity image.
+
 ## Usage
 
 ``` r
-populate_targets_proj(title, log_folder = "build_logs", overwrite = FALSE)
+populate_targets_proj(
+  title,
+  log_folder = "build_logs",
+  runtime = c("native", "container"),
+  overwrite = FALSE
+)
 ```
 
 ## Arguments
@@ -24,6 +36,12 @@ populate_targets_proj(title, log_folder = "build_logs", overwrite = FALSE)
 
   (character) directory for LSF logs
 
+- runtime:
+
+  (character) R runtime the pipeline and its LSF workers use: `"native"`
+  (the default) for the module-provided R, or `"container"` for the LPC
+  RStudio Singularity image
+
 - overwrite:
 
   (logical) overwrite existing template files
@@ -33,5 +51,6 @@ populate_targets_proj(title, log_folder = "build_logs", overwrite = FALSE)
 ``` r
 if (FALSE) { # \dontrun{
 populate_targets_proj("test")
+populate_targets_proj("test", runtime = "container")
 } # }
 ```

@@ -47,10 +47,23 @@ creating LSF templates, a `Pipelines.qmd` file containing boilerplate
 for running analyses, and a `Results.qmd` file which can be used to
 visualize the results.
 
+The `runtime` argument chooses the R installation the pipeline runs
+against. `"native"` (the default) loads the LPC’s R module
+(`module load R/4.5`) and leaves the package library to `renv`.
+`"container"` instead runs the main `targets` process and every LSF
+worker inside the LPC’s RStudio Singularity image, reading packages from
+a library built against that image’s R, which is the right choice only
+for a project whose library was built against that image. Mixing the two
+fails at run time: a worker that loads a library built for a different R
+version reports errors such as `unused arguments (controller = ...)`,
+because the worker and the controller end up running different `crew`
+versions.
+
 ``` r
 
 #' \dontrun{
 populate_targets_proj("test")
+populate_targets_proj("test", runtime = "container")
 #' }
 ```
 
@@ -59,7 +72,9 @@ The
 function creates several files/folders within the project directory.
 `.make-targets.sh` and is a hidden helper file which is not designed for
 user interaction, but necessary for submission of jobs to the LSF
-scheduler. The other files are designed to be edited/used by the user:
+scheduler; its contents follow the `runtime` argument, so that the main
+`targets` process runs under the same R as the workers. The other files
+are designed to be edited/used by the user:
 
 - `Pipeline.qmd` - Quarto markdown file which can be used to create a
   Target Markdown document that specifies a `targets` pipeline for your
@@ -129,9 +144,24 @@ creates workers that submit to different queues (eg. `voltron_normal`,
 will use 1 core and 16GB memory, while a “long” worker will use 1 core
 and 10GB memory).
 
+[`use_crew_lsf()`](https://mglev1n.github.io/levinmisc/reference/use_crew_lsf.md)
+takes the same `runtime` argument as
+[`populate_targets_proj()`](https://mglev1n.github.io/levinmisc/reference/populate_targets_proj.md),
+which controls the shell lines that open each worker script. Under
+`"container"` the worker exports `R_LIBS_USER` and `SINGULARITY_BIND`
+and then runs R through `singularity exec`; under `"native"` it runs
+`module load R/4.5` and nothing else, so the project library comes from
+`renv/activate.R` (`crew_options_lsf()` defaults `cwd` to the project
+directory). The two branches also differ in the `crew.cluster` interface
+they emit: the container branch keeps the older `lsf_*` arguments to
+`crew_controller_lsf()`, which is what the `crew.cluster` build inside
+the image understands, while the native branch uses the
+`crew_options_lsf()` interface that replaced them.
+
 ``` r
 
 #' \dontrun{
 use_crew_lsf()
+use_crew_lsf(runtime = "container")
 #' }
 ```
