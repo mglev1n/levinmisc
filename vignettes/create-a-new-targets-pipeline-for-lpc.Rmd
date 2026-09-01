@@ -58,6 +58,8 @@ The `targets` package is a tool for developing reproducible research workflows i
 
 The `populate_targets_proj` function can be run within a new project folder to initialize the project with the files/folders necessary for deploying a `targets` pipeline on the LPC at Penn. This includes creating LSF templates, a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results.
 
+The `runtime` argument chooses the R installation the pipeline runs against. `"native"` (the default) loads the LPC's R module (`module load R/4.5`) and leaves the package library to `renv`. `"container"` instead runs the main `targets` process and every LSF worker inside the LPC's RStudio Singularity image, reading packages from a library built against that image's R, which is the right choice only for a project whose library was built against that image. Mixing the two fails at run time: a worker that loads a library built for a different R version reports errors such as `unused arguments (controller = ...)`, because the worker and the controller end up running different `crew` versions.
+
 <!--
 Here is an example on how to use the function.
 This should be a reproducible and working example
@@ -67,11 +69,12 @@ This should be a reproducible and working example
 
 #' \dontrun{
 populate_targets_proj("test")
+populate_targets_proj("test", runtime = "container")
 #' }
 ```
 
 
-The `populate_targets_proj()` function creates several files/folders within the project directory. `.make-targets.sh` and is a hidden helper file which is not designed for user interaction, but necessary for submission of jobs to the LSF scheduler. The other files are designed to be edited/used by the user:
+The `populate_targets_proj()` function creates several files/folders within the project directory. `.make-targets.sh` and is a hidden helper file which is not designed for user interaction, but necessary for submission of jobs to the LSF scheduler; its contents follow the `runtime` argument, so that the main `targets` process runs under the same R as the workers. The other files are designed to be edited/used by the user:
 
   - `Pipeline.qmd` - Quarto markdown file which can be used to create a Target Markdown document that specifies a `targets` pipeline for your analyses. See: https://books.ropensci.org/targets/literate-programming.html#target-markdown for details. Remember to knit/render this document in order to generate the pipeline.
   
@@ -118,6 +121,8 @@ Here are some unit tests to verify the function works as expected.
 ### Use {crew} for parallelization
 
 The `crew` and `crew.cluster` packages have enabled the use of heterogenous workers (<https://books.ropensci.org/targets/crew.html#heterogeneous-workers>), that can be used to deploy `targets` pipelines either locally or on HPC resources. The `use_crew_lsf()` function is designed to return a block of code to rapidly enable the use of heterogeneous workers on the Penn LPC. By default, this function creates workers that submit to different queues (eg. `voltron_normal`, `voltron_long`), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory).
+
+`use_crew_lsf()` takes the same `runtime` argument as `populate_targets_proj()`, which controls the shell lines that open each worker script. Under `"container"` the worker exports `R_LIBS_USER` and `SINGULARITY_BIND` and then runs R through `singularity exec`; under `"native"` it runs `module load R/4.5` and nothing else, so the project library comes from `renv/activate.R` (`crew_options_lsf()` defaults `cwd` to the project directory). The two branches also differ in the `crew.cluster` interface they emit: the container branch keeps the older `lsf_*` arguments to `crew_controller_lsf()`, which is what the `crew.cluster` build inside the image understands, while the native branch uses the `crew_options_lsf()` interface that replaced them.
     
 
   
@@ -126,6 +131,7 @@ The `crew` and `crew.cluster` packages have enabled the use of heterogenous work
 
 #' \dontrun{
 use_crew_lsf()
+use_crew_lsf(runtime = "container")
 #' }
 ```
 

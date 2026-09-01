@@ -7,6 +7,10 @@
 #' 
 #' This function returns a template for using `crew.cluster` in a targets project, enabling the parallel execution of a targets workflow. By default, the template is pre-filled using parameters specific to the LPC system at Penn. By default, this function creates workers that submit to different queues (eg. `voltron_normal`, `voltron_long`), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory).
 #'
+#' The `runtime` argument selects the R installation the workers run against. `"native"`, the default, loads the LPC's R module and leaves the package library to `renv`; `"container"` runs each worker inside the LPC's RStudio Singularity image instead. Use `"container"` only when the project library was built against that image: a worker that loads a library built for a different R version fails with errors such as `unused arguments (controller = ...)`, because the worker and the controller then run different `crew` versions.
+#'
+#' @param runtime (character) R runtime the LSF workers use: `"native"` (the default) for the module-provided R, or `"container"` for the LPC RStudio Singularity image
+#'
 #' @return A code block to copy/paste into a targets project
 #'
 #' @export
@@ -14,10 +18,91 @@
 #' @examples
 #' \dontrun{
 #' use_crew_lsf()
+#' use_crew_lsf(runtime = "container")
 #' }
 
-use_crew_lsf <- function() {
+use_crew_lsf <- function(runtime = c("native", "container")) {
+  runtime <- rlang::arg_match(runtime)
+
   title <- basename(here::here())
+
+  # The "container" runtime executes each worker inside the LPC's RStudio
+  # image, so `R_LIBS_USER` has to name a library built against that image's R.
+  # The "native" runtime loads the LPC's R module instead and leaves the library
+  # to `renv/activate.R`, because `crew_options_lsf()` defaults `cwd` to the
+  # directory the controllers were built in - the project directory.
+  container_image <- "/project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif"
+  container_library <- "$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17"
+  container_bind <- "/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static"
+  r_module <- "R/4.5"
+
+  # Shell lines that open each worker script, rendered as the elements of a
+  # `script_lines = c(...)` call. crew appends its own `Rscript -e '...'` after
+  # them, so under the container runtime the `singularity exec` line comes last
+  # and ends in a line continuation.
+  worker_lines <- function(queue, threads, indent) {
+    lines <- c(
+      paste0("#BSUB-q ", queue),
+      if (runtime == "container") {
+        paste0("export R_LIBS_USER=", container_library)
+      } else {
+        paste0("module load ", r_module)
+      },
+      "export TMPDIR=/scratch",
+      paste0("export OMP_NUM_THREADS=", threads),
+      if (runtime == "container") {
+        c(
+          paste0("export SINGULARITY_BIND='", container_bind, "'"),
+          paste0("singularity exec --pwd ", getwd(), " ", container_image, " \\")
+        )
+      }
+    )
+
+    paste0(strrep(" ", indent), encodeString(lines, quote = "\""), collapse = ",\n")
+  }
+
+  # A single `crew_controller_lsf()` call, rendered as the source the user
+  # pastes into their pipeline. The native runtime uses the current
+  # `crew_options_lsf()` interface; the container runtime keeps the `lsf_*`
+  # arguments it replaced, which are what the crew.cluster build inside the
+  # image understands.
+  controller <- function(suffix, workers, queue, memory, threads = 1, cores = NULL) {
+    if (runtime == "container") {
+      glue::glue(
+        "controller_lsf_{suffix} <- crew.cluster::crew_controller_lsf(
+  name = '{title}_{suffix}',
+  workers = {workers}L,{cores_line}
+  lsf_memory_gigabytes_limit = {memory},
+  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
+  lsf_log_output = 'build_logs/crew-%J.log',
+  lsf_log_error = 'build_logs/crew-%J.err',
+  script_lines = c(
+{worker_lines(queue, threads, indent = 4)}
+  ),
+  verbose = TRUE
+)",
+        cores_line = if (is.null(cores)) "" else paste0("\n  lsf_cores = ", cores, ",")
+      )
+    } else {
+      glue::glue(
+        "controller_lsf_{suffix} <- crew.cluster::crew_controller_lsf(
+  name = '{title}_{suffix}',
+  workers = {workers}L,
+  options_cluster = crew.cluster::crew_options_lsf(
+    verbose = TRUE,
+    script_directory = tools::R_user_dir('crew.cluster', which = 'cache'),
+    script_lines = c(
+{worker_lines(queue, threads, indent = 6)}
+    ),
+    log_output = 'build_logs/crew-%J.log',
+    log_error = 'build_logs/crew-%J.err',
+    memory_gigabytes_limit = {memory}{cores_line}
+  )
+)",
+        cores_line = if (is.null(cores)) "" else paste0(",\n    cores = ", cores)
+      )
+    }
+  }
 
   command <- glue::glue(
     "library(targets)
@@ -31,78 +116,13 @@ controller_local <- crew_controller_local(
   seconds_idle = 10
 )
 
-controller_lsf_normal <- crew.cluster::crew_controller_lsf(
-  name = '{title}_normal',
-  workers = 20L,
-  lsf_memory_gigabytes_limit = 16,
-  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
-  lsf_log_output = 'build_logs/crew-%J.log',
-  lsf_log_error = 'build_logs/crew-%J.err',
-  script_lines = c(
-    \"#BSUB-q voltron_normal\",
-    \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
-    \"export TMPDIR=/scratch\",
-    \"export OMP_NUM_THREADS=1\",
-    \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
-    \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
-  ),
-  verbose = TRUE
-)
+{controller('normal', 20, 'voltron_normal', 16)}
 
-controller_lsf_long <- crew.cluster::crew_controller_lsf(
-  name = '{title}_long',
-  workers = 150L,
-  lsf_memory_gigabytes_limit = 10,
-  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
-  lsf_log_output = 'build_logs/crew-%J.log',
-  lsf_log_error = 'build_logs/crew-%J.err',
-  script_lines = c(
-    \"#BSUB-q voltron_long\",
-    \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
-    \"export TMPDIR=/scratch\",
-    \"export OMP_NUM_THREADS=1\",
-    \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
-    \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
-  ),
-  verbose = TRUE
-)
+{controller('long', 150, 'voltron_long', 10)}
 
-controller_lsf_highmem <- crew.cluster::crew_controller_lsf(
-  name = '{title}_highmem',
-  workers = 5L,
-  lsf_memory_gigabytes_limit = 96,
-  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
-  lsf_log_output = 'build_logs/crew-%J.log',
-  lsf_log_error = 'build_logs/crew-%J.err',
-  script_lines = c(
-    \"#BSUB-q voltron_normal\",
-    \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
-    \"export TMPDIR=/scratch\",
-    \"export OMP_NUM_THREADS=1\",
-    \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
-    \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
-  ),
-  verbose = TRUE
-)
+{controller('highmem', 5, 'voltron_normal', 96)}
 
-controller_lsf_multicore <- crew.cluster::crew_controller_lsf(
-  name = '{title}_multicore',
-  workers = 5L,
-  lsf_cores = 16,
-  lsf_memory_gigabytes_limit = 96,
-  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
-  lsf_log_output = 'build_logs/crew-%J.log',
-  lsf_log_error = 'build_logs/crew-%J.err',
-  script_lines = c(
-    \"#BSUB-q voltron_normal\",
-    \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
-    \"export TMPDIR=/scratch\",
-    \"export OMP_NUM_THREADS=16\",
-    \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
-    \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
-  ),
-  verbose = TRUE
-)
+{controller('multicore', 5, 'voltron_normal', 96, threads = 16, cores = 16)}
 
 # define some global options/functions common to all targets
 options(tidyverse.quiet = TRUE)
