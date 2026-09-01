@@ -5,8 +5,11 @@
 #' @description
 #' This function creates a minimal targets template in the current directory. This includes creating a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results. Parallelization of the pipeline is implemented using [targets::tar_make()] and `crew.cluster`, using pre-filled using parameters specific to the LPC system at Penn.
 #'
+#' The `runtime` argument selects the R installation the pipeline runs against, and is passed through to [use_crew_lsf()]. `"container"` runs the main `targets` process and every worker inside the LPC's RStudio Singularity image; `"native"` loads the LPC's R module instead and leaves the package library to `renv`.
+#'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
 #' @param log_folder (character) directory for LSF logs
+#' @param runtime (character) R runtime the pipeline and its LSF workers use: `"container"` for the LPC RStudio Singularity image, or `"native"` for the module-provided R
 #' @param overwrite (logical) overwrite existing template files
 #'
 #' @export
@@ -14,11 +17,15 @@
 #' @examples
 #' \dontrun{
 #' populate_targets_proj("test")
+#' populate_targets_proj("test", runtime = "native")
 #' }
 
 populate_targets_proj <- function(title,
                                   log_folder = "build_logs",
+                                  runtime = c("container", "native"),
                                   overwrite = FALSE) {
+  runtime <- rlang::arg_match(runtime)
+
   # Create title
   if (missing(title)) {
     title <- basename(here::here())
@@ -35,11 +42,16 @@ populate_targets_proj <- function(title,
   fs::dir_create(log_folder)
   cli::cli_alert_success("Build log folder created at {.file {log_folder}}")
 
-  # Copy batch script for job submission
-  usethis::use_template(".make-targets.sh",
+  # Copy batch script for job submission. The main {targets} process has to run
+  # under the same R as the workers, so the runtime chooses the template.
+  make_targets_template <- switch(runtime,
+    container = ".make-targets.sh",
+    native = ".make-targets-native.sh"
+  )
+  usethis::use_template(make_targets_template,
                         save_as = ".make-targets.sh",
                         package = "levinmisc")
-  cli::cli_alert_success("Submission template created at {.file .make-targets.sh}")
+  cli::cli_alert_success("Submission template created at {.file .make-targets.sh} using the {.val {runtime}} R runtime")
 
   # Copy batch script to submit targets job
   usethis::use_template("submit-targets.sh",
@@ -50,7 +62,7 @@ populate_targets_proj <- function(title,
   # Copy targets pipeline template
   usethis::use_template("Pipeline.qmd",
                         save_as = paste0(title, "-Pipeline.qmd"),
-                        data = list(global_options = levinmisc::use_crew_lsf()),
+                        data = list(global_options = levinmisc::use_crew_lsf(runtime = runtime)),
                         package = "levinmisc")
   cli::cli_alert_success("Targets Pipeline template created at {.file {paste0(title, '-Pipeline.qmd')}}")
 

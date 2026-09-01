@@ -4,7 +4,10 @@
 \alias{use_crew_lsf}
 \title{Use crew lsf to execute a targets pipeline using the LSF HPC scheduler}
 \usage{
-use_crew_lsf()
+use_crew_lsf(runtime = c("container", "native"))
+}
+\arguments{
+\item{runtime}{(character) R runtime the LSF workers use: \code{"container"} for the LPC RStudio Singularity image, or \code{"native"} for the module-provided R}
 }
 \value{
 A code block to copy/paste into a targets project
@@ -13,10 +16,13 @@ A code block to copy/paste into a targets project
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 
 This function returns a template for using \code{crew.cluster} in a targets project, enabling the parallel execution of a targets workflow. By default, the template is pre-filled using parameters specific to the LPC system at Penn. By default, this function creates workers that submit to different queues (eg. \code{voltron_normal}, \code{voltron_long}), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory).
+
+The \code{runtime} argument selects the R installation the workers run against. \code{"container"} runs each worker inside the LPC's RStudio Singularity image, and \code{"native"} loads the LPC's R module instead, leaving the package library to \code{renv}. Use \code{"native"} when the project library was built against a module-provided R: a worker that loads a library built for a different R version fails with errors such as \code{unused arguments (controller = ...)}, because the worker and the controller then run different \code{crew} versions.
 }
 \examples{
 \dontrun{
 use_crew_lsf()
+use_crew_lsf(runtime = "native")
 }
 }
 \concept{targets}

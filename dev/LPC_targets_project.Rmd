@@ -64,14 +64,19 @@ The `targets` package is a tool for developing reproducible research workflows i
 
 The `populate_targets_proj` function can be run within a new project folder to initialize the project with the files/folders necessary for deploying a `targets` pipeline on the LPC at Penn. This includes creating LSF templates, a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results.
 
+The `runtime` argument chooses the R installation the pipeline runs against. `"container"` (the default) runs the main `targets` process and every LSF worker inside the LPC's RStudio Singularity image, reading packages from a library built against that image's R. `"native"` loads the LPC's R module (`module load R/4.5`) instead and leaves the package library to `renv`, which is the right choice for a project whose library was built against a module-provided R. Mixing the two fails at run time: a worker that loads a library built for a different R version reports errors such as `unused arguments (controller = ...)`, because the worker and the controller end up running different `crew` versions.
+
 ```{r function-populate_targets_proj}
 #' Create a minimal targets template in the current project
 #' 
 #' @description
 #' This function creates a minimal targets template in the current directory. This includes creating a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results. Parallelization of the pipeline is implemented using [targets::tar_make()] and `crew.cluster`, using pre-filled using parameters specific to the LPC system at Penn.
 #'
+#' The `runtime` argument selects the R installation the pipeline runs against, and is passed through to [use_crew_lsf()]. `"container"` runs the main `targets` process and every worker inside the LPC's RStudio Singularity image; `"native"` loads the LPC's R module instead and leaves the package library to `renv`.
+#'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
 #' @param log_folder (character) directory for LSF logs
+#' @param runtime (character) R runtime the pipeline and its LSF workers use: `"container"` for the LPC RStudio Singularity image, or `"native"` for the module-provided R
 #' @param overwrite (logical) overwrite existing template files
 #'
 #' @export
@@ -79,7 +84,10 @@ The `populate_targets_proj` function can be run within a new project folder to i
 
 populate_targets_proj <- function(title,
                                   log_folder = "build_logs",
+                                  runtime = c("container", "native"),
                                   overwrite = FALSE) {
+  runtime <- rlang::arg_match(runtime)
+
   # Create title
   if (missing(title)) {
     title <- basename(here::here())
@@ -96,11 +104,16 @@ populate_targets_proj <- function(title,
   fs::dir_create(log_folder)
   cli::cli_alert_success("Build log folder created at {.file {log_folder}}")
 
-  # Copy batch script for job submission
-  usethis::use_template(".make-targets.sh",
+  # Copy batch script for job submission. The main {targets} process has to run
+  # under the same R as the workers, so the runtime chooses the template.
+  make_targets_template <- switch(runtime,
+    container = ".make-targets.sh",
+    native = ".make-targets-native.sh"
+  )
+  usethis::use_template(make_targets_template,
                         save_as = ".make-targets.sh",
                         package = "levinmisc")
-  cli::cli_alert_success("Submission template created at {.file .make-targets.sh}")
+  cli::cli_alert_success("Submission template created at {.file .make-targets.sh} using the {.val {runtime}} R runtime")
 
   # Copy batch script to submit targets job
   usethis::use_template("submit-targets.sh",
@@ -111,7 +124,7 @@ populate_targets_proj <- function(title,
   # Copy targets pipeline template
   usethis::use_template("Pipeline.qmd",
                         save_as = paste0(title, "-Pipeline.qmd"),
-                        data = list(global_options = levinmisc::use_crew_lsf()),
+                        data = list(global_options = levinmisc::use_crew_lsf(runtime = runtime)),
                         package = "levinmisc")
   cli::cli_alert_success("Targets Pipeline template created at {.file {paste0(title, '-Pipeline.qmd')}}")
 
@@ -131,10 +144,11 @@ This should be a reproducible and working example
 ```{r examples-populate_targets_proj, eval=FALSE}
 #' \dontrun{
 populate_targets_proj("test")
+populate_targets_proj("test", runtime = "native")
 #' }
 ```
 
-The `populate_targets_proj()` function creates several files/folders within the project directory. `.make-targets.sh` and is a hidden helper file which is not designed for user interaction, but necessary for submission of jobs to the LSF scheduler. The other files are designed to be edited/used by the user:
+The `populate_targets_proj()` function creates several files/folders within the project directory. `.make-targets.sh` and is a hidden helper file which is not designed for user interaction, but necessary for submission of jobs to the LSF scheduler; its contents follow the `runtime` argument, so that the main `targets` process runs under the same R as the workers. The other files are designed to be edited/used by the user:
 
   - `Pipeline.qmd` - Quarto markdown file which can be used to create a Target Markdown document that specifies a `targets` pipeline for your analyses. See: https://books.ropensci.org/targets/literate-programming.html#target-markdown for details. Remember to knit/render this document in order to generate the pipeline.
   
@@ -232,6 +246,8 @@ test_that("populate_targets_proj works", {
 ### Use {crew} for parallelization
 
 The `crew` and `crew.cluster` packages have enabled the use of heterogenous workers (<https://books.ropensci.org/targets/crew.html#heterogeneous-workers>), that can be used to deploy `targets` pipelines either locally or on HPC resources. The `use_crew_lsf()` function is designed to return a block of code to rapidly enable the use of heterogeneous workers on the Penn LPC. By default, this function creates workers that submit to different queues (eg. `voltron_normal`, `voltron_long`), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory).
+
+`use_crew_lsf()` takes the same `runtime` argument as `populate_targets_proj()`, which controls the shell lines that open each worker script. Under `"container"` the worker exports `R_LIBS_USER` and `SINGULARITY_BIND` and then runs R through `singularity exec`; under `"native"` it runs `module load R/4.5` and nothing else, so the project library comes from `renv/activate.R` (`crew_options_lsf()` defaults `cwd` to the project directory). The two branches also differ in the `crew.cluster` interface they emit: the container branch keeps the older `lsf_*` arguments to `crew_controller_lsf()`, which is what the `crew.cluster` build inside the image understands, while the native branch uses the `crew_options_lsf()` interface that replaced them.
     
 ```{r function-use_crew_lsf}
 #' Use crew lsf to execute a targets pipeline using the LSF HPC scheduler
@@ -241,13 +257,97 @@ The `crew` and `crew.cluster` packages have enabled the use of heterogenous work
 #' 
 #' This function returns a template for using `crew.cluster` in a targets project, enabling the parallel execution of a targets workflow. By default, the template is pre-filled using parameters specific to the LPC system at Penn. By default, this function creates workers that submit to different queues (eg. `voltron_normal`, `voltron_long`), and allocate different resources (eg. a "normal" worker will use 1 core and 16GB memory, while a "long" worker will use 1 core and 10GB memory).
 #'
+#' The `runtime` argument selects the R installation the workers run against. `"container"` runs each worker inside the LPC's RStudio Singularity image, and `"native"` loads the LPC's R module instead, leaving the package library to `renv`. Use `"native"` when the project library was built against a module-provided R: a worker that loads a library built for a different R version fails with errors such as `unused arguments (controller = ...)`, because the worker and the controller then run different `crew` versions.
+#'
+#' @param runtime (character) R runtime the LSF workers use: `"container"` for the LPC RStudio Singularity image, or `"native"` for the module-provided R
+#'
 #' @return A code block to copy/paste into a targets project
 #'
 #' @export
 #' @concept targets
 
-use_crew_lsf <- function() {
+use_crew_lsf <- function(runtime = c("container", "native")) {
+  runtime <- rlang::arg_match(runtime)
+
   title <- basename(here::here())
+
+  # The "container" runtime executes each worker inside the LPC's RStudio
+  # image, so `R_LIBS_USER` has to name a library built against that image's R.
+  # The "native" runtime loads the LPC's R module instead and leaves the library
+  # to `renv/activate.R`, because `crew_options_lsf()` defaults `cwd` to the
+  # directory the controllers were built in - the project directory.
+  container_image <- "/project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif"
+  container_library <- "$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17"
+  container_bind <- "/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static"
+  r_module <- "R/4.5"
+
+  # Shell lines that open each worker script, rendered as the elements of a
+  # `script_lines = c(...)` call. crew appends its own `Rscript -e '...'` after
+  # them, so under the container runtime the `singularity exec` line comes last
+  # and ends in a line continuation.
+  worker_lines <- function(queue, threads, indent) {
+    lines <- c(
+      paste0("#BSUB-q ", queue),
+      if (runtime == "container") {
+        paste0("export R_LIBS_USER=", container_library)
+      } else {
+        paste0("module load ", r_module)
+      },
+      "export TMPDIR=/scratch",
+      paste0("export OMP_NUM_THREADS=", threads),
+      if (runtime == "container") {
+        c(
+          paste0("export SINGULARITY_BIND='", container_bind, "'"),
+          paste0("singularity exec --pwd ", getwd(), " ", container_image, " \\")
+        )
+      }
+    )
+
+    paste0(strrep(" ", indent), encodeString(lines, quote = "\""), collapse = ",\n")
+  }
+
+  # A single `crew_controller_lsf()` call, rendered as the source the user
+  # pastes into their pipeline. The container runtime keeps the `lsf_*`
+  # arguments, which are what the crew.cluster build inside the image
+  # understands; the native runtime uses the current `crew_options_lsf()`
+  # interface that replaced them.
+  controller <- function(suffix, workers, queue, memory, threads = 1, cores = NULL) {
+    if (runtime == "container") {
+      glue::glue(
+        "controller_lsf_{suffix} <- crew.cluster::crew_controller_lsf(
+  name = '{title}_{suffix}',
+  workers = {workers}L,{cores_line}
+  lsf_memory_gigabytes_limit = {memory},
+  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
+  lsf_log_output = 'build_logs/crew-%J.log',
+  lsf_log_error = 'build_logs/crew-%J.err',
+  script_lines = c(
+{worker_lines(queue, threads, indent = 4)}
+  ),
+  verbose = TRUE
+)",
+        cores_line = if (is.null(cores)) "" else paste0("\n  lsf_cores = ", cores, ",")
+      )
+    } else {
+      glue::glue(
+        "controller_lsf_{suffix} <- crew.cluster::crew_controller_lsf(
+  name = '{title}_{suffix}',
+  workers = {workers}L,
+  options_cluster = crew.cluster::crew_options_lsf(
+    verbose = TRUE,
+    script_directory = tools::R_user_dir('crew.cluster', which = 'cache'),
+    script_lines = c(
+{worker_lines(queue, threads, indent = 6)}
+    ),
+    log_output = 'build_logs/crew-%J.log',
+    log_error = 'build_logs/crew-%J.err',
+    memory_gigabytes_limit = {memory}{cores_line}
+  )
+)",
+        cores_line = if (is.null(cores)) "" else paste0(",\n    cores = ", cores)
+      )
+    }
+  }
 
   command <- glue::glue(
     "library(targets)
@@ -261,78 +361,13 @@ controller_local <- crew_controller_local(
   seconds_idle = 10
 )
 
-controller_lsf_normal <- crew.cluster::crew_controller_lsf(
-  name = '{title}_normal',
-  workers = 20L,
-  lsf_memory_gigabytes_limit = 16,
-  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
-  lsf_log_output = 'build_logs/crew-%J.log',
-  lsf_log_error = 'build_logs/crew-%J.err',
-  script_lines = c(
-    \"#BSUB-q voltron_normal\",
-    \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
-    \"export TMPDIR=/scratch\",
-    \"export OMP_NUM_THREADS=1\",
-    \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
-    \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
-  ),
-  verbose = TRUE
-)
+{controller('normal', 20, 'voltron_normal', 16)}
 
-controller_lsf_long <- crew.cluster::crew_controller_lsf(
-  name = '{title}_long',
-  workers = 150L,
-  lsf_memory_gigabytes_limit = 10,
-  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
-  lsf_log_output = 'build_logs/crew-%J.log',
-  lsf_log_error = 'build_logs/crew-%J.err',
-  script_lines = c(
-    \"#BSUB-q voltron_long\",
-    \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
-    \"export TMPDIR=/scratch\",
-    \"export OMP_NUM_THREADS=1\",
-    \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
-    \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
-  ),
-  verbose = TRUE
-)
+{controller('long', 150, 'voltron_long', 10)}
 
-controller_lsf_highmem <- crew.cluster::crew_controller_lsf(
-  name = '{title}_highmem',
-  workers = 5L,
-  lsf_memory_gigabytes_limit = 96,
-  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
-  lsf_log_output = 'build_logs/crew-%J.log',
-  lsf_log_error = 'build_logs/crew-%J.err',
-  script_lines = c(
-    \"#BSUB-q voltron_normal\",
-    \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
-    \"export TMPDIR=/scratch\",
-    \"export OMP_NUM_THREADS=1\",
-    \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
-    \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
-  ),
-  verbose = TRUE
-)
+{controller('highmem', 5, 'voltron_normal', 96)}
 
-controller_lsf_multicore <- crew.cluster::crew_controller_lsf(
-  name = '{title}_multicore',
-  workers = 5L,
-  lsf_cores = 16,
-  lsf_memory_gigabytes_limit = 96,
-  script_dir = tools::R_user_dir('crew.cluster', which = 'cache'),
-  lsf_log_output = 'build_logs/crew-%J.log',
-  lsf_log_error = 'build_logs/crew-%J.err',
-  script_lines = c(
-    \"#BSUB-q voltron_normal\",
-    \"export R_LIBS_USER=$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17\",
-    \"export TMPDIR=/scratch\",
-    \"export OMP_NUM_THREADS=16\",
-    \"export SINGULARITY_BIND='/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static'\",
-    \"singularity exec --pwd {getwd()} /project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif \\\\\"
-  ),
-  verbose = TRUE
-)
+{controller('multicore', 5, 'voltron_normal', 96, threads = 16, cores = 16)}
 
 # define some global options/functions common to all targets
 options(tidyverse.quiet = TRUE)
@@ -359,12 +394,42 @@ tar_option_set(
 ```{r example-use_crew_lsf, eval=FALSE}
 #' \dontrun{
 use_crew_lsf()
+use_crew_lsf(runtime = "native")
 #' }
 ```
   
 ```{r tests-use_crew_lsf}
 test_that("use_crew_lsf works", {
   expect_true(inherits(use_crew_lsf, "function"))
+})
+
+test_that("use_crew_lsf defaults to the container runtime", {
+  template <- suppressMessages(use_crew_lsf())
+  expect_identical(
+    as.character(template),
+    as.character(suppressMessages(use_crew_lsf(runtime = "container")))
+  )
+  expect_true(grepl("singularity exec", template, fixed = TRUE))
+  expect_true(grepl("export SINGULARITY_BIND=", template, fixed = TRUE))
+  expect_false(grepl("module load", template, fixed = TRUE))
+})
+
+test_that("use_crew_lsf loads an R module under the native runtime", {
+  template <- suppressMessages(use_crew_lsf(runtime = "native"))
+  expect_true(grepl("module load R/", template, fixed = TRUE))
+  expect_false(grepl("singularity exec", template, fixed = TRUE))
+  expect_false(grepl("R_LIBS_USER", template, fixed = TRUE))
+})
+
+test_that("use_crew_lsf returns parseable R code for either runtime", {
+  for (runtime in c("container", "native")) {
+    template <- suppressMessages(use_crew_lsf(runtime = runtime))
+    expect_true(length(parse(text = template)) > 0)
+  }
+})
+
+test_that("use_crew_lsf rejects an unknown runtime", {
+  expect_error(use_crew_lsf(runtime = "singularity"), "must be one of")
 })
 ```
   
