@@ -373,7 +373,7 @@ controller_local <- crew_controller_local(
 options(tidyverse.quiet = TRUE)
 
 tar_option_set(
-  packages = c('tidyverse', 'targets', 'tarchetypes', 'arrow', 'vroom', 'data.table', 'qs', 'gt', 'crew', 'crew.cluster'),
+  packages = c('tidyverse', 'targets', 'tarchetypes', 'arrow', 'vroom', 'data.table', 'gt', 'crew', 'crew.cluster'),
   controller = crew::crew_controller_group(controller_lsf_long, controller_lsf_normal, controller_lsf_highmem, controller_lsf_multicore, controller_local),
   resources = tar_resources(
     crew = tar_resources_crew(controller = '{title}_normal')
