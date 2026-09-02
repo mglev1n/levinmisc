@@ -39,11 +39,11 @@ tar_unscript()
 
 # Targets Pipeline
 
-```{targets globals, tar_globals = TRUE}
+```{r globals, engine = "targets", tar_globals = TRUE}
 {{{global_options}}}
 ```
 
-```{targets arrow-storage}
+```{r arrow-storage, engine = "targets"}
 format_arrow_table <- function() {
   targets::tar_format(
     read = function(path) {
@@ -74,7 +74,7 @@ format_arrow_dataset <- function() {
 
 # Analysis
 
-```{targets study-overview}
+```{r study-overview, engine = "targets"}
 
 ```
 
