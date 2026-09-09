@@ -29,7 +29,6 @@ library(targets)
 library(data.table)
 library(vroom)
 library(arrow)
-library(qs)
 library(tarchetypes)
 
 theme_set(theme_bw(base_size = 16))

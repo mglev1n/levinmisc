@@ -4,10 +4,12 @@
 \alias{use_crew_lsf}
 \title{Use crew lsf to execute a targets pipeline using the LSF HPC scheduler}
 \usage{
-use_crew_lsf(runtime = c("native", "container"))
+use_crew_lsf(runtime = c("native", "container"), path = ".")
 }
 \arguments{
 \item{runtime}{(character) R runtime the LSF workers use: \code{"native"} (the default) for the module-provided R, or \code{"container"} for the LPC RStudio Singularity image}
+
+\item{path}{(character) project directory the pipeline runs in, defaulting to the working directory. It supplies the controller names and, under the container runtime, the working directory each worker runs in}
 }
 \value{
 A code block to copy/paste into a targets project

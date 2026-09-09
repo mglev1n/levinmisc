@@ -5,12 +5,18 @@
 #' @description
 #' This function creates a minimal targets template in the current directory. This includes creating a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results. Parallelization of the pipeline is implemented using [targets::tar_make()] and `crew.cluster`, using pre-filled using parameters specific to the LPC system at Penn.
 #'
+#' Files are written to `path`, which defaults to the working directory. Passing it explicitly matters when the
+#' project directory holds none of the markers a project search looks for (an `.Rproj` file, a `DESCRIPTION`,
+#' a git repository, a `.vscode/` directory), because such a search otherwise walks up and writes into a parent
+#' directory.
+#'
 #' The `runtime` argument selects the R installation the pipeline runs against, and is passed through to [use_crew_lsf()]. `"native"`, the default, loads the LPC's R module and leaves the package library to `renv`; `"container"` instead runs the main `targets` process and every worker inside the LPC's RStudio Singularity image.
 #'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
 #' @param log_folder (character) directory for LSF logs
+#' @param path (character) project directory the files are written to, defaulting to the working directory
 #' @param runtime (character) R runtime the pipeline and its LSF workers use: `"native"` (the default) for the module-provided R, or `"container"` for the LPC RStudio Singularity image
-#' @param overwrite (logical) overwrite existing template files
+#' @param overwrite (logical) replace existing template files without asking first
 #'
 #' @export
 #' @concept targets
@@ -22,25 +28,48 @@
 
 populate_targets_proj <- function(title,
                                   log_folder = "build_logs",
+                                  path = ".",
                                   runtime = c("native", "container"),
                                   overwrite = FALSE) {
   runtime <- rlang::arg_match(runtime)
 
+  # usethis::use_template() writes relative to the active usethis project, not
+  # to the working directory, and usethis locates that project by walking *up*
+  # from the working directory until a directory looks like one (.Rproj,
+  # DESCRIPTION, .git, .vscode/, _quarto.yml, renv.lock, .here). A project
+  # carrying none of those markers therefore sends every template into
+  # whichever ancestor happens to have one. Pinning the active project to
+  # `path` keeps the files where the user is working; force = TRUE skips that
+  # same marker check, and local_project() restores the previous project when
+  # this function exits.
+  path <- fs::path_norm(fs::path_abs(path))
+  fs::dir_create(path)
+  usethis::local_project(path, force = TRUE, quiet = TRUE)
+
   # Create title
   if (missing(title)) {
-    title <- basename(here::here())
+    title <- basename(path)
   }
 
-  # Check if files already exist
-  if (file.exists("*-Results.qmd") | file.exists("*-Pipeline.qmd")) {
-    cli::cli_alert_danger("Files already exist")
-    overwrite <- yesno::yesno("Overwrite existing files?")
-    if (!overwrite) cli::cli_abort("Exiting")
+  # Check if files already exist. The globs have to be matched against the
+  # directory rather than passed to file.exists(), which takes them literally
+  # and so never matches anything.
+  existing <- c(
+    fs::dir_ls(path, glob = "*-Pipeline.qmd"),
+    fs::dir_ls(path, glob = "*-Results.qmd")
+  )
+  if (length(existing) > 0 && !overwrite) {
+    cli::cli_alert_danger("Found {length(existing)} existing template file{?s} in {.file {path}}")
+    cli::cli_ul(basename(existing))
+    if (!rlang::is_interactive()) {
+      cli::cli_abort("Pass {.code overwrite = TRUE} to replace them.")
+    }
+    if (!yesno::yesno("Overwrite existing files?")) cli::cli_abort("Exiting")
   }
 
   # Create build_logs folder
-  fs::dir_create(log_folder)
-  cli::cli_alert_success("Build log folder created at {.file {log_folder}}")
+  fs::dir_create(path, log_folder)
+  cli::cli_alert_success("Build log folder created at {.file {fs::path(path, log_folder)}}")
 
   # Copy batch script for job submission. The main {targets} process has to run
   # under the same R as the workers, so the runtime chooses the template.
@@ -62,7 +91,7 @@ populate_targets_proj <- function(title,
   # Copy targets pipeline template
   usethis::use_template("Pipeline.qmd",
                         save_as = paste0(title, "-Pipeline.qmd"),
-                        data = list(global_options = levinmisc::use_crew_lsf(runtime = runtime)),
+                        data = list(global_options = levinmisc::use_crew_lsf(runtime = runtime, path = path)),
                         package = "levinmisc")
   cli::cli_alert_success("Targets Pipeline template created at {.file {paste0(title, '-Pipeline.qmd')}}")
 
