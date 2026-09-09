@@ -10,6 +10,7 @@
 #' The `runtime` argument selects the R installation the workers run against. `"native"`, the default, loads the LPC's R module and leaves the package library to `renv`; `"container"` runs each worker inside the LPC's RStudio Singularity image instead. Use `"container"` only when the project library was built against that image: a worker that loads a library built for a different R version fails with errors such as `unused arguments (controller = ...)`, because the worker and the controller then run different `crew` versions.
 #'
 #' @param runtime (character) R runtime the LSF workers use: `"native"` (the default) for the module-provided R, or `"container"` for the LPC RStudio Singularity image
+#' @param path (character) project directory the pipeline runs in, defaulting to the working directory. It supplies the controller names and, under the container runtime, the working directory each worker runs in
 #'
 #' @return A code block to copy/paste into a targets project
 #'
@@ -21,10 +22,15 @@
 #' use_crew_lsf(runtime = "container")
 #' }
 
-use_crew_lsf <- function(runtime = c("native", "container")) {
+use_crew_lsf <- function(runtime = c("native", "container"), path = ".") {
   runtime <- rlang::arg_match(runtime)
 
-  title <- basename(here::here())
+  # The controller names and the container's working directory both come from
+  # the project directory, taken as an argument rather than searched for: a
+  # rprojroot-style search walks up from the working directory and lands in a
+  # parent when the project carries no .Rproj, DESCRIPTION or .git marker.
+  path <- fs::path_norm(fs::path_abs(path))
+  title <- basename(path)
 
   # The "container" runtime executes each worker inside the LPC's RStudio
   # image, so `R_LIBS_USER` has to name a library built against that image's R.
@@ -53,7 +59,7 @@ use_crew_lsf <- function(runtime = c("native", "container")) {
       if (runtime == "container") {
         c(
           paste0("export SINGULARITY_BIND='", container_bind, "'"),
-          paste0("singularity exec --pwd ", getwd(), " ", container_image, " \\")
+          paste0("singularity exec --pwd ", path, " ", container_image, " \\")
         )
       }
     )

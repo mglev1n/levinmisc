@@ -7,6 +7,7 @@
 populate_targets_proj(
   title,
   log_folder = "build_logs",
+  path = ".",
   runtime = c("native", "container"),
   overwrite = FALSE
 )
@@ -16,12 +17,19 @@ populate_targets_proj(
 
 \item{log_folder}{(character) directory for LSF logs}
 
+\item{path}{(character) project directory the files are written to, defaulting to the working directory}
+
 \item{runtime}{(character) R runtime the pipeline and its LSF workers use: \code{"native"} (the default) for the module-provided R, or \code{"container"} for the LPC RStudio Singularity image}
 
 \item{overwrite}{(logical) overwrite existing template files}
 }
 \description{
 This function creates a minimal targets template in the current directory. This includes creating a \code{Pipelines.qmd} file containing boilerplate for running analyses, and a \code{Results.qmd} file which can be used to visualize the results. Parallelization of the pipeline is implemented using \code{\link[targets:tar_make]{targets::tar_make()}} and \code{crew.cluster}, using pre-filled using parameters specific to the LPC system at Penn.
+
+Files are written to \code{path}, which defaults to the working directory. Passing it explicitly matters when the
+project directory holds none of the markers a project search looks for (an \code{.Rproj} file, a \code{DESCRIPTION},
+a git repository, a \verb{.vscode/} directory), because such a search otherwise walks up and writes into a parent
+directory.
 
 The \code{runtime} argument selects the R installation the pipeline runs against, and is passed through to \code{\link[=use_crew_lsf]{use_crew_lsf()}}. \code{"native"}, the default, loads the LPC's R module and leaves the package library to \code{renv}; \code{"container"} instead runs the main \code{targets} process and every worker inside the LPC's RStudio Singularity image.
 }

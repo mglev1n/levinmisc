@@ -18,7 +18,6 @@ Imports:
     ggrepel,
     ggtext,
     glue,
-    here,
     janitor,
     lifecycle,
     magrittr,
