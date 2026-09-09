@@ -22,7 +22,7 @@ controller then run different `crew` versions.
 ## Usage
 
 ``` r
-use_crew_lsf(runtime = c("native", "container"))
+use_crew_lsf(runtime = c("native", "container"), path = ".")
 ```
 
 ## Arguments
@@ -32,6 +32,12 @@ use_crew_lsf(runtime = c("native", "container"))
   (character) R runtime the LSF workers use: `"native"` (the default)
   for the module-provided R, or `"container"` for the LPC RStudio
   Singularity image
+
+- path:
+
+  (character) project directory the pipeline runs in, defaulting to the
+  working directory. It supplies the controller names and, under the
+  container runtime, the working directory each worker runs in
 
 ## Value
 
