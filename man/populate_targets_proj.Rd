@@ -21,7 +21,7 @@ populate_targets_proj(
 
 \item{runtime}{(character) R runtime the pipeline and its LSF workers use: \code{"native"} (the default) for the module-provided R, or \code{"container"} for the LPC RStudio Singularity image}
 
-\item{overwrite}{(logical) overwrite existing template files}
+\item{overwrite}{(logical) replace existing template files without asking first}
 }
 \description{
 This function creates a minimal targets template in the current directory. This includes creating a \code{Pipelines.qmd} file containing boilerplate for running analyses, and a \code{Results.qmd} file which can be used to visualize the results. Parallelization of the pipeline is implemented using \code{\link[targets:tar_make]{targets::tar_make()}} and \code{crew.cluster}, using pre-filled using parameters specific to the LPC system at Penn.

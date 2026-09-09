@@ -83,7 +83,7 @@ The `runtime` argument chooses the R installation the pipeline runs against. `"n
 #' @param log_folder (character) directory for LSF logs
 #' @param path (character) project directory the files are written to, defaulting to the working directory
 #' @param runtime (character) R runtime the pipeline and its LSF workers use: `"native"` (the default) for the module-provided R, or `"container"` for the LPC RStudio Singularity image
-#' @param overwrite (logical) overwrite existing template files
+#' @param overwrite (logical) replace existing template files without asking first
 #'
 #' @export
 #' @concept targets
@@ -113,11 +113,20 @@ populate_targets_proj <- function(title,
     title <- basename(path)
   }
 
-  # Check if files already exist
-  if (file.exists("*-Results.qmd") | file.exists("*-Pipeline.qmd")) {
-    cli::cli_alert_danger("Files already exist")
-    overwrite <- yesno::yesno("Overwrite existing files?")
-    if (!overwrite) cli::cli_abort("Exiting")
+  # Check if files already exist. The globs have to be matched against the
+  # directory rather than passed to file.exists(), which takes them literally
+  # and so never matches anything.
+  existing <- c(
+    fs::dir_ls(path, glob = "*-Pipeline.qmd"),
+    fs::dir_ls(path, glob = "*-Results.qmd")
+  )
+  if (length(existing) > 0 && !overwrite) {
+    cli::cli_alert_danger("Found {length(existing)} existing template file{?s} in {.file {path}}")
+    cli::cli_ul(basename(existing))
+    if (!rlang::is_interactive()) {
+      cli::cli_abort("Pass {.code overwrite = TRUE} to replace them.")
+    }
+    if (!yesno::yesno("Overwrite existing files?")) cli::cli_abort("Exiting")
   }
 
   # Create build_logs folder
