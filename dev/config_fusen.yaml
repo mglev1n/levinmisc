@@ -71,7 +71,7 @@ LPC_targets_project.Rmd:
   - R/populate_targets_proj.R
   - R/use_crew_lsf.R
   tests:
-  - tests/testthat/test-slack-notifications.R
+  - tests/testthat/test-optional-lsf-submission-scripts.R
   - tests/testthat/test-use_crew_lsf.R
   vignettes: vignettes/create-a-new-targets-pipeline-for-lpc.Rmd
   inflate:

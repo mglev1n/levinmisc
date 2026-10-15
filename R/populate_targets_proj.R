@@ -12,11 +12,25 @@
 #'
 #' The `runtime` argument selects the R installation the pipeline runs against, and is passed through to [use_crew_lsf()]. `"native"`, the default, loads the LPC's R module and leaves the package library to `renv`; `"container"` instead runs the main `targets` process and every worker inside the LPC's RStudio Singularity image.
 #'
+#' The `"container"` runtime still works but will lose support in a future release; new projects should use `"native"`.
+#'
+#' The function also creates a data directory and a results directory, so that every location holding data or data-derived output is known when the project starts. With `git_safeguards = TRUE` (the default), it keeps those locations out of git in two ways. It appends entries to `.gitignore` for the data and results directories, the log directory, the `targets` data store (`_targets/`), the scripts generated from the Target Markdown file, and common data file types. Rendered HTML reports are not ignored, so they can be committed once checked. It also writes a pre-commit hook to `.githooks/pre-commit` that refuses any commit staging a file from those directories, a file with a data file extension, a file larger than 5 MB (25 MB for HTML), or text shaped like a PMBB participant ID, including IDs inside SVG figures embedded in a self-contained report. The hook prints only masked identifiers. When `path` is the root of a git repository, the function points `core.hooksPath` at `.githooks` so the hook runs; otherwise it prints the command to run after `git init`. Because the hook lives in the repository, each new clone needs only that one command.
+#'
+#' The function writes `.vscode/tasks.json`, which defines editor tasks for pulling from GitHub, rendering the pipeline file, and running the pipeline, plus one task that runs all three in sequence. The run task calls `.run-pipeline.R`, which runs [targets::tar_make()] and sends an optional Slack or ntfy notification when the pipeline completes or fails. The notification holds only the status, elapsed time, target counts, and errored target names, never error text, and is configured per user in `~/.Renviron` (see the vignette). The tasks work in VS Code and code-server when the project directory is opened as the workspace and trusted; an existing `tasks.json` is left unchanged. A run started from a task stops if the code-server job ends.
+#'
+#' The function can be re-run on an existing project to add files introduced by newer versions of this package. Existing files are kept unless `overwrite = TRUE`, and when `title` is not given, an existing `*-Pipeline.qmd` file supplies it. The pre-commit hook is the exception: it is always updated to the current version, and a previous hook that differs is saved as `.githooks/pre-commit.bak`.
+#'
+#' The LSF submission scripts `submit-targets.sh` and `.make-targets.sh` are written only when `lsf_scripts = TRUE`, for users who start pipelines from a submission host rather than from code-server on a compute node.
+#'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
 #' @param log_folder (character) directory for LSF logs
 #' @param path (character) project directory the files are written to, defaulting to the working directory
 #' @param runtime (character) R runtime the pipeline and its LSF workers use: `"native"` (the default) for the module-provided R, or `"container"` for the LPC RStudio Singularity image
-#' @param overwrite (logical) replace existing template files without asking first
+#' @param overwrite (logical) replace existing project files (the pipeline and results `.qmd` files, `.run-pipeline.R`, `.vscode/tasks.json`, and the LSF scripts) with fresh templates. By default, existing files are kept and only missing files are added.
+#' @param data_dir (character) directory for input data, created inside `path` and excluded from git
+#' @param results_dir (character) directory for pipeline results, created inside `path` and excluded from git
+#' @param git_safeguards (logical) add `.gitignore` entries and a pre-commit hook that keep data, results, and participant identifiers out of git
+#' @param lsf_scripts (logical) also write `submit-targets.sh` and `.make-targets.sh` for submitting the main `targets` process as an LSF job. The log folder is created either way, since `crew` LSF workers write their logs there.
 #'
 #' @export
 #' @concept targets
@@ -30,7 +44,11 @@ populate_targets_proj <- function(title,
                                   log_folder = "build_logs",
                                   path = ".",
                                   runtime = c("native", "container"),
-                                  overwrite = FALSE) {
+                                  overwrite = FALSE,
+                                  data_dir = "Data",
+                                  results_dir = "Results",
+                                  git_safeguards = TRUE,
+                                  lsf_scripts = FALSE) {
   runtime <- rlang::arg_match(runtime)
 
   # usethis::use_template() writes relative to the active usethis project, not
@@ -46,58 +64,205 @@ populate_targets_proj <- function(title,
   fs::dir_create(path)
   usethis::local_project(path, force = TRUE, quiet = TRUE)
 
-  # Create title
+  # Default the title to the one an existing project already uses, so a re-run
+  # updates that project instead of adding a second pair of .qmd files. The
+  # glob has to be matched against the directory: file.exists() takes globs
+  # literally and so never matches anything.
   if (missing(title)) {
-    title <- basename(path)
-  }
-
-  # Check if files already exist. The globs have to be matched against the
-  # directory rather than passed to file.exists(), which takes them literally
-  # and so never matches anything.
-  existing <- c(
-    fs::dir_ls(path, glob = "*-Pipeline.qmd"),
-    fs::dir_ls(path, glob = "*-Results.qmd")
-  )
-  if (length(existing) > 0 && !overwrite) {
-    cli::cli_alert_danger("Found {length(existing)} existing template file{?s} in {.file {path}}")
-    cli::cli_ul(basename(existing))
-    if (!rlang::is_interactive()) {
-      cli::cli_abort("Pass {.code overwrite = TRUE} to replace them.")
+    existing_pipelines <- fs::path_file(fs::dir_ls(path, glob = "*-Pipeline.qmd"))
+    title <- if (length(existing_pipelines) == 1) {
+      sub("-Pipeline\\.qmd$", "", existing_pipelines)
+    } else {
+      basename(path)
     }
-    if (!yesno::yesno("Overwrite existing files?")) cli::cli_abort("Exiting")
   }
 
   # Create build_logs folder
   fs::dir_create(path, log_folder)
-  cli::cli_alert_success("Build log folder created at {.file {fs::path(path, log_folder)}}")
+  cli::cli_alert_success("Build log folder ready at {.file {fs::path(path, log_folder)}}")
 
-  # Copy batch script for job submission. The main {targets} process has to run
-  # under the same R as the workers, so the runtime chooses the template.
-  make_targets_template <- switch(runtime,
-    container = ".make-targets.sh",
-    native = ".make-targets-native.sh"
-  )
-  usethis::use_template(make_targets_template,
-                        save_as = ".make-targets.sh",
-                        package = "levinmisc")
-  cli::cli_alert_success("Submission template created at {.file .make-targets.sh} using the {.val {runtime}} R runtime")
+  # Create data and results folders, so every location that holds data or
+  # data-derived output exists, and is excluded from git, from the start
+  fs::dir_create(path, c(data_dir, results_dir))
+  cli::cli_alert_success("Data folder ready at {.file {fs::path(path, data_dir)}}")
+  cli::cli_alert_success("Results folder ready at {.file {fs::path(path, results_dir)}}")
 
-  # Copy batch script to submit targets job
-  usethis::use_template("submit-targets.sh",
-                        save_as = "submit-targets.sh",
-                        package = "levinmisc")
-  cli::cli_alert_success("Targets submission script created at {.file submit-targets.sh}")
+  if (lsf_scripts) {
+    # Copy batch script for job submission. The main {targets} process has to
+    # run under the same R as the workers, so the runtime chooses the template.
+    make_targets_template <- switch(runtime,
+      container = ".make-targets.sh",
+      native = ".make-targets-native.sh"
+    )
+    write_project_template(make_targets_template, ".make-targets.sh", path, overwrite,
+                           data = function() list(r_module = lpc_r_module),
+                           label = paste("Submission template for the", runtime, "R runtime"))
 
-  # Copy targets pipeline template
-  usethis::use_template("Pipeline.qmd",
-                        save_as = paste0(title, "-Pipeline.qmd"),
-                        data = list(global_options = levinmisc::use_crew_lsf(runtime = runtime, path = path)),
-                        package = "levinmisc")
-  cli::cli_alert_success("Targets Pipeline template created at {.file {paste0(title, '-Pipeline.qmd')}}")
+    # Copy batch script to submit targets job
+    write_project_template("submit-targets.sh", "submit-targets.sh", path, overwrite,
+                           label = "Targets submission script")
+  }
+
+  # Copy targets pipeline template. use_crew_lsf() prints its code block, so it
+  # runs only when the file is actually written.
+  write_project_template("Pipeline.qmd", paste0(title, "-Pipeline.qmd"), path, overwrite,
+                         data = function() list(global_options = levinmisc::use_crew_lsf(runtime = runtime, path = path)),
+                         label = "Targets Pipeline template")
 
   # Copy targets results template
-  usethis::use_template("Results.qmd",
-                        save_as = paste0(title, "-Results.qmd"),
+  write_project_template("Results.qmd", paste0(title, "-Results.qmd"), path, overwrite,
+                         label = "Targets Results template")
+
+  # Script the run task calls: runs tar_make() and sends the notification
+  write_project_template("run-pipeline.R", ".run-pipeline.R", path, overwrite,
+                         label = "Pipeline run script")
+
+  # Editor tasks for pulling, rendering, and running
+  tasks_written <- write_project_template("tasks.json", ".vscode/tasks.json", path, overwrite,
+                                          data = function() list(title = title, r_module = lpc_r_module),
+                                          label = "Editor tasks")
+  if (tasks_written) {
+    cli::cli_alert_info("To use the editor tasks: open {.file {path}} itself as the code-server workspace, trust it when prompted, and optionally add the keybinding shown at the top of {.file .vscode/tasks.json} to your user {.file keybindings.json}.")
+    if (runtime == "container") {
+      cli::cli_alert_info("The editor tasks use the native R module ({.val {lpc_r_module}}), not the container.")
+    }
+  }
+
+  if (git_safeguards) {
+    use_targets_git_safeguards(path,
+                               data_dir = data_dir,
+                               results_dir = results_dir,
+                               log_folder = log_folder)
+  }
+
+  invisible(path)
+}
+
+#' R module loaded by the native runtime, the editor tasks, and LSF workers
+#' @noRd
+lpc_r_module <- "R/4.5"
+
+#' Write a template into the project unless the file already exists
+#'
+#' Existing files are kept unless `overwrite` is TRUE, so populate_targets_proj()
+#' can be re-run to add files that newer package versions introduce. The file is
+#' deleted before rewriting because usethis::use_template() would otherwise ask
+#' again, or silently decline outside an interactive session.
+#'
+#' @param template,save_as (character) template name and path relative to `path`
+#' @param path (character) project directory, already the active usethis project
+#' @param overwrite (logical) replace an existing file
+#' @param data (function) returns the template data; called only when writing
+#' @param label (character) description used in the status message
+#' @return TRUE if the file was written, FALSE if an existing file was kept
+#' @noRd
+write_project_template <- function(template, save_as, path, overwrite,
+                                   data = function() list(), label = save_as) {
+  target <- fs::path(path, save_as)
+  if (fs::file_exists(target) && !overwrite) {
+    cli::cli_alert_info("Kept existing {.file {save_as}}")
+    return(invisible(FALSE))
+  }
+  if (fs::file_exists(target)) {
+    fs::file_delete(target)
+  }
+  fs::dir_create(fs::path_dir(target))
+  usethis::use_template(template, save_as = save_as, data = data(), package = "levinmisc")
+  cli::cli_alert_success("{label} created at {.file {save_as}}")
+  invisible(TRUE)
+}
+
+#' Add .gitignore entries and a pre-commit hook that keep data out of git
+#'
+#' @param path (character) normalized project directory, already set as the active usethis project
+#' @param data_dir,results_dir,log_folder (character) directories to exclude
+#'
+#' @noRd
+use_targets_git_safeguards <- function(path, data_dir, results_dir, log_folder) {
+  dirs <- sub("/+$", "", c(data_dir, results_dir, log_folder))
+
+  usethis::use_git_ignore(c(
+    "# Data, results, and logs (levinmisc::populate_targets_proj)",
+    paste0("/", dirs, "/"),
+    "/_targets/",
+    "# Scripts generated by rendering the Target Markdown pipeline file",
+    "/_targets.R",
+    "/_targets_r/",
+    "# Supporting folders of non-self-contained reports",
+    "*_files/",
+    "/.quarto/",
+    "# Common data and serialized-object file types",
+    "*.rds", "*.rda", "*.RData", "*.qs", "*.qs2", "*.fst",
+    "*.parquet", "*.feather", "*.arrow",
+    "# Synthetic test fixtures may be committed",
+    "!/tests/**",
+    "!/Synthetic/**",
+    "# R session files",
+    ".Rhistory",
+    ".Rproj.user/"
+  ))
+  cli::cli_alert_success("Data, results, and generated files added to {.file .gitignore}")
+
+  # Projects created by earlier versions ignored all rendered HTML
+  ignored <- trimws(readLines(fs::path(path, ".gitignore"), warn = FALSE))
+  if (any(ignored %in% c("*.html", "/*.html", "*.htm"))) {
+    cli::cli_alert_warning("{.file .gitignore} still ignores {.code *.html}, so rendered reports cannot be committed. Remove that line to commit reports; the pre-commit hook checks them for participant identifiers.")
+  }
+
+  # The hook matches paths with bash regular expressions, so directory names
+  # containing regex metacharacters (eg. ".") have to be escaped
+  regex_escape <- function(x) gsub("([.|()^{}+$*?\\[\\]\\\\])", "\\\\\\1", x, perl = TRUE)
+  # The hook is always brought up to date, unlike other project files, so
+  # older projects gain new checks. A previous version that differs, possibly
+  # edited by hand, is kept beside it.
+  hook <- fs::path(path, ".githooks", "pre-commit")
+  previous_hook <- if (fs::file_exists(hook)) readLines(hook, warn = FALSE) else NULL
+  if (!is.null(previous_hook)) {
+    fs::file_delete(hook)
+  }
+  fs::dir_create(path, ".githooks")
+  usethis::use_template("pre-commit",
+                        save_as = ".githooks/pre-commit",
+                        data = list(data_dir = regex_escape(dirs[[1]]),
+                                    results_dir = regex_escape(dirs[[2]]),
+                                    log_folder = regex_escape(dirs[[3]])),
                         package = "levinmisc")
-  cli::cli_alert_success("Targets Results template created at {.file {paste0(title, '-Results.qmd')}}")
+  fs::file_chmod(hook, "u+x")
+  if (is.null(previous_hook)) {
+    cli::cli_alert_success("Pre-commit hook created at {.file .githooks/pre-commit}")
+  } else if (identical(previous_hook, readLines(hook, warn = FALSE))) {
+    cli::cli_alert_info("Pre-commit hook at {.file .githooks/pre-commit} is already up to date")
+  } else {
+    writeLines(previous_hook, fs::path(path, ".githooks", "pre-commit.bak"))
+    cli::cli_alert_success("Pre-commit hook updated; the previous version is saved as {.file .githooks/pre-commit.bak}")
+  }
+
+  # Git runs hooks from core.hooksPath, resolved relative to the repository
+  # root, so the setting only applies when `path` is that root. An existing
+  # hooksPath belongs to another tool (eg. a pre-commit framework) and is kept.
+  activate_cmd <- "git config core.hooksPath .githooks"
+  git <- function(...) {
+    tryCatch(
+      processx::run("git", c("-C", path, ...), error_on_status = FALSE),
+      error = function(e) list(status = 1L, stdout = "")
+    )
+  }
+  toplevel <- git("rev-parse", "--show-toplevel")
+  is_repo_root <- toplevel$status == 0 &&
+    fs::path_real(trimws(toplevel$stdout)) == fs::path_real(path)
+
+  if (!is_repo_root) {
+    cli::cli_alert_info("{.file {path}} is not the root of a git repository. After {.code git init}, activate the hook with {.code {activate_cmd}}")
+    return(invisible(FALSE))
+  }
+
+  current <- trimws(git("config", "--get", "core.hooksPath")$stdout)
+  if (nzchar(current) && current != ".githooks") {
+    cli::cli_alert_warning("Kept existing {.code core.hooksPath = {current}}. Copy {.file .githooks/pre-commit} there to use the hook.")
+    return(invisible(FALSE))
+  }
+
+  git("config", "core.hooksPath", ".githooks")
+  cli::cli_alert_success("Pre-commit hook activated. Each new clone needs {.code {activate_cmd}} once.")
+  invisible(TRUE)
 }

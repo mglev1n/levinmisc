@@ -30,8 +30,7 @@ Imports:
     tidyr,
     usethis,
     vroom,
-    withr,
-    yesno
+    withr
 Suggests: 
     BSgenome,
     coloc (>= 5.2.0),

@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook created by levinmisc::populate_targets_proj().
+#
+# Blocks commits that would put data, pipeline results, or participant
+# identifiers into git history. .gitignore already keeps data files out of
+# `git add .`, but it does not stop `git add -f`, files whose type it does not
+# list, or identifiers printed inside a rendered report. This hook checks every
+# staged file and refuses the commit if any of them:
+#   1. sits in a protected directory (data, results, the targets store, logs),
+#   2. has a data or serialized-object file extension,
+#   3. is larger than MAX_SIZE_KB (MAX_HTML_SIZE_KB for .html reports), or
+#   4. contains text matching ID_PATTERN, including text inside base64-encoded
+#      SVG figures embedded in self-contained HTML.
+#
+# Paths matching ALLOW_REGEX are exempt from checks 1 and 2, so small synthetic
+# test fixtures can live in the repository; they are still checked for
+# identifiers. The hook never prints a full identifier, only a masked prefix,
+# so its output is safe to share. Edit the settings below as needed.
+#
+# The identifier check uses ripgrep (rg) when it is installed and grep
+# otherwise; both give the same matches. Text drawn inside PNG figures cannot be
+# checked.
+#
+# The hook runs because populate_targets_proj() sets `core.hooksPath` to
+# .githooks. A fresh clone needs that setting once:
+#   git config core.hooksPath .githooks
+#
+# To bypass the hook for one commit after checking the files yourself:
+#   git commit --no-verify
+
+# ---- Settings ---------------------------------------------------------------
+
+PROTECTED_REGEX='^({{{data_dir}}}|{{{results_dir}}}|{{{log_folder}}}|_targets)/'
+DATA_EXT_REGEX='\.(rds|rda|rdata|qs|qs2|fst|feather|arrow|parquet|csv|tsv|txt\.gz|csv\.gz|tsv\.gz|gz|bgz|zip|xlsx|xls|sav|dta|sas7bdat|xpt|sqlite|db|duckdb|h5|hdf5|h5ad|vcf|bcf|bgen|bed|bim|fam|pgen|pvar|psam)$'
+ALLOW_REGEX='^(tests/|Synthetic/)'
+MAX_SIZE_KB=5000
+MAX_HTML_SIZE_KB=25000
+
+# Participant identifier shapes, as a POSIX extended regular expression. PMBB
+# IDs are "PMBB" followed by 13 digits; this pattern also matches lowercase,
+# separated ("PMBB-...", "pmbb_..."), embedded, and truncated forms. Character
+# classes are used instead of case-insensitive matching because grep -i is
+# several times slower. Add other shapes with alternation: 'pattern1|pattern2'.
+ID_PATTERN='[Pp][Mm][Bb][Bb][ _-]?[0-9]{6,}'
+
+# ---- Identifier search ------------------------------------------------------
+
+# Reads text on stdin and prints "line:match" for each identifier found.
+if command -v rg >/dev/null 2>&1; then
+  find_ids() { rg --no-config --no-filename --line-number --only-matching -e "$ID_PATTERN" - 2>/dev/null; }
+else
+  find_ids() { LC_ALL=C grep --line-number --only-matching -E -e "$ID_PATTERN"; }
+fi
+
+# Replaces each match with its first two characters, so output never shows a
+# full identifier.
+mask_ids() { sed -E 's/^([0-9]+):(..).*/line \1: \2************/'; }
+
+# ---- Checks -----------------------------------------------------------------
+
+blocked=()
+id_findings=()
+blob=$(mktemp)
+trap 'rm -f "$blob"' EXIT
+
+while IFS= read -r -d '' file; do
+  lower=$(printf '%s' "$file" | tr '[:upper:]' '[:lower:]')
+
+  if [[ ! "$file" =~ $ALLOW_REGEX ]]; then
+    if [[ "$file" =~ $PROTECTED_REGEX ]]; then
+      blocked+=("$file  (protected directory)")
+      continue
+    fi
+    if [[ "$lower" =~ $DATA_EXT_REGEX ]]; then
+      blocked+=("$file  (data file type)")
+      continue
+    fi
+  fi
+
+  limit_kb=$MAX_SIZE_KB
+  if [[ "$lower" == *.html || "$lower" == *.htm ]]; then
+    limit_kb=$MAX_HTML_SIZE_KB
+  fi
+  size_bytes=$(git cat-file -s ":$file" 2>/dev/null || echo 0)
+  if (( size_bytes > limit_kb * 1024 )); then
+    blocked+=("$file  ($(( size_bytes / 1024 )) KB, limit ${limit_kb} KB)")
+    continue
+  fi
+
+  # Check the staged version, which is exactly what will be committed. Binary
+  # files are skipped; `grep -I` treats them as non-matching.
+  git show ":$file" > "$blob" 2>/dev/null || continue
+  LC_ALL=C grep -Iq . "$blob" || continue
+
+  while IFS= read -r finding; do
+    id_findings+=("$file, $finding")
+  done < <(find_ids < "$blob" | mask_ids)
+
+  while IFS= read -r finding; do
+    id_findings+=("$file, embedded SVG, ${finding#line *: }")
+  done < <(
+    LC_ALL=C grep -o 'data:image/svg+xml;base64,[A-Za-z0-9+/=]*' "$blob" |
+      cut -d, -f2 |
+      while IFS= read -r encoded; do
+        printf '%s' "$encoded" | base64 --decode 2>/dev/null
+        echo
+      done |
+      find_ids | mask_ids
+  )
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+# ---- Report -----------------------------------------------------------------
+
+status=0
+
+if (( ${#blocked[@]} > 0 )); then
+  status=1
+  echo "pre-commit: these staged files may contain data or results:" >&2
+  for entry in "${blocked[@]}"; do
+    echo "  - $entry" >&2
+  done
+  echo "" >&2
+  echo "Unstage them with: git restore --staged <file>" >&2
+  echo "If a file is safe to commit, add its path to ALLOW_REGEX in .githooks/pre-commit." >&2
+  echo "" >&2
+fi
+
+if (( ${#id_findings[@]} > 0 )); then
+  status=1
+  echo "pre-commit: these staged files contain participant identifiers (masked):" >&2
+  for entry in "${id_findings[@]}"; do
+    echo "  - $entry" >&2
+  done
+  echo "" >&2
+  echo "Fix the source (for example, stop printing the ID column), re-render, and stage again." >&2
+  echo "" >&2
+fi
+
+if (( status != 0 )); then
+  echo "Commit blocked. After checking the files yourself, bypass once with: git commit --no-verify" >&2
+fi
+
+exit $status

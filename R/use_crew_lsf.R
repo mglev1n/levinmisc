@@ -40,7 +40,7 @@ use_crew_lsf <- function(runtime = c("native", "container"), path = ".") {
   container_image <- "/project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif"
   container_library <- "$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17"
   container_bind <- "/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static"
-  r_module <- "R/4.5"
+  r_module <- lpc_r_module
 
   # Shell lines that open each worker script, rendered as the elements of a
   # `script_lines = c(...)` call. crew appends its own `Rscript -e '...'` after

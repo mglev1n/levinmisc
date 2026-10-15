@@ -9,7 +9,11 @@ populate_targets_proj(
   log_folder = "build_logs",
   path = ".",
   runtime = c("native", "container"),
-  overwrite = FALSE
+  overwrite = FALSE,
+  data_dir = "Data",
+  results_dir = "Results",
+  git_safeguards = TRUE,
+  lsf_scripts = FALSE
 )
 }
 \arguments{
@@ -21,7 +25,15 @@ populate_targets_proj(
 
 \item{runtime}{(character) R runtime the pipeline and its LSF workers use: \code{"native"} (the default) for the module-provided R, or \code{"container"} for the LPC RStudio Singularity image}
 
-\item{overwrite}{(logical) replace existing template files without asking first}
+\item{overwrite}{(logical) replace existing project files (the pipeline and results \code{.qmd} files, \code{.run-pipeline.R}, \code{.vscode/tasks.json}, and the LSF scripts) with fresh templates. By default, existing files are kept and only missing files are added.}
+
+\item{data_dir}{(character) directory for input data, created inside \code{path} and excluded from git}
+
+\item{results_dir}{(character) directory for pipeline results, created inside \code{path} and excluded from git}
+
+\item{git_safeguards}{(logical) add \code{.gitignore} entries and a pre-commit hook that keep data, results, and participant identifiers out of git}
+
+\item{lsf_scripts}{(logical) also write \code{submit-targets.sh} and \code{.make-targets.sh} for submitting the main \code{targets} process as an LSF job. The log folder is created either way, since \code{crew} LSF workers write their logs there.}
 }
 \description{
 This function creates a minimal targets template in the current directory. This includes creating a \code{Pipelines.qmd} file containing boilerplate for running analyses, and a \code{Results.qmd} file which can be used to visualize the results. Parallelization of the pipeline is implemented using \code{\link[targets:tar_make]{targets::tar_make()}} and \code{crew.cluster}, using pre-filled using parameters specific to the LPC system at Penn.
@@ -32,6 +44,16 @@ a git repository, a \verb{.vscode/} directory), because such a search otherwise 
 directory.
 
 The \code{runtime} argument selects the R installation the pipeline runs against, and is passed through to \code{\link[=use_crew_lsf]{use_crew_lsf()}}. \code{"native"}, the default, loads the LPC's R module and leaves the package library to \code{renv}; \code{"container"} instead runs the main \code{targets} process and every worker inside the LPC's RStudio Singularity image.
+
+The \code{"container"} runtime still works but will lose support in a future release; new projects should use \code{"native"}.
+
+The function also creates a data directory and a results directory, so that every location holding data or data-derived output is known when the project starts. With \code{git_safeguards = TRUE} (the default), it keeps those locations out of git in two ways. It appends entries to \code{.gitignore} for the data and results directories, the log directory, the \code{targets} data store (\verb{_targets/}), the scripts generated from the Target Markdown file, and common data file types. Rendered HTML reports are not ignored, so they can be committed once checked. It also writes a pre-commit hook to \code{.githooks/pre-commit} that refuses any commit staging a file from those directories, a file with a data file extension, a file larger than 5 MB (25 MB for HTML), or text shaped like a PMBB participant ID, including IDs inside SVG figures embedded in a self-contained report. The hook prints only masked identifiers. When \code{path} is the root of a git repository, the function points \code{core.hooksPath} at \code{.githooks} so the hook runs; otherwise it prints the command to run after \verb{git init}. Because the hook lives in the repository, each new clone needs only that one command.
+
+The function writes \code{.vscode/tasks.json}, which defines editor tasks for pulling from GitHub, rendering the pipeline file, and running the pipeline, plus one task that runs all three in sequence. The run task calls \code{.run-pipeline.R}, which runs \code{\link[targets:tar_make]{targets::tar_make()}} and sends an optional Slack or ntfy notification when the pipeline completes or fails. The notification holds only the status, elapsed time, target counts, and errored target names, never error text, and is configured per user in \verb{~/.Renviron} (see the vignette). The tasks work in VS Code and code-server when the project directory is opened as the workspace and trusted; an existing \code{tasks.json} is left unchanged. A run started from a task stops if the code-server job ends.
+
+The function can be re-run on an existing project to add files introduced by newer versions of this package. Existing files are kept unless \code{overwrite = TRUE}, and when \code{title} is not given, an existing \verb{*-Pipeline.qmd} file supplies it. The pre-commit hook is the exception: it is always updated to the current version, and a previous hook that differs is saved as \code{.githooks/pre-commit.bak}.
+
+The LSF submission scripts \code{submit-targets.sh} and \code{.make-targets.sh} are written only when \code{lsf_scripts = TRUE}, for users who start pipelines from a submission host rather than from code-server on a compute node.
 }
 \examples{
 \dontrun{
