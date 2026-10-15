@@ -149,10 +149,10 @@ otherwise, with identical results, and needs no configuration or
 identifier list.
 
 When it finds an identifier, the hook blocks the commit and lists each
-file and line with the value masked (for example `PM************`), so
-its output is safe to share. Fix the source of the report, for example
-by not printing an ID column, re-render, and stage the file again. To
-add other identifier shapes, extend `ID_PATTERN` in
+file and line with the value masked (for example `PMBB*************`),
+so its output is safe to share. Fix the source of the report, for
+example by not printing an ID column, re-render, and stage the file
+again. To add other identifier shapes, extend `ID_PATTERN` in
 `.githooks/pre-commit` with regular-expression alternation
 (`'pattern1|pattern2'`). After checking a file yourself,
 `git commit --no-verify` bypasses the hook once.
