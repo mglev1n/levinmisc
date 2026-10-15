@@ -25,7 +25,7 @@ notify <- function(text, failed = FALSE) {
   }
 
   # Mask anything shaped like a PMBB ID, as a final safeguard
-  text <- gsub("([Pp][Mm])[Bb][Bb][ _-]?[0-9]{6,}", "\\1************", text)
+  text <- gsub("([Pp][Mm][Bb][Bb])[ _-]?[0-9]{6,}", "\\1*************", text)
 
   if (!nzchar(Sys.which("curl"))) {
     warning("curl is not on PATH; notification skipped", call. = FALSE)

@@ -53,9 +53,9 @@ else
   find_ids() { LC_ALL=C grep --line-number --only-matching -E -e "$ID_PATTERN"; }
 fi
 
-# Replaces each match with its first two characters, so output never shows a
-# full identifier.
-mask_ids() { sed -E 's/^([0-9]+):(..).*/line \1: \2************/'; }
+# Keeps the first four characters of each match (the "PMBB" prefix) and masks
+# the rest, so output never shows a full identifier.
+mask_ids() { sed -E 's/^([0-9]+):(....).*/line \1: \2*************/'; }
 
 # ---- Checks -----------------------------------------------------------------
 

@@ -175,6 +175,9 @@ test_that("pre-commit hook blocks PMBB identifiers and masks its output", {
       label <- paste(case_name, if (with_rg) "(rg)" else "(grep)")
       expect_identical(result$status != 0, case$blocked, label = label)
       expect_false(grepl("0000000012345", result$stderr, fixed = TRUE), label = label)
+      if (case_name == "body_text") {
+        expect_true(grepl("PMBB*************", result$stderr, fixed = TRUE), label = label)
+      }
       if (isTRUE(case$svg)) {
         expect_true(grepl("embedded SVG", result$stderr, fixed = TRUE), label = label)
       }

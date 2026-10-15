@@ -102,7 +102,7 @@ The `populate_targets_proj()` function creates several files/folders within the 
 
 The pre-commit hook searches every staged text file for strings shaped like a PMBB ID: `PMBB` followed by digits, in upper or lower case, with an optional space, underscore, or dash. The pattern also matches truncated IDs and IDs inside longer strings, such as `sample_PMBB…_A`. It decodes SVG figures embedded in self-contained HTML reports and searches their text too; text drawn inside PNG figures cannot be checked. The hook uses ripgrep (`rg`) when it is installed and `grep` otherwise, with identical results, and needs no configuration or identifier list.
 
-When it finds an identifier, the hook blocks the commit and lists each file and line with the value masked (for example `PM************`), so its output is safe to share. Fix the source of the report, for example by not printing an ID column, re-render, and stage the file again. To add other identifier shapes, extend `ID_PATTERN` in `.githooks/pre-commit` with regular-expression alternation (`'pattern1|pattern2'`). After checking a file yourself, `git commit --no-verify` bypasses the hook once.
+When it finds an identifier, the hook blocks the commit and lists each file and line with the value masked (for example `PMBB*************`), so its output is safe to share. Fix the source of the report, for example by not printing an ID column, re-render, and stage the file again. To add other identifier shapes, extend `ID_PATTERN` in `.githooks/pre-commit` with regular-expression alternation (`'pattern1|pattern2'`). After checking a file yourself, `git commit --no-verify` bypasses the hook once.
 
 ### Pipeline notifications
 
