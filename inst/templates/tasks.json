@@ -22,11 +22,16 @@
   //
   // The pipeline runs inside the code-server job, so it stops if that job ends.
   // Request a session long enough for the whole pipeline.
+  //
+  // Tasks run in a non-login shell ("-c"). A login shell ("-lc") would run the
+  // compute node's /etc/profile scripts, which on the LPC refuse sessions that
+  // did not start through LSF ("no direct access allowed"). The `module`
+  // command still works, because the code-server session passes it on.
   "version": "2.0.0",
   "options": {
     "shell": {
       "executable": "/bin/bash",
-      "args": ["-lc"]
+      "args": ["-c"]
     }
   },
   "tasks": [

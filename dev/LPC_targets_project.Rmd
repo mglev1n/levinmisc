@@ -372,7 +372,7 @@ The `populate_targets_proj()` function creates several files/folders within the 
 
 The pre-commit hook searches every staged text file for strings shaped like a PMBB ID: `PMBB` followed by digits, in upper or lower case, with an optional space, underscore, or dash. The pattern also matches truncated IDs and IDs inside longer strings, such as `sample_PMBB…_A`. It decodes SVG figures embedded in self-contained HTML reports and searches their text too; text drawn inside PNG figures cannot be checked. The hook uses ripgrep (`rg`) when it is installed and `grep` otherwise, with identical results, and needs no configuration or identifier list.
 
-When it finds an identifier, the hook blocks the commit and lists each file and line with the value masked (for example `PM************`), so its output is safe to share. Fix the source of the report, for example by not printing an ID column, re-render, and stage the file again. To add other identifier shapes, extend `ID_PATTERN` in `.githooks/pre-commit` with regular-expression alternation (`'pattern1|pattern2'`). After checking a file yourself, `git commit --no-verify` bypasses the hook once.
+When it finds an identifier, the hook blocks the commit and lists each file and line with the value masked (for example `PMBB*************`), so its output is safe to share. Fix the source of the report, for example by not printing an ID column, re-render, and stage the file again. To add other identifier shapes, extend `ID_PATTERN` in `.githooks/pre-commit` with regular-expression alternation (`'pattern1|pattern2'`). After checking a file yourself, `git commit --no-verify` bypasses the hook once.
 
 ### Pipeline notifications
 
@@ -531,6 +531,8 @@ test_that("populate_targets_proj writes native-R editor tasks and the run script
   expect_true(grepl(paste0("module load ", lpc_r_module, " && Rscript .run-pipeline.R"), tasks, fixed = TRUE))
   expect_true(grepl("quarto render \\\"test-Pipeline.qmd\\\"", tasks, fixed = TRUE))
   expect_false(grepl("singularity", tasks, fixed = TRUE))
+  # A login shell would run the compute node's profile guard and stop the task
+  expect_true(grepl('"args": ["-c"]', tasks, fixed = TRUE))
   expect_true(file.exists(file.path(proj, ".run-pipeline.R")))
   expect_false("*.html" %in% readLines(file.path(proj, ".gitignore")))
 })
@@ -608,6 +610,9 @@ test_that("pre-commit hook blocks PMBB identifiers and masks its output", {
       label <- paste(case_name, if (with_rg) "(rg)" else "(grep)")
       expect_identical(result$status != 0, case$blocked, label = label)
       expect_false(grepl("0000000012345", result$stderr, fixed = TRUE), label = label)
+      if (case_name == "body_text") {
+        expect_true(grepl("PMBB*************", result$stderr, fixed = TRUE), label = label)
+      }
       if (isTRUE(case$svg)) {
         expect_true(grepl("embedded SVG", result$stderr, fixed = TRUE), label = label)
       }

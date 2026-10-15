@@ -96,6 +96,8 @@ test_that("populate_targets_proj writes native-R editor tasks and the run script
   expect_true(grepl(paste0("module load ", lpc_r_module, " && Rscript .run-pipeline.R"), tasks, fixed = TRUE))
   expect_true(grepl("quarto render \\\"test-Pipeline.qmd\\\"", tasks, fixed = TRUE))
   expect_false(grepl("singularity", tasks, fixed = TRUE))
+  # A login shell would run the compute node's profile guard and stop the task
+  expect_true(grepl('"args": ["-c"]', tasks, fixed = TRUE))
   expect_true(file.exists(file.path(proj, ".run-pipeline.R")))
   expect_false("*.html" %in% readLines(file.path(proj, ".gitignore")))
 })
@@ -173,6 +175,9 @@ test_that("pre-commit hook blocks PMBB identifiers and masks its output", {
       label <- paste(case_name, if (with_rg) "(rg)" else "(grep)")
       expect_identical(result$status != 0, case$blocked, label = label)
       expect_false(grepl("0000000012345", result$stderr, fixed = TRUE), label = label)
+      if (case_name == "body_text") {
+        expect_true(grepl("PMBB*************", result$stderr, fixed = TRUE), label = label)
+      }
       if (isTRUE(case$svg)) {
         expect_true(grepl("embedded SVG", result$stderr, fixed = TRUE), label = label)
       }
