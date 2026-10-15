@@ -13,11 +13,22 @@
   //     "args": "Pull, render, and run pipeline"
   //   }
   //
-  // To run tar_make() in the active R terminal (for example arf) instead:
+  // To run only the pipeline (Rscript .run-pipeline.R, with its notification),
+  // skipping the pull and render steps:
   //   {
   //     "key": "ctrl+shift+m",
-  //     "command": "workbench.action.terminal.sendSequence",
-  //     "args": { "text": "targets::tar_make()\u000D" }
+  //     "command": "workbench.action.tasks.runTask",
+  //     "args": "Run pipeline"
+  //   }
+  //
+  // To run tar_make() inside your R session instead, which blocks that session
+  // until the pipeline finishes, use the vscode-R extension's command. It sends
+  // code to the extension's R terminal (for example arf), whichever terminal
+  // has focus:
+  //   {
+  //     "key": "ctrl+alt+r",
+  //     "command": "r.runCommand",
+  //     "args": "targets::tar_make()"
   //   }
   //
   // The pipeline runs inside the code-server job, so it stops if that job ends.
