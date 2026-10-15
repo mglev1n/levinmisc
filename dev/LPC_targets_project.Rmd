@@ -531,6 +531,8 @@ test_that("populate_targets_proj writes native-R editor tasks and the run script
   expect_true(grepl(paste0("module load ", lpc_r_module, " && Rscript .run-pipeline.R"), tasks, fixed = TRUE))
   expect_true(grepl("quarto render \\\"test-Pipeline.qmd\\\"", tasks, fixed = TRUE))
   expect_false(grepl("singularity", tasks, fixed = TRUE))
+  # A login shell would run the compute node's profile guard and stop the task
+  expect_true(grepl('"args": ["-c"]', tasks, fixed = TRUE))
   expect_true(file.exists(file.path(proj, ".run-pipeline.R")))
   expect_false("*.html" %in% readLines(file.path(proj, ".gitignore")))
 })
