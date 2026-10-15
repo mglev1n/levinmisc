@@ -95,16 +95,29 @@ and tools are described in detail: <a href="https://books.ropensci.org/targets/"
 in the R console - this function is described below in detail, and will
 initialize your project with helpful files/folders to start building
 your <code>targets</code> pipeline.</p></li>
+<li><p>Keep input data in <code>Data/</code> and write pipeline outputs
+to <code>Results/</code>. Both directories, the <code>targets</code>
+data store, and logs are excluded from git, and a pre-commit hook blocks
+commits that would add data or participant identifiers. If the project
+was not yet a git repository, run <code>git init</code> and then
+<code>git config core.hooksPath .githooks</code>; a fresh clone of the
+project needs the second command once.</p></li>
+<li><p>Open the project directory itself in code-server (File &gt; Open
+Folder) and trust the workspace when prompted, so the editor tasks in
+<code>.vscode/tasks.json</code> load.</p></li>
 <li><p>Modify the <code>Pipelines.qmd</code> file to specify your
 analyses. The <code>targets</code> documentation can be useful for
 specifics.</p></li>
 <li><p>Knit/Render <code>Pipelines.qmd</code> to convert your markdown
 document into a series of R scripts that will actually run your
 analyses.</p></li>
-<li><p>Run <code>submit-targets.sh</code> from a terminal window to
-submit your <code>targets</code> pipeline to the LPC for execution.
-Details of possible command line arguments to this script are described
-below.</p></li>
+<li><p>Run the pipeline. The <code>Pull, render, and run pipeline</code>
+editor task pulls the latest code from GitHub, renders the pipeline
+file, and runs <code>targets::tar_make()</code> in its own terminal,
+leaving your R terminal free. When the run finishes or fails, it can
+send a Slack or ntfy notification (see below). The run happens inside
+the code-server job, so request a session long enough for the whole
+pipeline.</p></li>
 <li><p>Modify <code>Results.qmd</code> to present the results of your
 analyses. Rendering this file allows you to mix text describing your
 analyses/methods and include citations alongside the actual results of
@@ -119,10 +132,11 @@ used heavily to load pre-computed results from your pipeline.</p></li>
 <p>The <code>populate_targets_proj</code> function can be run within a
 new project folder to initialize the project with the files/folders
 necessary for deploying a <code>targets</code> pipeline on the LPC at
-Penn. This includes creating LSF templates, a <code>Pipelines.qmd</code>
-file containing boilerplate for running analyses, and a
-<code>Results.qmd</code> file which can be used to visualize the
-results.</p>
+Penn. This includes creating a <code>Pipelines.qmd</code> file
+containing boilerplate for running analyses, a <code>Results.qmd</code>
+file which can be used to visualize the results, editor tasks, a
+pipeline run script with notifications, and git safeguards against
+committing data or participant identifiers.</p>
 <p>The <code>runtime</code> argument chooses the R installation the
 pipeline runs against. <code>"native"</code> (the default) loads the
 LPC’s R module (<code>module load R/4.5</code>) and leaves the package
@@ -135,6 +149,11 @@ a worker that loads a library built for a different R version reports
 errors such as <code>unused arguments (controller = ...)</code>, because
 the worker and the controller end up running different <code>crew</code>
 versions.</p>
+<p>The <code>"container"</code> runtime is still supported but will lose
+support in a future release, because the lab no longer runs R through
+Singularity. New projects should use the default <code>"native"</code>
+runtime. The editor tasks always use the native R module, whichever
+runtime is chosen.</p>
 <!--
 Here is an example on how to use the function.
 This should be a reproducible and working example
@@ -145,13 +164,7 @@ This should be a reproducible and working example
 <span><span class="fu"><a href="../reference/populate_targets_proj.html">populate_targets_proj</a></span><span class="op">(</span><span class="st">"test"</span>, runtime <span class="op">=</span> <span class="st">"container"</span><span class="op">)</span></span>
 <span><span class="co">#' }</span></span></code></pre></div>
 <p>The <code><a href="../reference/populate_targets_proj.html">populate_targets_proj()</a></code> function creates several
-files/folders within the project directory.
-<code>.make-targets.sh</code> and is a hidden helper file which is not
-designed for user interaction, but necessary for submission of jobs to
-the LSF scheduler; its contents follow the <code>runtime</code>
-argument, so that the main <code>targets</code> process runs under the
-same R as the workers. The other files are designed to be edited/used by
-the user:</p>
+files/folders within the project directory:</p>
 <ul>
 <li><p><code>Pipeline.qmd</code> - Quarto markdown file which can be
 used to create a Target Markdown document that specifies a
@@ -160,26 +173,141 @@ for details. Remember to knit/render this document in order to generate
 the pipeline.</p></li>
 <li><p><code>Results.qmd</code> - Quarto markdown file which can be used
 to display the results generated by the <code>targets</code> pipeline
-specified in <code>Pipeline.qmd</code></p></li>
-<li><p><code>build_logs/</code> - Directory where jobs logs are
-stored</p></li>
-<li><p><code>submit-targets.sh</code>- This is a bash script which can
-be used to run your <code>targets</code> pipeline, once
-<code>Pipeline.qmd</code> has been knit/rendered. This script can be run
-directly from the submission host.</p></li>
+specified in <code>Pipeline.qmd</code>. It renders a self-contained HTML
+report, which can be committed once the pre-commit hook has checked
+it.</p></li>
+<li><p><code>build_logs/</code> - Directory where <code>crew</code> LSF
+worker logs are stored</p></li>
+<li><p><code>Data/</code> and <code>Results/</code> - Directories for
+input data and pipeline outputs; their names are set by the
+<code>data_dir</code> and <code>results_dir</code> arguments. Both are
+excluded from git.</p></li>
+<li><p><code>.run-pipeline.R</code> - Script the editor’s run task
+calls. It runs <code>targets::tar_make()</code>, prints a summary, sends
+an optional notification, and exits with status 1 if the pipeline
+failed.</p></li>
+<li><p><code>.vscode/tasks.json</code> - Editor tasks to pull from
+GitHub, render the pipeline file, run the pipeline, or do all three in
+sequence (<code>Pull, render, and run pipeline</code>), plus a task to
+render the results report. Code-server loads the file only when the
+project directory itself is opened as the workspace and trusted. The
+comment at the top of the file shows the keybinding to add to your user
+<code>keybindings.json</code> to run the combined task with one key, and
+a second keybinding that sends <code>targets::tar_make()</code> to the
+active R terminal instead.</p></li>
+<li><p><code>.gitignore</code> - Entries added for the data, results,
+and log directories, the <code>targets</code> data store
+(<code>_targets/</code>), scripts generated by rendering the pipeline
+file, and common data file types. Rendered HTML reports are not ignored.
+Existing entries are kept.</p></li>
+<li><p><code>.githooks/pre-commit</code> - Git hook that blocks any
+commit staging a file from a protected directory, a file with a data
+file extension, a file larger than 5 MB (25 MB for HTML reports), or
+text shaped like a PMBB participant ID. Set
+<code>git_safeguards = FALSE</code> to skip both the
+<code>.gitignore</code> entries and the hook. Details are
+below.</p></li>
 </ul>
+<div class="section level3">
+<h3 id="participant-identifier-check">Participant identifier check<a class="anchor" aria-label="anchor" href="#participant-identifier-check"></a>
+</h3>
+<p>The pre-commit hook searches every staged text file for strings
+shaped like a PMBB ID: <code>PMBB</code> followed by digits, in upper or
+lower case, with an optional space, underscore, or dash. The pattern
+also matches truncated IDs and IDs inside longer strings, such as
+<code>sample_PMBB…_A</code>. It decodes SVG figures embedded in
+self-contained HTML reports and searches their text too; text drawn
+inside PNG figures cannot be checked. The hook uses ripgrep
+(<code>rg</code>) when it is installed and <code>grep</code> otherwise,
+with identical results, and needs no configuration or identifier
+list.</p>
+<p>When it finds an identifier, the hook blocks the commit and lists
+each file and line with the value masked (for example
+<code>PM************</code>), so its output is safe to share. Fix the
+source of the report, for example by not printing an ID column,
+re-render, and stage the file again. To add other identifier shapes,
+extend <code>ID_PATTERN</code> in <code>.githooks/pre-commit</code> with
+regular-expression alternation (<code>'pattern1|pattern2'</code>). After
+checking a file yourself, <code>git commit --no-verify</code> bypasses
+the hook once.</p>
+</div>
+<div class="section level3">
+<h3 id="pipeline-notifications">Pipeline notifications<a class="anchor" aria-label="anchor" href="#pipeline-notifications"></a>
+</h3>
+<p><code>.run-pipeline.R</code> can notify you when a pipeline completes
+or fails. The message contains the status, elapsed time, target counts,
+and the names of errored targets. It never contains error messages or
+target values, because R errors can echo data values and the message
+leaves the cluster; the full error is printed in the task terminal.
+Notifications are sent with the <code>curl</code> command-line tool, so
+no extra R packages are needed in the project library. They are
+configured once per user in <code>~/.Renviron</code>, never in the
+project.</p>
+<p><strong>Slack.</strong> Create an incoming webhook for the channel
+that should receive messages:</p>
+<ol style="list-style-type: decimal">
+<li>Go to <a href="https://api.slack.com/apps" class="external-link uri">https://api.slack.com/apps</a>, choose <strong>Create New
+App</strong>, then <strong>From scratch</strong>, and pick the lab
+workspace.</li>
+<li>Open <strong>Incoming Webhooks</strong> and switch on the activation
+toggle.</li>
+<li>Choose <strong>Add New Webhook to Workspace</strong>, pick the
+channel, and select <strong>Authorize</strong>. If the workspace
+restricts apps, this becomes a request that a workspace admin must
+approve.</li>
+<li>Copy the webhook URL and add these lines to
+<code>~/.Renviron</code>, then restart R:</li>
+</ol>
+<pre><code>LEVINMISC_NOTIFY=slack
+LEVINMISC_SLACK_WEBHOOK=https://hooks.slack.com/services/...</code></pre>
+<p>Treat the webhook URL like a password: anyone who has it can post to
+the channel. The Slack desktop and phone apps show each message as a
+notification.</p>
+<p><strong>ntfy.</strong> As an alternative, ntfy (<a href="https://ntfy.sh" class="external-link uri">https://ntfy.sh</a>) delivers push
+notifications to its phone app, Mac app, or website. Subscribe to a
+hard-to-guess topic, then add:</p>
+<pre><code>LEVINMISC_NOTIFY=ntfy
+LEVINMISC_NTFY_URL=https://ntfy.sh/your-hard-to-guess-topic</code></pre>
+<p>Set <code>LEVINMISC_NOTIFY_START=true</code> to also be notified when
+a run starts. With <code>LEVINMISC_NOTIFY</code> unset, the script
+prints its summary in the terminal only.</p>
+</div>
+<div class="section level3">
+<h3 id="updating-an-existing-project">Updating an existing project<a class="anchor" aria-label="anchor" href="#updating-an-existing-project"></a>
+</h3>
+<p>Re-run <code><a href="../reference/populate_targets_proj.html">populate_targets_proj()</a></code> in an existing project to
+add files introduced by newer versions of this package, such as
+<code>.run-pipeline.R</code> or the editor tasks. Existing files,
+including your <code>Pipeline.qmd</code> and <code>Results.qmd</code>,
+are kept, and the function lists each one it kept. When
+<code>title</code> is not given and the project has one
+<code>*-Pipeline.qmd</code> file, its name supplies the title. Pass
+<code>overwrite = TRUE</code> only to replace existing files with fresh
+templates.</p>
+<p>The pre-commit hook is the exception: a re-run always updates it, so
+older projects gain the identifier check, and a previous version that
+differs is saved as <code>.githooks/pre-commit.bak</code>. If the
+project’s <code>.gitignore</code> still contains a <code>*.html</code>
+line from an earlier version, the function warns; delete that line to
+commit rendered reports. LSF scripts from earlier versions, such as
+<code>submit-targets.sh</code>, are left in place.</p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="submit-targets-sh">submit-targets.sh<a class="anchor" aria-label="anchor" href="#submit-targets-sh"></a>
+<h2 id="optional-lsf-submission-scripts">Optional LSF submission scripts<a class="anchor" aria-label="anchor" href="#optional-lsf-submission-scripts"></a>
 </h2>
-<p>This script is used to actually submit your pipeline to the LPC once
-<code>Pipeline.qmd</code> has been knit/rendered. This should be run
-from a terminal session from the root directory of your project. The
-only function of this script is to submit your pipeline to the LPC for
-analysis, and can be run directly from a submission host (eg.
-<code>scisub7</code>). The script can accept command line arguments,
-which can be useful for parallelizing your pipeline over multiple
-workers/CPUs:</p>
+<p>Pipelines are normally run from code-server on a compute node with
+the editor task above. To submit the main <code>targets</code> process
+as its own LSF job instead, for example from a submission host such as
+<code>scisub7</code>, call
+<code>populate_targets_proj(lsf_scripts = TRUE)</code>. This also writes
+<code>submit-targets.sh</code> and the hidden helper
+<code>.make-targets.sh</code>, whose contents follow the
+<code>runtime</code> argument so that the main <code>targets</code>
+process runs under the same R as the workers. Run
+<code>submit-targets.sh</code> from the root directory of your project
+once <code>Pipeline.qmd</code> has been knit/rendered. The script
+accepts command line arguments:</p>
 <pre><code>Usage: ./submit-targets.sh [-n NUM_WORKERS] [-j JOB_NAME] [-o OUTPUT_LOG] [-e ERROR_LOG] [-q QUEUE] [-m MEMORY] [-s SLACK] [-h HELP]
 
 Submit a job using the LSF scheduler with the specified number of CPUs and memory usage.
@@ -193,21 +321,14 @@ Options:
   -m MEMORY      Memory usage for the job in megabytes (default: 16000)
   -s SLACK       Enable slack notifications; requires setup using slackr::slack_setup() (default: false)
   -h HELP        Display this help message and exit</code></pre>
-<div class="section level3">
-<h3 id="slack-notifications">Slack Notifications<a class="anchor" aria-label="anchor" href="#slack-notifications"></a>
-</h3>
-<p>Slack can be used to automatically notify the user of pipeline
-start/finish using the <code>-s true</code> command line flag:</p>
-<pre><code>./submit-targets.sh -s true</code></pre>
-<p>Slack notifications are provided using the <code>slackr</code>
-package. The package must be configured separately before Slack
-notifications are enabled. See <a href="https://mrkaye97.github.io/slackr/index.html" class="external-link uri">https://mrkaye97.github.io/slackr/index.html</a> for more
-information about <code>slackr</code> setup and generation of an Slack
-API token.</p>
+<p>The <code>-s true</code> flag of <code>submit-targets.sh</code> sends
+start and finish messages through the <code>slackr</code> package, which
+must be installed and configured separately (<a href="https://mrkaye97.github.io/slackr/index.html" class="external-link uri">https://mrkaye97.github.io/slackr/index.html</a>). It does
+not report failures; the webhook notifications from
+<code>.run-pipeline.R</code> described above do.</p>
 <!--
 Here are some unit tests to verify the function works as expected.
 -->
-</div>
 <div class="section level3">
 <h3 id="use-crew-for-parallelization">Use {crew} for parallelization<a class="anchor" aria-label="anchor" href="#use-crew-for-parallelization"></a>
 </h3>
@@ -236,7 +357,7 @@ container branch keeps the older <code>lsf_*</code> arguments to
 <code>crew.cluster</code> build inside the image understands, while the
 native branch uses the <code>crew_options_lsf()</code> interface that
 replaced them.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' \dontrun{</span></span>
 <span><span class="fu"><a href="../reference/use_crew_lsf.html">use_crew_lsf</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/use_crew_lsf.html">use_crew_lsf</a></span><span class="op">(</span>runtime <span class="op">=</span> <span class="st">"container"</span><span class="op">)</span></span>
