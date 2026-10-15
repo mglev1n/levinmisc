@@ -120,10 +120,10 @@ function creates several files/folders within the project directory:
   (`Pull, render, and run pipeline`), plus a task to render the results
   report. Code-server loads the file only when the project directory
   itself is opened as the workspace and trusted. The comment at the top
-  of the file shows the keybinding to add to your user
-  `keybindings.json` to run the combined task with one key, and a second
-  keybinding that sends `targets::tar_make()` to the active R terminal
-  instead.
+  of the file shows keybindings to add to your user `keybindings.json`:
+  one runs the combined task, one runs only the pipeline step through
+  `Rscript`, and one runs `targets::tar_make()` in your R session
+  through the vscode-R extension.
 
 - `.gitignore` - Entries added for the data, results, and log
   directories, the `targets` data store (`_targets/`), scripts generated
