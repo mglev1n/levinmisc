@@ -12,9 +12,13 @@
 #'
 #' The `runtime` argument selects the R installation the pipeline runs against, and is passed through to [use_crew_lsf()]. `"native"`, the default, loads the LPC's R module and leaves the package library to `renv`; `"container"` instead runs the main `targets` process and every worker inside the LPC's RStudio Singularity image.
 #'
-#' The function also creates a data directory and a results directory, so that every location holding data or data-derived output is known when the project starts. With `git_safeguards = TRUE` (the default), it keeps those locations out of git in two ways. It appends entries to `.gitignore` for the data and results directories, the log directory, the `targets` data store (`_targets/`), the scripts generated from the Target Markdown file, rendered reports, and common data file types. It also writes a pre-commit hook to `.githooks/pre-commit` that refuses any commit staging a file from those directories, a file with a data file extension, or a file larger than 5 MB, which catches files forced past `.gitignore` with `git add -f`. When `path` is the root of a git repository, the function points `core.hooksPath` at `.githooks` so the hook runs; otherwise it prints the command to run after `git init`. Because the hook lives in the repository, each new clone needs only that one command.
+#' The `"container"` runtime still works but will lose support in a future release; new projects should use `"native"`.
 #'
-#' Finally, the function writes `.vscode/tasks.json`, which defines editor tasks for pulling from GitHub, rendering the pipeline file, and submitting the pipeline, plus one task that runs all three in sequence. These tasks work in VS Code and code-server; an existing `tasks.json` is left unchanged.
+#' The function also creates a data directory and a results directory, so that every location holding data or data-derived output is known when the project starts. With `git_safeguards = TRUE` (the default), it keeps those locations out of git in two ways. It appends entries to `.gitignore` for the data and results directories, the log directory, the `targets` data store (`_targets/`), the scripts generated from the Target Markdown file, and common data file types. Rendered HTML reports are not ignored, so they can be committed once checked. It also writes a pre-commit hook to `.githooks/pre-commit` that refuses any commit staging a file from those directories, a file with a data file extension, a file larger than 5 MB (25 MB for HTML), or text shaped like a PMBB participant ID, including IDs inside SVG figures embedded in a self-contained report. The hook prints only masked identifiers. When `path` is the root of a git repository, the function points `core.hooksPath` at `.githooks` so the hook runs; otherwise it prints the command to run after `git init`. Because the hook lives in the repository, each new clone needs only that one command.
+#'
+#' The function writes `.vscode/tasks.json`, which defines editor tasks for pulling from GitHub, rendering the pipeline file, and running the pipeline, plus one task that runs all three in sequence. The run task calls `.run-pipeline.R`, which runs [targets::tar_make()] and sends an optional Slack or ntfy notification when the pipeline completes or fails. The notification holds only the status, elapsed time, target counts, and errored target names, never error text, and is configured per user in `~/.Renviron` (see the vignette). The tasks work in VS Code and code-server when the project directory is opened as the workspace and trusted; an existing `tasks.json` is left unchanged. A run started from a task stops if the code-server job ends.
+#'
+#' The LSF submission scripts `submit-targets.sh` and `.make-targets.sh` are written only when `lsf_scripts = TRUE`, for users who start pipelines from a submission host rather than from code-server on a compute node.
 #'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
 #' @param log_folder (character) directory for LSF logs
@@ -23,7 +27,8 @@
 #' @param overwrite (logical) replace existing template files without asking first
 #' @param data_dir (character) directory for input data, created inside `path` and excluded from git
 #' @param results_dir (character) directory for pipeline results, created inside `path` and excluded from git
-#' @param git_safeguards (logical) add `.gitignore` entries and a pre-commit hook that keep data and results out of git
+#' @param git_safeguards (logical) add `.gitignore` entries and a pre-commit hook that keep data, results, and participant identifiers out of git
+#' @param lsf_scripts (logical) also write `submit-targets.sh` and `.make-targets.sh` for submitting the main `targets` process as an LSF job. The log folder is created either way, since `crew` LSF workers write their logs there.
 #'
 #' @export
 #' @concept targets
@@ -40,7 +45,8 @@ populate_targets_proj <- function(title,
                                   overwrite = FALSE,
                                   data_dir = "Data",
                                   results_dir = "Results",
-                                  git_safeguards = TRUE) {
+                                  git_safeguards = TRUE,
+                                  lsf_scripts = FALSE) {
   runtime <- rlang::arg_match(runtime)
 
   # usethis::use_template() writes relative to the active usethis project, not
@@ -87,22 +93,25 @@ populate_targets_proj <- function(title,
   cli::cli_alert_success("Data folder created at {.file {fs::path(path, data_dir)}}")
   cli::cli_alert_success("Results folder created at {.file {fs::path(path, results_dir)}}")
 
-  # Copy batch script for job submission. The main {targets} process has to run
-  # under the same R as the workers, so the runtime chooses the template.
-  make_targets_template <- switch(runtime,
-    container = ".make-targets.sh",
-    native = ".make-targets-native.sh"
-  )
-  usethis::use_template(make_targets_template,
-                        save_as = ".make-targets.sh",
-                        package = "levinmisc")
-  cli::cli_alert_success("Submission template created at {.file .make-targets.sh} using the {.val {runtime}} R runtime")
+  if (lsf_scripts) {
+    # Copy batch script for job submission. The main {targets} process has to
+    # run under the same R as the workers, so the runtime chooses the template.
+    make_targets_template <- switch(runtime,
+      container = ".make-targets.sh",
+      native = ".make-targets-native.sh"
+    )
+    usethis::use_template(make_targets_template,
+                          save_as = ".make-targets.sh",
+                          data = list(r_module = lpc_r_module),
+                          package = "levinmisc")
+    cli::cli_alert_success("Submission template created at {.file .make-targets.sh} using the {.val {runtime}} R runtime")
 
-  # Copy batch script to submit targets job
-  usethis::use_template("submit-targets.sh",
-                        save_as = "submit-targets.sh",
-                        package = "levinmisc")
-  cli::cli_alert_success("Targets submission script created at {.file submit-targets.sh}")
+    # Copy batch script to submit targets job
+    usethis::use_template("submit-targets.sh",
+                          save_as = "submit-targets.sh",
+                          package = "levinmisc")
+    cli::cli_alert_success("Targets submission script created at {.file submit-targets.sh}")
+  }
 
   # Copy targets pipeline template
   usethis::use_template("Pipeline.qmd",
@@ -117,7 +126,13 @@ populate_targets_proj <- function(title,
                         package = "levinmisc")
   cli::cli_alert_success("Targets Results template created at {.file {paste0(title, '-Results.qmd')}}")
 
-  # Editor tasks for pulling, rendering, and submitting. A project may already
+  # Script the run task calls: runs tar_make() and sends the notification
+  usethis::use_template("run-pipeline.R",
+                        save_as = ".run-pipeline.R",
+                        package = "levinmisc")
+  cli::cli_alert_success("Pipeline run script created at {.file .run-pipeline.R}")
+
+  # Editor tasks for pulling, rendering, and running. A project may already
   # have its own tasks.json, which this function should not replace.
   tasks_file <- fs::path(path, ".vscode", "tasks.json")
   if (fs::file_exists(tasks_file)) {
@@ -126,9 +141,13 @@ populate_targets_proj <- function(title,
     fs::dir_create(path, ".vscode")
     usethis::use_template("tasks.json",
                           save_as = ".vscode/tasks.json",
-                          data = list(title = title),
+                          data = list(title = title, r_module = lpc_r_module),
                           package = "levinmisc")
     cli::cli_alert_success("Editor tasks created at {.file .vscode/tasks.json}")
+    cli::cli_alert_info("To use the editor tasks: open {.file {path}} itself as the code-server workspace, trust it when prompted, and optionally add the keybinding shown at the top of {.file .vscode/tasks.json} to your user {.file keybindings.json}.")
+    if (runtime == "container") {
+      cli::cli_alert_info("The editor tasks use the native R module ({.val {lpc_r_module}}), not the container.")
+    }
   }
 
   if (git_safeguards) {
@@ -140,6 +159,10 @@ populate_targets_proj <- function(title,
 
   invisible(path)
 }
+
+#' R module loaded by the native runtime, the editor tasks, and LSF workers
+#' @noRd
+lpc_r_module <- "R/4.5"
 
 #' Add .gitignore entries and a pre-commit hook that keep data out of git
 #'
@@ -157,8 +180,7 @@ use_targets_git_safeguards <- function(path, data_dir, results_dir, log_folder) 
     "# Scripts generated by rendering the Target Markdown pipeline file",
     "/_targets.R",
     "/_targets_r/",
-    "# Rendered reports can embed results",
-    "*.html",
+    "# Supporting folders of non-self-contained reports",
     "*_files/",
     "/.quarto/",
     "# Common data and serialized-object file types",

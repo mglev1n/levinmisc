@@ -25,6 +25,184 @@ test_that("populate_targets_proj creates data folders and git safeguards", {
   hooks_path <- processx::run("git", c("-C", proj, "config", "--get", "core.hooksPath"))$stdout
   expect_equal(trimws(hooks_path), ".githooks")
 })
+
+test_that("populate_targets_proj writes LSF scripts only on request", {
+  skip_on_cran()
+  proj <- withr::local_tempdir()
+  suppressMessages(populate_targets_proj("test", path = proj, overwrite = TRUE))
+  expect_false(file.exists(file.path(proj, "submit-targets.sh")))
+  expect_false(file.exists(file.path(proj, ".make-targets.sh")))
+  expect_true(dir.exists(file.path(proj, "build_logs")))
+
+  proj2 <- withr::local_tempdir()
+  suppressMessages(populate_targets_proj("test", path = proj2, overwrite = TRUE, lsf_scripts = TRUE))
+  expect_true(file.exists(file.path(proj2, "submit-targets.sh")))
+  make_targets <- readLines(file.path(proj2, ".make-targets.sh"))
+  expect_true(any(make_targets == paste("module load", lpc_r_module)))
+})
+
+test_that("populate_targets_proj writes native-R editor tasks and the run script", {
+  skip_on_cran()
+  proj <- withr::local_tempdir()
+  suppressMessages(populate_targets_proj("test", path = proj, overwrite = TRUE, runtime = "container"))
+  tasks <- paste(readLines(file.path(proj, ".vscode", "tasks.json")), collapse = "\n")
+  expect_true(grepl(paste0("module load ", lpc_r_module, " && Rscript .run-pipeline.R"), tasks, fixed = TRUE))
+  expect_true(grepl("quarto render \\\"test-Pipeline.qmd\\\"", tasks, fixed = TRUE))
+  expect_false(grepl("singularity", tasks, fixed = TRUE))
+  expect_true(file.exists(file.path(proj, ".run-pipeline.R")))
+  expect_false("*.html" %in% readLines(file.path(proj, ".gitignore")))
+})
+
+# Helpers for the pre-commit hook tests. `with_rg = FALSE` runs git with a PATH
+# that lacks ripgrep, so the grep code path is exercised.
+hook_project <- function() {
+  proj <- withr::local_tempdir(.local_envir = parent.frame())
+  processx::run("git", c("-C", proj, "init", "-q"))
+  processx::run("git", c("-C", proj, "config", "user.email", "test@example.com"))
+  processx::run("git", c("-C", proj, "config", "user.name", "Test"))
+  suppressMessages(populate_targets_proj("test", path = proj, overwrite = TRUE))
+  proj
+}
+
+path_without_rg <- function() {
+  bin <- withr::local_tempdir(.local_envir = parent.frame())
+  tools <- c("bash", "sh", "env", "git", "grep", "sed", "base64", "cut", "tr",
+             "mktemp", "rm", "cat", "head", "printf")
+  for (tool in tools) {
+    location <- Sys.which(tool)
+    if (nzchar(location)) file.symlink(location, file.path(bin, tool))
+  }
+  bin
+}
+
+try_commit <- function(proj, files, with_rg = TRUE) {
+  for (name in names(files)) {
+    dir.create(dirname(file.path(proj, name)), recursive = TRUE, showWarnings = FALSE)
+    writeLines(files[[name]], file.path(proj, name))
+  }
+  processx::run("git", c("-C", proj, "add", "-f", names(files)))
+  env <- if (with_rg) NULL else c(PATH = path_without_rg())
+  git <- Sys.which("git")
+  processx::run(git, c("-C", proj, "commit", "-q", "-m", "test"),
+                env = if (is.null(env)) NULL else c("current", env),
+                error_on_status = FALSE)
+}
+
+fake_id <- "PMBB0000000012345"
+svg_uri <- function(text) {
+  svg_file <- withr::local_tempfile(fileext = ".svg")
+  writeLines(sprintf('<svg xmlns="http://www.w3.org/2000/svg"><text>%s</text></svg>', text), svg_file)
+  encoded <- processx::run("sh", c("-c", paste("base64 <", shQuote(svg_file))))$stdout
+  paste0("data:image/svg+xml;base64,", gsub("\n", "", encoded))
+}
+
+hook_cases <- function() {
+  png_noise <- paste(sample(c(LETTERS, letters, 0:9, "+", "/"), 2e5, replace = TRUE), collapse = "")
+  genomics <- paste(sprintf("<tr><td>chr1:%d</td><td>rs%d</td></tr>",
+                            sample.int(2.4e8, 2000), sample.int(9e8, 2000)), collapse = "")
+  list(
+    body_text   = list(files = list("report.html" = sprintf("<p>Participant %s</p>", fake_id)), blocked = TRUE),
+    widget_json = list(files = list("report.html" = sprintf('<script type="application/json">{"x":{"data":[["%s"]]}}</script>', fake_id)), blocked = TRUE),
+    svg_only    = list(files = list("report.html" = sprintf('<img src="%s">', svg_uri(fake_id))), blocked = TRUE, svg = TRUE),
+    lowercase   = list(files = list("notes.md" = "see pmbb-0000000012345"), blocked = TRUE),
+    embedded    = list(files = list("notes.md" = sprintf("sample_%s_A", fake_id)), blocked = TRUE),
+    truncated   = list(files = list("notes.md" = "PMBB00001234"), blocked = TRUE),
+    short       = list(files = list("notes.md" = "the PMBB12 cohort"), blocked = FALSE),
+    png_genomic = list(files = list("report.html" = paste0('<img src="data:image/png;base64,', png_noise, '">', genomics)), blocked = FALSE),
+    synthetic   = list(files = list("Synthetic/fixture.csv" = c("person_id,age", paste0(fake_id, ",50"))), blocked = TRUE)
+  )
+}
+
+test_that("pre-commit hook blocks PMBB identifiers and masks its output", {
+  skip_on_cran()
+  skip_on_os("windows")
+  skip_if(Sys.which("git") == "", "git is not installed")
+  modes <- if (nzchar(Sys.which("rg"))) c(TRUE, FALSE) else FALSE
+  for (with_rg in modes) {
+    for (case_name in names(hook_cases())) {
+      case <- hook_cases()[[case_name]]
+      proj <- hook_project()
+      result <- try_commit(proj, case$files, with_rg = with_rg)
+      label <- paste(case_name, if (with_rg) "(rg)" else "(grep)")
+      expect_identical(result$status != 0, case$blocked, label = label)
+      expect_false(grepl("0000000012345", result$stderr, fixed = TRUE), label = label)
+      if (isTRUE(case$svg)) {
+        expect_true(grepl("embedded SVG", result$stderr, fixed = TRUE), label = label)
+      }
+    }
+  }
+})
+
+test_that("pre-commit hook allows a clean 10 MB HTML report", {
+  skip_on_cran()
+  skip_if(Sys.which("git") == "", "git is not installed")
+  proj <- hook_project()
+  rows <- rep("<tr><td>chr2:123456789</td><td>0.05</td></tr>", 230000)
+  result <- try_commit(proj, list("report.html" = rows))
+  expect_true(file.size(file.path(proj, "report.html")) > 10e6)
+  expect_equal(result$status, 0)
+})
+
+# Helpers for the run script tests: a fake curl records its arguments, so the
+# notification code runs without network access.
+run_pipeline <- function(targets_script, notify = "slack", curl_status = 0) {
+  proj <- withr::local_tempdir(.local_envir = parent.frame())
+  suppressMessages(populate_targets_proj("test", path = proj, overwrite = TRUE, git_safeguards = FALSE))
+  writeLines(targets_script, file.path(proj, "_targets.R"))
+  bin <- withr::local_tempdir(.local_envir = parent.frame())
+  log <- file.path(bin, "curl.log")
+  writeLines(c("#!/bin/sh", sprintf('printf "%%s\\n" "$@" >> "%s"', log), sprintf("exit %d", curl_status)),
+             file.path(bin, "curl"))
+  Sys.chmod(file.path(bin, "curl"), "755")
+  env <- c("current",
+           PATH = paste(bin, Sys.getenv("PATH"), sep = .Platform$path.sep),
+           LEVINMISC_NOTIFY = notify,
+           LEVINMISC_SLACK_WEBHOOK = "https://hooks.example.invalid/services/T0/B0/X0")
+  result <- processx::run(file.path(R.home("bin"), "Rscript"), ".run-pipeline.R", wd = proj,
+                          env = env, error_on_status = FALSE)
+  result$curl_log <- if (file.exists(log)) paste(readLines(log), collapse = "\n") else NULL
+  result
+}
+
+passing_pipeline <- c("library(targets)", "list(tar_target(a, 1), tar_target(b, a + 1))")
+failing_pipeline <- c("library(targets)",
+                      "list(tar_target(a, 1), tar_target(b, stop('bad value PMBB0000000099999')))")
+
+test_that(".run-pipeline.R reports a successful run", {
+  skip_on_cran()
+  skip_if_not_installed("targets")
+  result <- run_pipeline(passing_pipeline)
+  expect_equal(result$status, 0)
+  expect_true(grepl("completed", result$curl_log, fixed = TRUE))
+  expect_true(grepl("Completed: 2", result$curl_log, fixed = TRUE))
+})
+
+test_that(".run-pipeline.R reports a failure without error text or identifiers", {
+  skip_on_cran()
+  skip_if_not_installed("targets")
+  result <- run_pipeline(failing_pipeline)
+  expect_equal(result$status, 1)
+  expect_true(grepl("FAILED", result$curl_log, fixed = TRUE))
+  expect_true(grepl("Errored targets: b", result$curl_log, fixed = TRUE))
+  expect_false(grepl("bad value", result$curl_log, fixed = TRUE))
+  expect_false(grepl("0000000099999", result$curl_log, fixed = TRUE))
+})
+
+test_that(".run-pipeline.R keeps the pipeline status when the notification fails", {
+  skip_on_cran()
+  skip_if_not_installed("targets")
+  result <- run_pipeline(passing_pipeline, curl_status = 7)
+  expect_equal(result$status, 0)
+  expect_true(grepl("Notification failed", result$stderr, fixed = TRUE))
+})
+
+test_that(".run-pipeline.R sends nothing when notifications are off", {
+  skip_on_cran()
+  skip_if_not_installed("targets")
+  result <- run_pipeline(passing_pipeline, notify = "")
+  expect_equal(result$status, 0)
+  expect_null(result$curl_log)
+})
 # 
 # # Functions to allow creating files in new temporary directory
 # dir_empty <- function(x) {

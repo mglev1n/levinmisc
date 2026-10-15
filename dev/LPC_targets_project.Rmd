@@ -52,21 +52,25 @@ The `targets` package is a tool for developing reproducible research workflows i
 
 1. Run the `levinmisc::populate_targets_proj()` function in the R console - this function is described below in detail, and will initialize your project with helpful files/folders to start building your `targets` pipeline.
 
-1. Keep input data in `Data/` and write pipeline outputs to `Results/`. Both directories, the `targets` data store, and logs are excluded from git, and a pre-commit hook blocks commits that would add data. If the project was not yet a git repository, run `git init` and then `git config core.hooksPath .githooks`; a fresh clone of the project needs the second command once.
+1. Keep input data in `Data/` and write pipeline outputs to `Results/`. Both directories, the `targets` data store, and logs are excluded from git, and a pre-commit hook blocks commits that would add data or participant identifiers. If the project was not yet a git repository, run `git init` and then `git config core.hooksPath .githooks`; a fresh clone of the project needs the second command once.
+
+1. Open the project directory itself in code-server (File > Open Folder) and trust the workspace when prompted, so the editor tasks in `.vscode/tasks.json` load.
 
 1. Modify the `Pipelines.qmd` file to specify your analyses. The `targets` documentation can be useful for specifics.
 
-1. Knit/Render `Pipelines.qmd` to convert your markdown document into a series of R scripts that will actually run your analyses. In VS Code or code-server, the `Pull, render, and submit pipeline` task in `.vscode/tasks.json` pulls the latest code from GitHub, renders the pipeline file, and submits it in one step.
+1. Knit/Render `Pipelines.qmd` to convert your markdown document into a series of R scripts that will actually run your analyses.
 
-1. Run `submit-targets.sh` from a terminal window to submit your `targets` pipeline to the LPC for execution. Details of possible command line arguments to this script are described below.
+1. Run the pipeline. The `Pull, render, and run pipeline` editor task pulls the latest code from GitHub, renders the pipeline file, and runs `targets::tar_make()` in its own terminal, leaving your R terminal free. When the run finishes or fails, it can send a Slack or ntfy notification (see below). The run happens inside the code-server job, so request a session long enough for the whole pipeline.
 
 1. Modify `Results.qmd` to present the results of your analyses. Rendering this file allows you to mix text describing your analyses/methods and include citations alongside the actual results of your pipeline. The `targets::tar_read()` function should be used heavily to load pre-computed results from your pipeline.
 
 ## populate_targets_proj()
 
-The `populate_targets_proj` function can be run within a new project folder to initialize the project with the files/folders necessary for deploying a `targets` pipeline on the LPC at Penn. This includes creating LSF templates, a `Pipelines.qmd` file containing boilerplate for running analyses, and a `Results.qmd` file which can be used to visualize the results.
+The `populate_targets_proj` function can be run within a new project folder to initialize the project with the files/folders necessary for deploying a `targets` pipeline on the LPC at Penn. This includes creating a `Pipelines.qmd` file containing boilerplate for running analyses, a `Results.qmd` file which can be used to visualize the results, editor tasks, a pipeline run script with notifications, and git safeguards against committing data or participant identifiers.
 
 The `runtime` argument chooses the R installation the pipeline runs against. `"native"` (the default) loads the LPC's R module (`module load R/4.5`) and leaves the package library to `renv`. `"container"` instead runs the main `targets` process and every LSF worker inside the LPC's RStudio Singularity image, reading packages from a library built against that image's R, which is the right choice only for a project whose library was built against that image. Mixing the two fails at run time: a worker that loads a library built for a different R version reports errors such as `unused arguments (controller = ...)`, because the worker and the controller end up running different `crew` versions.
+
+The `"container"` runtime is still supported but will lose support in a future release, because the lab no longer runs R through Singularity. New projects should use the default `"native"` runtime. The editor tasks always use the native R module, whichever runtime is chosen.
 
 ```{r function-populate_targets_proj}
 #' Create a minimal targets template in the current project
@@ -81,9 +85,13 @@ The `runtime` argument chooses the R installation the pipeline runs against. `"n
 #'
 #' The `runtime` argument selects the R installation the pipeline runs against, and is passed through to [use_crew_lsf()]. `"native"`, the default, loads the LPC's R module and leaves the package library to `renv`; `"container"` instead runs the main `targets` process and every worker inside the LPC's RStudio Singularity image.
 #'
-#' The function also creates a data directory and a results directory, so that every location holding data or data-derived output is known when the project starts. With `git_safeguards = TRUE` (the default), it keeps those locations out of git in two ways. It appends entries to `.gitignore` for the data and results directories, the log directory, the `targets` data store (`_targets/`), the scripts generated from the Target Markdown file, rendered reports, and common data file types. It also writes a pre-commit hook to `.githooks/pre-commit` that refuses any commit staging a file from those directories, a file with a data file extension, or a file larger than 5 MB, which catches files forced past `.gitignore` with `git add -f`. When `path` is the root of a git repository, the function points `core.hooksPath` at `.githooks` so the hook runs; otherwise it prints the command to run after `git init`. Because the hook lives in the repository, each new clone needs only that one command.
+#' The `"container"` runtime still works but will lose support in a future release; new projects should use `"native"`.
 #'
-#' Finally, the function writes `.vscode/tasks.json`, which defines editor tasks for pulling from GitHub, rendering the pipeline file, and submitting the pipeline, plus one task that runs all three in sequence. These tasks work in VS Code and code-server; an existing `tasks.json` is left unchanged.
+#' The function also creates a data directory and a results directory, so that every location holding data or data-derived output is known when the project starts. With `git_safeguards = TRUE` (the default), it keeps those locations out of git in two ways. It appends entries to `.gitignore` for the data and results directories, the log directory, the `targets` data store (`_targets/`), the scripts generated from the Target Markdown file, and common data file types. Rendered HTML reports are not ignored, so they can be committed once checked. It also writes a pre-commit hook to `.githooks/pre-commit` that refuses any commit staging a file from those directories, a file with a data file extension, a file larger than 5 MB (25 MB for HTML), or text shaped like a PMBB participant ID, including IDs inside SVG figures embedded in a self-contained report. The hook prints only masked identifiers. When `path` is the root of a git repository, the function points `core.hooksPath` at `.githooks` so the hook runs; otherwise it prints the command to run after `git init`. Because the hook lives in the repository, each new clone needs only that one command.
+#'
+#' The function writes `.vscode/tasks.json`, which defines editor tasks for pulling from GitHub, rendering the pipeline file, and running the pipeline, plus one task that runs all three in sequence. The run task calls `.run-pipeline.R`, which runs [targets::tar_make()] and sends an optional Slack or ntfy notification when the pipeline completes or fails. The notification holds only the status, elapsed time, target counts, and errored target names, never error text, and is configured per user in `~/.Renviron` (see the vignette). The tasks work in VS Code and code-server when the project directory is opened as the workspace and trusted; an existing `tasks.json` is left unchanged. A run started from a task stops if the code-server job ends.
+#'
+#' The LSF submission scripts `submit-targets.sh` and `.make-targets.sh` are written only when `lsf_scripts = TRUE`, for users who start pipelines from a submission host rather than from code-server on a compute node.
 #'
 #' @param title (character) base name for project files (eg. "{title}-Pipeline.qmd" and "{title}-Results.qmd")
 #' @param log_folder (character) directory for LSF logs
@@ -92,7 +100,8 @@ The `runtime` argument chooses the R installation the pipeline runs against. `"n
 #' @param overwrite (logical) replace existing template files without asking first
 #' @param data_dir (character) directory for input data, created inside `path` and excluded from git
 #' @param results_dir (character) directory for pipeline results, created inside `path` and excluded from git
-#' @param git_safeguards (logical) add `.gitignore` entries and a pre-commit hook that keep data and results out of git
+#' @param git_safeguards (logical) add `.gitignore` entries and a pre-commit hook that keep data, results, and participant identifiers out of git
+#' @param lsf_scripts (logical) also write `submit-targets.sh` and `.make-targets.sh` for submitting the main `targets` process as an LSF job. The log folder is created either way, since `crew` LSF workers write their logs there.
 #'
 #' @export
 #' @concept targets
@@ -104,7 +113,8 @@ populate_targets_proj <- function(title,
                                   overwrite = FALSE,
                                   data_dir = "Data",
                                   results_dir = "Results",
-                                  git_safeguards = TRUE) {
+                                  git_safeguards = TRUE,
+                                  lsf_scripts = FALSE) {
   runtime <- rlang::arg_match(runtime)
 
   # usethis::use_template() writes relative to the active usethis project, not
@@ -151,22 +161,25 @@ populate_targets_proj <- function(title,
   cli::cli_alert_success("Data folder created at {.file {fs::path(path, data_dir)}}")
   cli::cli_alert_success("Results folder created at {.file {fs::path(path, results_dir)}}")
 
-  # Copy batch script for job submission. The main {targets} process has to run
-  # under the same R as the workers, so the runtime chooses the template.
-  make_targets_template <- switch(runtime,
-    container = ".make-targets.sh",
-    native = ".make-targets-native.sh"
-  )
-  usethis::use_template(make_targets_template,
-                        save_as = ".make-targets.sh",
-                        package = "levinmisc")
-  cli::cli_alert_success("Submission template created at {.file .make-targets.sh} using the {.val {runtime}} R runtime")
+  if (lsf_scripts) {
+    # Copy batch script for job submission. The main {targets} process has to
+    # run under the same R as the workers, so the runtime chooses the template.
+    make_targets_template <- switch(runtime,
+      container = ".make-targets.sh",
+      native = ".make-targets-native.sh"
+    )
+    usethis::use_template(make_targets_template,
+                          save_as = ".make-targets.sh",
+                          data = list(r_module = lpc_r_module),
+                          package = "levinmisc")
+    cli::cli_alert_success("Submission template created at {.file .make-targets.sh} using the {.val {runtime}} R runtime")
 
-  # Copy batch script to submit targets job
-  usethis::use_template("submit-targets.sh",
-                        save_as = "submit-targets.sh",
-                        package = "levinmisc")
-  cli::cli_alert_success("Targets submission script created at {.file submit-targets.sh}")
+    # Copy batch script to submit targets job
+    usethis::use_template("submit-targets.sh",
+                          save_as = "submit-targets.sh",
+                          package = "levinmisc")
+    cli::cli_alert_success("Targets submission script created at {.file submit-targets.sh}")
+  }
 
   # Copy targets pipeline template
   usethis::use_template("Pipeline.qmd",
@@ -181,7 +194,13 @@ populate_targets_proj <- function(title,
                         package = "levinmisc")
   cli::cli_alert_success("Targets Results template created at {.file {paste0(title, '-Results.qmd')}}")
 
-  # Editor tasks for pulling, rendering, and submitting. A project may already
+  # Script the run task calls: runs tar_make() and sends the notification
+  usethis::use_template("run-pipeline.R",
+                        save_as = ".run-pipeline.R",
+                        package = "levinmisc")
+  cli::cli_alert_success("Pipeline run script created at {.file .run-pipeline.R}")
+
+  # Editor tasks for pulling, rendering, and running. A project may already
   # have its own tasks.json, which this function should not replace.
   tasks_file <- fs::path(path, ".vscode", "tasks.json")
   if (fs::file_exists(tasks_file)) {
@@ -190,9 +209,13 @@ populate_targets_proj <- function(title,
     fs::dir_create(path, ".vscode")
     usethis::use_template("tasks.json",
                           save_as = ".vscode/tasks.json",
-                          data = list(title = title),
+                          data = list(title = title, r_module = lpc_r_module),
                           package = "levinmisc")
     cli::cli_alert_success("Editor tasks created at {.file .vscode/tasks.json}")
+    cli::cli_alert_info("To use the editor tasks: open {.file {path}} itself as the code-server workspace, trust it when prompted, and optionally add the keybinding shown at the top of {.file .vscode/tasks.json} to your user {.file keybindings.json}.")
+    if (runtime == "container") {
+      cli::cli_alert_info("The editor tasks use the native R module ({.val {lpc_r_module}}), not the container.")
+    }
   }
 
   if (git_safeguards) {
@@ -204,6 +227,10 @@ populate_targets_proj <- function(title,
 
   invisible(path)
 }
+
+#' R module loaded by the native runtime, the editor tasks, and LSF workers
+#' @noRd
+lpc_r_module <- "R/4.5"
 
 #' Add .gitignore entries and a pre-commit hook that keep data out of git
 #'
@@ -221,8 +248,7 @@ use_targets_git_safeguards <- function(path, data_dir, results_dir, log_folder) 
     "# Scripts generated by rendering the Target Markdown pipeline file",
     "/_targets.R",
     "/_targets_r/",
-    "# Rendered reports can embed results",
-    "*.html",
+    "# Supporting folders of non-self-contained reports",
     "*_files/",
     "/.quarto/",
     "# Common data and serialized-object file types",
@@ -293,26 +319,60 @@ populate_targets_proj("test", runtime = "container")
 #' }
 ```
 
-The `populate_targets_proj()` function creates several files/folders within the project directory. `.make-targets.sh` and is a hidden helper file which is not designed for user interaction, but necessary for submission of jobs to the LSF scheduler; its contents follow the `runtime` argument, so that the main `targets` process runs under the same R as the workers. The other files are designed to be edited/used by the user:
+The `populate_targets_proj()` function creates several files/folders within the project directory:
 
   - `Pipeline.qmd` - Quarto markdown file which can be used to create a Target Markdown document that specifies a `targets` pipeline for your analyses. See: https://books.ropensci.org/targets/literate-programming.html#target-markdown for details. Remember to knit/render this document in order to generate the pipeline.
   
-  - `Results.qmd` - Quarto markdown file which can be used to display the results generated by the `targets` pipeline specified in `Pipeline.qmd`
+  - `Results.qmd` - Quarto markdown file which can be used to display the results generated by the `targets` pipeline specified in `Pipeline.qmd`. It renders a self-contained HTML report, which can be committed once the pre-commit hook has checked it.
   
-  - `build_logs/` - Directory where jobs logs are stored
+  - `build_logs/` - Directory where `crew` LSF worker logs are stored
 
   - `Data/` and `Results/` - Directories for input data and pipeline outputs; their names are set by the `data_dir` and `results_dir` arguments. Both are excluded from git.
 
-  - `.gitignore` - Entries added for the data, results, and log directories, the `targets` data store (`_targets/`), scripts generated by rendering the pipeline file, rendered reports, and common data file types. Existing entries are kept.
+  - `.run-pipeline.R` - Script the editor's run task calls. It runs `targets::tar_make()`, prints a summary, sends an optional notification, and exits with status 1 if the pipeline failed.
 
-  - `.githooks/pre-commit` - Git hook that blocks any commit staging a file from a protected directory, a file with a data file extension, or a file larger than 5 MB, including files forced past `.gitignore` with `git add -f`. Paths under `tests/` or `Synthetic/` are allowed, so synthetic test data can be committed. Set `git_safeguards = FALSE` to skip both the `.gitignore` entries and the hook.
+  - `.vscode/tasks.json` - Editor tasks to pull from GitHub, render the pipeline file, run the pipeline, or do all three in sequence (`Pull, render, and run pipeline`), plus a task to render the results report. Code-server loads the file only when the project directory itself is opened as the workspace and trusted. The comment at the top of the file shows the keybinding to add to your user `keybindings.json` to run the combined task with one key, and a second keybinding that sends `targets::tar_make()` to the active R terminal instead.
 
-  - `.vscode/tasks.json` - Editor tasks to pull from GitHub, render the pipeline file, submit the pipeline, or run all three in sequence. To run the combined task with a keyboard shortcut, add a keybinding for `workbench.action.tasks.runTask` with the argument `"Pull, render, and submit pipeline"` to your user `keybindings.json`.
-  
-  - `submit-targets.sh`- This is a bash script which can be used to run your `targets` pipeline, once `Pipeline.qmd` has been knit/rendered. This script can be run directly from the submission host.
-  
-## submit-targets.sh
-This script is used to actually submit your pipeline to the LPC once `Pipeline.qmd` has been knit/rendered. This should be run from a terminal session from the root directory of your project. The only function of this script is to submit your pipeline to the LPC for analysis, and can be run directly from a submission host (eg. `scisub7`). The script can accept command line arguments, which can be useful for parallelizing your pipeline over multiple workers/CPUs:
+  - `.gitignore` - Entries added for the data, results, and log directories, the `targets` data store (`_targets/`), scripts generated by rendering the pipeline file, and common data file types. Rendered HTML reports are not ignored. Existing entries are kept.
+
+  - `.githooks/pre-commit` - Git hook that blocks any commit staging a file from a protected directory, a file with a data file extension, a file larger than 5 MB (25 MB for HTML reports), or text shaped like a PMBB participant ID. Set `git_safeguards = FALSE` to skip both the `.gitignore` entries and the hook. Details are below.
+
+### Participant identifier check
+
+The pre-commit hook searches every staged text file for strings shaped like a PMBB ID: `PMBB` followed by digits, in upper or lower case, with an optional space, underscore, or dash. The pattern also matches truncated IDs and IDs inside longer strings, such as `sample_PMBB…_A`. It decodes SVG figures embedded in self-contained HTML reports and searches their text too; text drawn inside PNG figures cannot be checked. The hook uses ripgrep (`rg`) when it is installed and `grep` otherwise, with identical results, and needs no configuration or identifier list.
+
+When it finds an identifier, the hook blocks the commit and lists each file and line with the value masked (for example `PM************`), so its output is safe to share. Fix the source of the report, for example by not printing an ID column, re-render, and stage the file again. To add other identifier shapes, extend `ID_PATTERN` in `.githooks/pre-commit` with regular-expression alternation (`'pattern1|pattern2'`). After checking a file yourself, `git commit --no-verify` bypasses the hook once.
+
+### Pipeline notifications
+
+`.run-pipeline.R` can notify you when a pipeline completes or fails. The message contains the status, elapsed time, target counts, and the names of errored targets. It never contains error messages or target values, because R errors can echo data values and the message leaves the cluster; the full error is printed in the task terminal. Notifications are sent with the `curl` command-line tool, so no extra R packages are needed in the project library. They are configured once per user in `~/.Renviron`, never in the project.
+
+**Slack.** Create an incoming webhook for the channel that should receive messages:
+
+1. Go to https://api.slack.com/apps, choose **Create New App**, then **From scratch**, and pick the lab workspace.
+1. Open **Incoming Webhooks** and switch on the activation toggle.
+1. Choose **Add New Webhook to Workspace**, pick the channel, and select **Authorize**. If the workspace restricts apps, this becomes a request that a workspace admin must approve.
+1. Copy the webhook URL and add these lines to `~/.Renviron`, then restart R:
+
+```
+LEVINMISC_NOTIFY=slack
+LEVINMISC_SLACK_WEBHOOK=https://hooks.slack.com/services/...
+```
+
+Treat the webhook URL like a password: anyone who has it can post to the channel. The Slack desktop and phone apps show each message as a notification.
+
+**ntfy.** As an alternative, ntfy (https://ntfy.sh) delivers push notifications to its phone app, Mac app, or website. Subscribe to a hard-to-guess topic, then add:
+
+```
+LEVINMISC_NOTIFY=ntfy
+LEVINMISC_NTFY_URL=https://ntfy.sh/your-hard-to-guess-topic
+```
+
+Set `LEVINMISC_NOTIFY_START=true` to also be notified when a run starts. With `LEVINMISC_NOTIFY` unset, the script prints its summary in the terminal only.
+
+## Optional LSF submission scripts
+
+Pipelines are normally run from code-server on a compute node with the editor task above. To submit the main `targets` process as its own LSF job instead, for example from a submission host such as `scisub7`, call `populate_targets_proj(lsf_scripts = TRUE)`. This also writes `submit-targets.sh` and the hidden helper `.make-targets.sh`, whose contents follow the `runtime` argument so that the main `targets` process runs under the same R as the workers. Run `submit-targets.sh` from the root directory of your project once `Pipeline.qmd` has been knit/rendered. The script accepts command line arguments:
   
 ```
 Usage: ./submit-targets.sh [-n NUM_WORKERS] [-j JOB_NAME] [-o OUTPUT_LOG] [-e ERROR_LOG] [-q QUEUE] [-m MEMORY] [-s SLACK] [-h HELP]
@@ -330,15 +390,7 @@ Options:
   -h HELP        Display this help message and exit
 ```
 
-### Slack Notifications
-
-Slack can be used to automatically notify the user of pipeline start/finish using the `-s true` command line flag:
-
-```
-./submit-targets.sh -s true
-```
-
-Slack notifications are provided using the `slackr` package. The package must be configured separately before Slack notifications are enabled. See https://mrkaye97.github.io/slackr/index.html for more information about `slackr` setup and generation of an Slack API token.
+The `-s true` flag of `submit-targets.sh` sends start and finish messages through the `slackr` package, which must be installed and configured separately (https://mrkaye97.github.io/slackr/index.html). It does not report failures; the webhook notifications from `.run-pipeline.R` described above do.
 
 
 <!--
@@ -370,6 +422,184 @@ test_that("populate_targets_proj creates data folders and git safeguards", {
   expect_true(file.access(hook, mode = 1) == 0)
   hooks_path <- processx::run("git", c("-C", proj, "config", "--get", "core.hooksPath"))$stdout
   expect_equal(trimws(hooks_path), ".githooks")
+})
+
+test_that("populate_targets_proj writes LSF scripts only on request", {
+  skip_on_cran()
+  proj <- withr::local_tempdir()
+  suppressMessages(populate_targets_proj("test", path = proj, overwrite = TRUE))
+  expect_false(file.exists(file.path(proj, "submit-targets.sh")))
+  expect_false(file.exists(file.path(proj, ".make-targets.sh")))
+  expect_true(dir.exists(file.path(proj, "build_logs")))
+
+  proj2 <- withr::local_tempdir()
+  suppressMessages(populate_targets_proj("test", path = proj2, overwrite = TRUE, lsf_scripts = TRUE))
+  expect_true(file.exists(file.path(proj2, "submit-targets.sh")))
+  make_targets <- readLines(file.path(proj2, ".make-targets.sh"))
+  expect_true(any(make_targets == paste("module load", lpc_r_module)))
+})
+
+test_that("populate_targets_proj writes native-R editor tasks and the run script", {
+  skip_on_cran()
+  proj <- withr::local_tempdir()
+  suppressMessages(populate_targets_proj("test", path = proj, overwrite = TRUE, runtime = "container"))
+  tasks <- paste(readLines(file.path(proj, ".vscode", "tasks.json")), collapse = "\n")
+  expect_true(grepl(paste0("module load ", lpc_r_module, " && Rscript .run-pipeline.R"), tasks, fixed = TRUE))
+  expect_true(grepl("quarto render \\\"test-Pipeline.qmd\\\"", tasks, fixed = TRUE))
+  expect_false(grepl("singularity", tasks, fixed = TRUE))
+  expect_true(file.exists(file.path(proj, ".run-pipeline.R")))
+  expect_false("*.html" %in% readLines(file.path(proj, ".gitignore")))
+})
+
+# Helpers for the pre-commit hook tests. `with_rg = FALSE` runs git with a PATH
+# that lacks ripgrep, so the grep code path is exercised.
+hook_project <- function() {
+  proj <- withr::local_tempdir(.local_envir = parent.frame())
+  processx::run("git", c("-C", proj, "init", "-q"))
+  processx::run("git", c("-C", proj, "config", "user.email", "test@example.com"))
+  processx::run("git", c("-C", proj, "config", "user.name", "Test"))
+  suppressMessages(populate_targets_proj("test", path = proj, overwrite = TRUE))
+  proj
+}
+
+path_without_rg <- function() {
+  bin <- withr::local_tempdir(.local_envir = parent.frame())
+  tools <- c("bash", "sh", "env", "git", "grep", "sed", "base64", "cut", "tr",
+             "mktemp", "rm", "cat", "head", "printf")
+  for (tool in tools) {
+    location <- Sys.which(tool)
+    if (nzchar(location)) file.symlink(location, file.path(bin, tool))
+  }
+  bin
+}
+
+try_commit <- function(proj, files, with_rg = TRUE) {
+  for (name in names(files)) {
+    dir.create(dirname(file.path(proj, name)), recursive = TRUE, showWarnings = FALSE)
+    writeLines(files[[name]], file.path(proj, name))
+  }
+  processx::run("git", c("-C", proj, "add", "-f", names(files)))
+  env <- if (with_rg) NULL else c(PATH = path_without_rg())
+  git <- Sys.which("git")
+  processx::run(git, c("-C", proj, "commit", "-q", "-m", "test"),
+                env = if (is.null(env)) NULL else c("current", env),
+                error_on_status = FALSE)
+}
+
+fake_id <- "PMBB0000000012345"
+svg_uri <- function(text) {
+  svg_file <- withr::local_tempfile(fileext = ".svg")
+  writeLines(sprintf('<svg xmlns="http://www.w3.org/2000/svg"><text>%s</text></svg>', text), svg_file)
+  encoded <- processx::run("sh", c("-c", paste("base64 <", shQuote(svg_file))))$stdout
+  paste0("data:image/svg+xml;base64,", gsub("\n", "", encoded))
+}
+
+hook_cases <- function() {
+  png_noise <- paste(sample(c(LETTERS, letters, 0:9, "+", "/"), 2e5, replace = TRUE), collapse = "")
+  genomics <- paste(sprintf("<tr><td>chr1:%d</td><td>rs%d</td></tr>",
+                            sample.int(2.4e8, 2000), sample.int(9e8, 2000)), collapse = "")
+  list(
+    body_text   = list(files = list("report.html" = sprintf("<p>Participant %s</p>", fake_id)), blocked = TRUE),
+    widget_json = list(files = list("report.html" = sprintf('<script type="application/json">{"x":{"data":[["%s"]]}}</script>', fake_id)), blocked = TRUE),
+    svg_only    = list(files = list("report.html" = sprintf('<img src="%s">', svg_uri(fake_id))), blocked = TRUE, svg = TRUE),
+    lowercase   = list(files = list("notes.md" = "see pmbb-0000000012345"), blocked = TRUE),
+    embedded    = list(files = list("notes.md" = sprintf("sample_%s_A", fake_id)), blocked = TRUE),
+    truncated   = list(files = list("notes.md" = "PMBB00001234"), blocked = TRUE),
+    short       = list(files = list("notes.md" = "the PMBB12 cohort"), blocked = FALSE),
+    png_genomic = list(files = list("report.html" = paste0('<img src="data:image/png;base64,', png_noise, '">', genomics)), blocked = FALSE),
+    synthetic   = list(files = list("Synthetic/fixture.csv" = c("person_id,age", paste0(fake_id, ",50"))), blocked = TRUE)
+  )
+}
+
+test_that("pre-commit hook blocks PMBB identifiers and masks its output", {
+  skip_on_cran()
+  skip_on_os("windows")
+  skip_if(Sys.which("git") == "", "git is not installed")
+  modes <- if (nzchar(Sys.which("rg"))) c(TRUE, FALSE) else FALSE
+  for (with_rg in modes) {
+    for (case_name in names(hook_cases())) {
+      case <- hook_cases()[[case_name]]
+      proj <- hook_project()
+      result <- try_commit(proj, case$files, with_rg = with_rg)
+      label <- paste(case_name, if (with_rg) "(rg)" else "(grep)")
+      expect_identical(result$status != 0, case$blocked, label = label)
+      expect_false(grepl("0000000012345", result$stderr, fixed = TRUE), label = label)
+      if (isTRUE(case$svg)) {
+        expect_true(grepl("embedded SVG", result$stderr, fixed = TRUE), label = label)
+      }
+    }
+  }
+})
+
+test_that("pre-commit hook allows a clean 10 MB HTML report", {
+  skip_on_cran()
+  skip_if(Sys.which("git") == "", "git is not installed")
+  proj <- hook_project()
+  rows <- rep("<tr><td>chr2:123456789</td><td>0.05</td></tr>", 230000)
+  result <- try_commit(proj, list("report.html" = rows))
+  expect_true(file.size(file.path(proj, "report.html")) > 10e6)
+  expect_equal(result$status, 0)
+})
+
+# Helpers for the run script tests: a fake curl records its arguments, so the
+# notification code runs without network access.
+run_pipeline <- function(targets_script, notify = "slack", curl_status = 0) {
+  proj <- withr::local_tempdir(.local_envir = parent.frame())
+  suppressMessages(populate_targets_proj("test", path = proj, overwrite = TRUE, git_safeguards = FALSE))
+  writeLines(targets_script, file.path(proj, "_targets.R"))
+  bin <- withr::local_tempdir(.local_envir = parent.frame())
+  log <- file.path(bin, "curl.log")
+  writeLines(c("#!/bin/sh", sprintf('printf "%%s\\n" "$@" >> "%s"', log), sprintf("exit %d", curl_status)),
+             file.path(bin, "curl"))
+  Sys.chmod(file.path(bin, "curl"), "755")
+  env <- c("current",
+           PATH = paste(bin, Sys.getenv("PATH"), sep = .Platform$path.sep),
+           LEVINMISC_NOTIFY = notify,
+           LEVINMISC_SLACK_WEBHOOK = "https://hooks.example.invalid/services/T0/B0/X0")
+  result <- processx::run(file.path(R.home("bin"), "Rscript"), ".run-pipeline.R", wd = proj,
+                          env = env, error_on_status = FALSE)
+  result$curl_log <- if (file.exists(log)) paste(readLines(log), collapse = "\n") else NULL
+  result
+}
+
+passing_pipeline <- c("library(targets)", "list(tar_target(a, 1), tar_target(b, a + 1))")
+failing_pipeline <- c("library(targets)",
+                      "list(tar_target(a, 1), tar_target(b, stop('bad value PMBB0000000099999')))")
+
+test_that(".run-pipeline.R reports a successful run", {
+  skip_on_cran()
+  skip_if_not_installed("targets")
+  result <- run_pipeline(passing_pipeline)
+  expect_equal(result$status, 0)
+  expect_true(grepl("completed", result$curl_log, fixed = TRUE))
+  expect_true(grepl("Completed: 2", result$curl_log, fixed = TRUE))
+})
+
+test_that(".run-pipeline.R reports a failure without error text or identifiers", {
+  skip_on_cran()
+  skip_if_not_installed("targets")
+  result <- run_pipeline(failing_pipeline)
+  expect_equal(result$status, 1)
+  expect_true(grepl("FAILED", result$curl_log, fixed = TRUE))
+  expect_true(grepl("Errored targets: b", result$curl_log, fixed = TRUE))
+  expect_false(grepl("bad value", result$curl_log, fixed = TRUE))
+  expect_false(grepl("0000000099999", result$curl_log, fixed = TRUE))
+})
+
+test_that(".run-pipeline.R keeps the pipeline status when the notification fails", {
+  skip_on_cran()
+  skip_if_not_installed("targets")
+  result <- run_pipeline(passing_pipeline, curl_status = 7)
+  expect_equal(result$status, 0)
+  expect_true(grepl("Notification failed", result$stderr, fixed = TRUE))
+})
+
+test_that(".run-pipeline.R sends nothing when notifications are off", {
+  skip_on_cran()
+  skip_if_not_installed("targets")
+  result <- run_pipeline(passing_pipeline, notify = "")
+  expect_equal(result$status, 0)
+  expect_null(result$curl_log)
 })
 # 
 # # Functions to allow creating files in new temporary directory
@@ -460,7 +690,7 @@ use_crew_lsf <- function(runtime = c("native", "container"), path = ".") {
   container_image <- "/project/voltron/rstudio/containers/bioconductor-tidyverse_3.17.sif"
   container_library <- "$HOME/R/rocker-rstudio/bioconductor-tidyverse_3.17"
   container_bind <- "/project/:/project/, /appl/:/appl/, /lsf/:/lsf/, /scratch/:/scratch, /static:/static"
-  r_module <- "R/4.5"
+  r_module <- lpc_r_module
 
   # Shell lines that open each worker script, rendered as the elements of a
   # `script_lines = c(...)` call. crew appends its own `Rscript -e '...'` after

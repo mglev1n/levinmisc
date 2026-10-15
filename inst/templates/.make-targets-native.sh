@@ -41,7 +41,7 @@ fi
 # but crew takes its worker counts from the controllers defined in the pipeline,
 # so it is not used here.
 
-module load R/4.5
+module load {{{r_module}}}
 
 export TMPDIR=/scratch
 export R_WORK_DIR=$(pwd)

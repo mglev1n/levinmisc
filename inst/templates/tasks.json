@@ -1,13 +1,34 @@
 {
   // Tasks created by levinmisc::populate_targets_proj().
-  // Run them from the Command Palette ("Tasks: Run Task"), or bind
-  // "Pull, render, and submit pipeline" to a key in your user keybindings.json:
+  //
+  // VS Code and code-server load this file only when the project directory
+  // itself is open as the workspace (File > Open Folder), and only after the
+  // workspace is trusted. Run a task from the Command Palette ("Tasks: Run Task").
+  //
+  // To run the whole cycle with one key, add this to your user keybindings.json
+  // (Command Palette: "Preferences: Open Keyboard Shortcuts (JSON)"):
   //   {
   //     "key": "ctrl+shift+r",
   //     "command": "workbench.action.tasks.runTask",
-  //     "args": "Pull, render, and submit pipeline"
+  //     "args": "Pull, render, and run pipeline"
   //   }
+  //
+  // To run tar_make() in the active R terminal (for example arf) instead:
+  //   {
+  //     "key": "ctrl+shift+m",
+  //     "command": "workbench.action.terminal.sendSequence",
+  //     "args": { "text": "targets::tar_make()\u000D" }
+  //   }
+  //
+  // The pipeline runs inside the code-server job, so it stops if that job ends.
+  // Request a session long enough for the whole pipeline.
   "version": "2.0.0",
+  "options": {
+    "shell": {
+      "executable": "/bin/bash",
+      "args": ["-lc"]
+    }
+  },
   "tasks": [
     {
       "label": "Pull from GitHub",
@@ -18,25 +39,29 @@
     {
       "label": "Render pipeline",
       "type": "shell",
-      "command": "quarto render \"{{{title}}}-Pipeline.qmd\"",
+      "command": "module load {{{r_module}}} && quarto render \"{{{title}}}-Pipeline.qmd\"",
       "problemMatcher": []
     },
     {
-      "label": "Submit pipeline",
+      "label": "Run pipeline",
       "type": "shell",
-      "command": "bash submit-targets.sh",
+      "command": "module load {{{r_module}}} && Rscript .run-pipeline.R",
+      "presentation": {
+        "panel": "dedicated",
+        "reveal": "always"
+      },
       "problemMatcher": []
     },
     {
-      "label": "Pull, render, and submit pipeline",
+      "label": "Pull, render, and run pipeline",
       "dependsOrder": "sequence",
-      "dependsOn": ["Pull from GitHub", "Render pipeline", "Submit pipeline"],
+      "dependsOn": ["Pull from GitHub", "Render pipeline", "Run pipeline"],
       "problemMatcher": []
     },
     {
       "label": "Render results",
       "type": "shell",
-      "command": "quarto render \"{{{title}}}-Results.qmd\"",
+      "command": "module load {{{r_module}}} && quarto render \"{{{title}}}-Results.qmd\"",
       "problemMatcher": []
     }
   ]
