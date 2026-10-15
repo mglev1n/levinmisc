@@ -247,9 +247,11 @@ use_targets_git_safeguards <- function(path, data_dir, results_dir, log_folder) 
       error = function(e) list(status = 1L, stdout = "")
     )
   }
-  toplevel <- git("rev-parse", "--show-toplevel")
-  is_repo_root <- toplevel$status == 0 &&
-    fs::path_real(trimws(toplevel$stdout)) == fs::path_real(path)
+  # `--show-prefix` prints the path from the repository root to `path`, which
+  # is empty at the root. Asking git avoids comparing path strings, which
+  # differ on Windows (drive letters, short 8.3 names, slashes).
+  prefix <- git("rev-parse", "--show-prefix")
+  is_repo_root <- prefix$status == 0 && !nzchar(trimws(prefix$stdout))
 
   if (!is_repo_root) {
     cli::cli_alert_info("{.file {path}} is not the root of a git repository. After {.code git init}, activate the hook with {.code {activate_cmd}}")
