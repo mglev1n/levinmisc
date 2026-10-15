@@ -3,6 +3,28 @@
 test_that("populate_targets_proj works", {
   expect_true(inherits(populate_targets_proj, "function"))
 })
+
+test_that("populate_targets_proj creates data folders and git safeguards", {
+  skip_on_cran()
+  skip_if(Sys.which("git") == "", "git is not installed")
+  proj <- withr::local_tempdir()
+  processx::run("git", c("-C", proj, "init", "-q"))
+
+  suppressMessages(populate_targets_proj("test", path = proj, overwrite = TRUE))
+
+  expect_true(dir.exists(file.path(proj, "Data")))
+  expect_true(dir.exists(file.path(proj, "Results")))
+  expect_true(file.exists(file.path(proj, ".vscode", "tasks.json")))
+
+  ignore <- readLines(file.path(proj, ".gitignore"))
+  expect_true(all(c("/Data/", "/Results/", "/_targets/") %in% ignore))
+
+  hook <- file.path(proj, ".githooks", "pre-commit")
+  expect_true(file.exists(hook))
+  expect_true(file.access(hook, mode = 1) == 0)
+  hooks_path <- processx::run("git", c("-C", proj, "config", "--get", "core.hooksPath"))$stdout
+  expect_equal(trimws(hooks_path), ".githooks")
+})
 # 
 # # Functions to allow creating files in new temporary directory
 # dir_empty <- function(x) {

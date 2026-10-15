@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook created by levinmisc::populate_targets_proj().
+#
+# Blocks commits that would put data or pipeline results into git history.
+# .gitignore already keeps these files out of `git add .`, but it does not stop
+# `git add -f`, files whose type it does not list, or a file copied into a
+# tracked directory. This hook checks every staged file and refuses the commit
+# if any of them:
+#   1. sits in a protected directory (data, results, the targets store, logs),
+#   2. has a data or serialized-object file extension, or
+#   3. is larger than MAX_SIZE_KB.
+#
+# Paths matching ALLOW_REGEX are exempt from checks 1 and 2, so small synthetic
+# test fixtures can live in the repository. Edit the settings below as needed.
+#
+# The hook runs because populate_targets_proj() sets `core.hooksPath` to
+# .githooks. A fresh clone needs that setting once:
+#   git config core.hooksPath .githooks
+#
+# To bypass the hook for one commit after checking the files yourself:
+#   git commit --no-verify
+
+# ---- Settings ---------------------------------------------------------------
+
+PROTECTED_REGEX='^({{{data_dir}}}|{{{results_dir}}}|{{{log_folder}}}|_targets)/'
+DATA_EXT_REGEX='\.(rds|rda|rdata|qs|qs2|fst|feather|arrow|parquet|csv|tsv|txt\.gz|csv\.gz|tsv\.gz|gz|bgz|zip|xlsx|xls|sav|dta|sas7bdat|xpt|sqlite|db|duckdb|h5|hdf5|h5ad|vcf|bcf|bgen|bed|bim|fam|pgen|pvar|psam)$'
+ALLOW_REGEX='^(tests/|Synthetic/)'
+MAX_SIZE_KB=5000
+
+# ---- Checks -----------------------------------------------------------------
+
+blocked=()
+
+while IFS= read -r -d '' file; do
+  lower=$(printf '%s' "$file" | tr '[:upper:]' '[:lower:]')
+
+  if [[ ! "$file" =~ $ALLOW_REGEX ]]; then
+    if [[ "$file" =~ $PROTECTED_REGEX ]]; then
+      blocked+=("$file  (protected directory)")
+      continue
+    fi
+    if [[ "$lower" =~ $DATA_EXT_REGEX ]]; then
+      blocked+=("$file  (data file type)")
+      continue
+    fi
+  fi
+
+  size_bytes=$(git cat-file -s ":$file" 2>/dev/null || echo 0)
+  if (( size_bytes > MAX_SIZE_KB * 1024 )); then
+    blocked+=("$file  ($(( size_bytes / 1024 )) KB, limit ${MAX_SIZE_KB} KB)")
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if (( ${#blocked[@]} > 0 )); then
+  echo "pre-commit: commit blocked; these staged files may contain data or results:" >&2
+  for entry in "${blocked[@]}"; do
+    echo "  - $entry" >&2
+  done
+  echo "" >&2
+  echo "Unstage them with: git restore --staged <file>" >&2
+  echo "If a file is safe to commit, add its path to ALLOW_REGEX in .githooks/pre-commit," >&2
+  echo "or commit once with: git commit --no-verify" >&2
+  exit 1
+fi
+
+exit 0

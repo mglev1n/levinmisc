@@ -1,0 +1,43 @@
+{
+  // Tasks created by levinmisc::populate_targets_proj().
+  // Run them from the Command Palette ("Tasks: Run Task"), or bind
+  // "Pull, render, and submit pipeline" to a key in your user keybindings.json:
+  //   {
+  //     "key": "ctrl+shift+r",
+  //     "command": "workbench.action.tasks.runTask",
+  //     "args": "Pull, render, and submit pipeline"
+  //   }
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Pull from GitHub",
+      "type": "shell",
+      "command": "git pull --rebase --autostash",
+      "problemMatcher": []
+    },
+    {
+      "label": "Render pipeline",
+      "type": "shell",
+      "command": "quarto render \"{{{title}}}-Pipeline.qmd\"",
+      "problemMatcher": []
+    },
+    {
+      "label": "Submit pipeline",
+      "type": "shell",
+      "command": "bash submit-targets.sh",
+      "problemMatcher": []
+    },
+    {
+      "label": "Pull, render, and submit pipeline",
+      "dependsOrder": "sequence",
+      "dependsOn": ["Pull from GitHub", "Render pipeline", "Submit pipeline"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Render results",
+      "type": "shell",
+      "command": "quarto render \"{{{title}}}-Results.qmd\"",
+      "problemMatcher": []
+    }
+  ]
+}

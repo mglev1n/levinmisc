@@ -9,7 +9,10 @@ populate_targets_proj(
   log_folder = "build_logs",
   path = ".",
   runtime = c("native", "container"),
-  overwrite = FALSE
+  overwrite = FALSE,
+  data_dir = "Data",
+  results_dir = "Results",
+  git_safeguards = TRUE
 )
 }
 \arguments{
@@ -22,6 +25,12 @@ populate_targets_proj(
 \item{runtime}{(character) R runtime the pipeline and its LSF workers use: \code{"native"} (the default) for the module-provided R, or \code{"container"} for the LPC RStudio Singularity image}
 
 \item{overwrite}{(logical) replace existing template files without asking first}
+
+\item{data_dir}{(character) directory for input data, created inside \code{path} and excluded from git}
+
+\item{results_dir}{(character) directory for pipeline results, created inside \code{path} and excluded from git}
+
+\item{git_safeguards}{(logical) add \code{.gitignore} entries and a pre-commit hook that keep data and results out of git}
 }
 \description{
 This function creates a minimal targets template in the current directory. This includes creating a \code{Pipelines.qmd} file containing boilerplate for running analyses, and a \code{Results.qmd} file which can be used to visualize the results. Parallelization of the pipeline is implemented using \code{\link[targets:tar_make]{targets::tar_make()}} and \code{crew.cluster}, using pre-filled using parameters specific to the LPC system at Penn.
@@ -32,6 +41,10 @@ a git repository, a \verb{.vscode/} directory), because such a search otherwise 
 directory.
 
 The \code{runtime} argument selects the R installation the pipeline runs against, and is passed through to \code{\link[=use_crew_lsf]{use_crew_lsf()}}. \code{"native"}, the default, loads the LPC's R module and leaves the package library to \code{renv}; \code{"container"} instead runs the main \code{targets} process and every worker inside the LPC's RStudio Singularity image.
+
+The function also creates a data directory and a results directory, so that every location holding data or data-derived output is known when the project starts. With \code{git_safeguards = TRUE} (the default), it keeps those locations out of git in two ways. It appends entries to \code{.gitignore} for the data and results directories, the log directory, the \code{targets} data store (\verb{_targets/}), the scripts generated from the Target Markdown file, rendered reports, and common data file types. It also writes a pre-commit hook to \code{.githooks/pre-commit} that refuses any commit staging a file from those directories, a file with a data file extension, or a file larger than 5 MB, which catches files forced past \code{.gitignore} with \verb{git add -f}. When \code{path} is the root of a git repository, the function points \code{core.hooksPath} at \code{.githooks} so the hook runs; otherwise it prints the command to run after \verb{git init}. Because the hook lives in the repository, each new clone needs only that one command.
+
+Finally, the function writes \code{.vscode/tasks.json}, which defines editor tasks for pulling from GitHub, rendering the pipeline file, and submitting the pipeline, plus one task that runs all three in sequence. These tasks work in VS Code and code-server; an existing \code{tasks.json} is left unchanged.
 }
 \examples{
 \dontrun{
