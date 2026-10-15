@@ -21,7 +21,10 @@ test_that("populate_targets_proj creates data folders and git safeguards", {
 
   hook <- file.path(proj, ".githooks", "pre-commit")
   expect_true(file.exists(hook))
-  expect_true(file.access(hook, mode = 1) == 0)
+  # Windows has no execute permission bit; git for Windows runs hooks regardless
+  if (.Platform$OS.type != "windows") {
+    expect_true(file.access(hook, mode = 1) == 0)
+  }
   hooks_path <- processx::run("git", c("-C", proj, "config", "--get", "core.hooksPath"))$stdout
   expect_equal(trimws(hooks_path), ".githooks")
 })
@@ -179,6 +182,7 @@ test_that("pre-commit hook blocks PMBB identifiers and masks its output", {
 
 test_that("pre-commit hook allows a clean 10 MB HTML report", {
   skip_on_cran()
+  skip_on_os("windows")
   skip_if(Sys.which("git") == "", "git is not installed")
   proj <- hook_project()
   rows <- rep("<tr><td>chr2:123456789</td><td>0.05</td></tr>", 230000)
@@ -215,6 +219,7 @@ failing_pipeline <- c("library(targets)",
 test_that(".run-pipeline.R reports a successful run", {
   skip_on_cran()
   skip_if_not_installed("targets")
+  skip_on_os("windows")
   result <- run_pipeline(passing_pipeline)
   expect_equal(result$status, 0)
   expect_true(grepl("completed", result$curl_log, fixed = TRUE))
@@ -224,6 +229,7 @@ test_that(".run-pipeline.R reports a successful run", {
 test_that(".run-pipeline.R reports a failure without error text or identifiers", {
   skip_on_cran()
   skip_if_not_installed("targets")
+  skip_on_os("windows")
   result <- run_pipeline(failing_pipeline)
   expect_equal(result$status, 1)
   expect_true(grepl("FAILED", result$curl_log, fixed = TRUE))
@@ -235,6 +241,7 @@ test_that(".run-pipeline.R reports a failure without error text or identifiers",
 test_that(".run-pipeline.R keeps the pipeline status when the notification fails", {
   skip_on_cran()
   skip_if_not_installed("targets")
+  skip_on_os("windows")
   result <- run_pipeline(passing_pipeline, curl_status = 7)
   expect_equal(result$status, 0)
   expect_true(grepl("Notification failed", result$stderr, fixed = TRUE))
@@ -243,6 +250,7 @@ test_that(".run-pipeline.R keeps the pipeline status when the notification fails
 test_that(".run-pipeline.R sends nothing when notifications are off", {
   skip_on_cran()
   skip_if_not_installed("targets")
+  skip_on_os("windows")
   result <- run_pipeline(passing_pipeline, notify = "")
   expect_equal(result$status, 0)
   expect_null(result$curl_log)
