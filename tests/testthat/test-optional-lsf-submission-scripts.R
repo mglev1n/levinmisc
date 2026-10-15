@@ -26,6 +26,50 @@ test_that("populate_targets_proj creates data folders and git safeguards", {
   expect_equal(trimws(hooks_path), ".githooks")
 })
 
+test_that("re-running populate_targets_proj keeps existing files and adds missing ones", {
+  skip_on_cran()
+  proj <- withr::local_tempdir()
+  processx::run("git", c("-C", proj, "init", "-q"))
+  writeLines("my pipeline", file.path(proj, "study-Pipeline.qmd"))
+  writeLines("my results", file.path(proj, "study-Results.qmd"))
+  writeLines(c(".Rhistory", "*.html"), file.path(proj, ".gitignore"))
+  dir.create(file.path(proj, ".githooks"))
+  writeLines("#!/bin/sh\necho old hook", file.path(proj, ".githooks", "pre-commit"))
+
+  messages <- testthat::capture_messages(populate_targets_proj(path = proj))
+
+  # Title comes from the existing file, so no second pair of .qmd files appears
+  expect_equal(length(fs::dir_ls(proj, glob = "*-Pipeline.qmd")), 1)
+  expect_equal(readLines(file.path(proj, "study-Pipeline.qmd")), "my pipeline")
+  expect_equal(readLines(file.path(proj, "study-Results.qmd")), "my results")
+  expect_true(any(grepl("Kept existing", messages)))
+  expect_false(any(grepl("Targets Pipeline template created", messages)))
+
+  # Missing files are added
+  expect_true(file.exists(file.path(proj, ".run-pipeline.R")))
+  tasks <- paste(readLines(file.path(proj, ".vscode", "tasks.json")), collapse = "\n")
+  expect_true(grepl("study-Pipeline.qmd", tasks, fixed = TRUE))
+
+  # The hook is updated and the old one kept; the *.html ignore line is reported
+  expect_true(any(grepl("ID_PATTERN", readLines(file.path(proj, ".githooks", "pre-commit")))))
+  expect_equal(readLines(file.path(proj, ".githooks", "pre-commit.bak"))[2], "echo old hook")
+  expect_true(any(grepl("still ignores", messages)))
+
+  # A second re-run reports the hook as current and writes no new backup
+  file.remove(file.path(proj, ".githooks", "pre-commit.bak"))
+  messages <- testthat::capture_messages(populate_targets_proj(path = proj))
+  expect_true(any(grepl("already up to date", messages)))
+  expect_false(file.exists(file.path(proj, ".githooks", "pre-commit.bak")))
+})
+
+test_that("populate_targets_proj replaces existing files when overwrite = TRUE", {
+  skip_on_cran()
+  proj <- withr::local_tempdir()
+  writeLines("my pipeline", file.path(proj, "study-Pipeline.qmd"))
+  suppressMessages(populate_targets_proj("study", path = proj, overwrite = TRUE, git_safeguards = FALSE))
+  expect_true(length(readLines(file.path(proj, "study-Pipeline.qmd"))) > 1)
+})
+
 test_that("populate_targets_proj writes LSF scripts only on request", {
   skip_on_cran()
   proj <- withr::local_tempdir()

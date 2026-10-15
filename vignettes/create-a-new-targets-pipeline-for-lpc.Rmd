@@ -131,6 +131,12 @@ LEVINMISC_NTFY_URL=https://ntfy.sh/your-hard-to-guess-topic
 
 Set `LEVINMISC_NOTIFY_START=true` to also be notified when a run starts. With `LEVINMISC_NOTIFY` unset, the script prints its summary in the terminal only.
 
+### Updating an existing project
+
+Re-run `populate_targets_proj()` in an existing project to add files introduced by newer versions of this package, such as `.run-pipeline.R` or the editor tasks. Existing files, including your `Pipeline.qmd` and `Results.qmd`, are kept, and the function lists each one it kept. When `title` is not given and the project has one `*-Pipeline.qmd` file, its name supplies the title. Pass `overwrite = TRUE` only to replace existing files with fresh templates.
+
+The pre-commit hook is the exception: a re-run always updates it, so older projects gain the identifier check, and a previous version that differs is saved as `.githooks/pre-commit.bak`. If the project's `.gitignore` still contains a `*.html` line from an earlier version, the function warns; delete that line to commit rendered reports. LSF scripts from earlier versions, such as `submit-targets.sh`, are left in place.
+
 ## Optional LSF submission scripts
 
 Pipelines are normally run from code-server on a compute node with the editor task above. To submit the main `targets` process as its own LSF job instead, for example from a submission host such as `scisub7`, call `populate_targets_proj(lsf_scripts = TRUE)`. This also writes `submit-targets.sh` and the hidden helper `.make-targets.sh`, whose contents follow the `runtime` argument so that the main `targets` process runs under the same R as the workers. Run `submit-targets.sh` from the root directory of your project once `Pipeline.qmd` has been knit/rendered. The script accepts command line arguments:
